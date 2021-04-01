@@ -364,7 +364,7 @@ contract Mint is OwnableUpgradeable, IMint {
             position.assetAmount = leftAssetAmount;
             savePostiion(positionIndex, position);
         }
-        //TODO,check params
+
         burnAsset(assetToken, sender, liquidatedAssetAmount);
 
         uint protocolFee = calculateProtocolFee(returnCollateralAmount);

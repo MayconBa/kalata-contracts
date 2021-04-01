@@ -70,11 +70,7 @@ contract Governance is OwnableUpgradeable, IGovernance {
        Create a new poll
        Issued when sending KALA tokens to the Governance contract to create a new poll.
        Will only succeed if the amount of tokens sent meets the configured proposal_deposit amount.
-
-
-
        About pollKey:  this.function cannot not return any data except the transaction receipt.  So add a pollKey for searching
-
    */
     function createPoll(uint depositAmount, string calldata title, string calldata description, bytes32 pollKey) override external {
         address proposer = _msgSender();
@@ -257,7 +253,7 @@ contract Governance is OwnableUpgradeable, IGovernance {
 
         poll.status = PollStatus.Executed;
 
-        //TODO, Each poll may have different task to execute
+        //Each poll may have different task to execute
 
 
     }

@@ -16,7 +16,6 @@ import "../libraries/SafeDecimalMath.sol";
 //The KALA is then sent to the Governance Contract to supply trading fee rewards for KALA stakers.
 
 //All the fee rewards is collected in this contract.
-//TODO,find out which contract collect the fee
 contract Collector is OwnableUpgradeable, ICollector {
     using SafeMath for uint;
     Config config;
