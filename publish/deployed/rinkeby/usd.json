@@ -1,0 +1,7 @@
+{
+  "name": "Binance-Peg BUSD-T",
+  "symbol": "BUSD",
+  "initialSupply": "10000000000000000000000000000",
+  "address": "0x3cCa885bfE078e23a37d22F60Fa8f2040c0Dba38",
+  "deploy": false
+}

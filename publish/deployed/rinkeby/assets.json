@@ -1,0 +1,56 @@
+{
+  "mApple": {
+    "name": "Apple Token",
+    "initialSupply": 0,
+    "sinaCode": "gb_aapl",
+    "gtimgCode": "usAAPL",
+    "address": "0xC9e8f0eDE794EBd81E882736b2ecDD302dDA90E2",
+    "feeder": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
+    "deploy": false
+  },
+  "mABNB": {
+    "name": "ABNB Token",
+    "initialSupply": 0,
+    "sinaCode": "gb_abnb",
+    "gtimgCode": "usABNB",
+    "address": "0x0683a0Fc24F626A8185425De00ba2C3496528C79",
+    "feeder": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
+    "deploy": false
+  },
+  "mAMC": {
+    "name": "Amc Token",
+    "initialSupply": 0,
+    "sinaCode": "gb_amc",
+    "gtimgCode": "usAMC",
+    "address": "0xDFd6b1865e94E88831A19d2634963fC3c432c43A",
+    "feeder": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
+    "deploy": false
+  },
+  "mAMZN": {
+    "name": "Amzn Token",
+    "initialSupply": 0,
+    "sinaCode": "gb_amzn",
+    "gtimgCode": "usAMZN",
+    "address": "0x51b0FdC7577E2baD96c8EA31b933b450D42f932f",
+    "feeder": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
+    "deploy": false
+  },
+  "mBABA": {
+    "name": "Alibaba Token",
+    "initialSupply": 0,
+    "sinaCode": "gb_baba",
+    "gtimgCode": "usBABA",
+    "address": "0xEa4fc46F5439C1C3325A5E9BC3bD05EcEC422d76",
+    "feeder": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
+    "deploy": false
+  },
+  "mGOOGL": {
+    "name": "Google Token",
+    "initialSupply": 0,
+    "sinaCode": "gb_goog",
+    "gtimgCode": "usGOOG",
+    "address": "0xA1Fb00703bF2C43a961b3083C969c8bbF1D2733d",
+    "feeder": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
+    "deploy": false
+  }
+}

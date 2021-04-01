@@ -1,0 +1,9 @@
+{
+  "deploy": false,
+  "upgrade": false,
+  "name": "Kalata",
+  "symbol": "Kala",
+  "deployer": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
+  "initialSupply": "120000000000000000000000000",
+  "address": "0xC95d1F12Db84DaaFb4f8Dde77eD2626CDCE654b3"
+}

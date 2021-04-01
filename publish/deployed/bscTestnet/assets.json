@@ -1,0 +1,152 @@
+{
+  "kApple": {
+    "name": "Apple Token",
+    "symbol": "kApple",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0xA905E9402cBd20695d11e83eE640EAe78A320fd6",
+    "pair": "0x7a648417679Df97aaD696d94B52b9Da410700C6D",
+    "deploy": false,
+    "sinaCode": "gb_aapl",
+    "gtimgCode": "usAAPL",
+    "icon": "https://api.kalata.io/api/deployed/icons/KAPPLE.png"
+  },
+  "kABNB": {
+    "name": "ABNB Token",
+    "symbol": "kABNB",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "sinaCode": "gb_abnb",
+    "gtimgCode": "usABNB",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0xC44D24D64c86e88e8FF792C2330aCA82545A41B8",
+    "pair": "0x3b4CF94d98bFAE2c3CD5e41298cB14d2663aC0BA",
+    "deploy": false,
+    "icon": "https://api.kalata.io/api/deployed/icons/KABNB.png"
+  },
+  "kAMC": {
+    "name": "Amc Token",
+    "symbol": "kAMC",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "sinaCode": "gb_amc",
+    "gtimgCode": "usAMC",
+    "address": "0x9CAe7a7dB421D169f0552061507995D4827Db481",
+    "pair": "0x8A2b55099182b98243cA2BF6083de1122C48cE92",
+    "deploy": false,
+    "icon": "https://api.kalata.io/api/deployed/icons/KAMC.png"
+  },
+  "kAMZN": {
+    "name": "Amzn Token",
+    "symbol": "kAMZN",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "sinaCode": "gb_amzn",
+    "gtimgCode": "usAMZN",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0x1Ada608a6645a16A6CFC1CBe11F811c75227623b",
+    "pair": "0x4900ca87aC0Bd8Dd95333B06b9f509905a9Aa5c0",
+    "deploy": false,
+    "icon": "https://api.kalata.io/api/deployed/icons/KAMZN.png"
+  },
+  "kBABA": {
+    "name": "Alibaba Token",
+    "symbol": "kBABA",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "sinaCode": "gb_baba",
+    "gtimgCode": "usBABA",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0x52723Eb3B14585D27621610bd82C1bFBFBE77A0a",
+    "pair": "0x69bf0Bf0C5f9E6f49286d0D36c99712f31F44dCb",
+    "deploy": false,
+    "icon": "https://api.kalata.io/api/deployed/icons/KBABA.png"
+  },
+  "kGOOGL": {
+    "name": "Google Token",
+    "symbol": "kGOOGL",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "sinaCode": "gb_goog",
+    "gtimgCode": "usGOOG",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0x730A47EAa4312129F32c4202cf1F72000Fcd86c3",
+    "pair": "0x32DFA016C1B2a198F85B6fFc2ce35F0D3CDF48dB",
+    "deploy": false,
+    "icon": "https://api.kalata.io/api/deployed/icons/KGOOGL.png"
+  },
+  "kBTC": {
+    "name": "BTC Token",
+    "symbol": "kBTC",
+    "initialSupply": "980000000000000000000000000",
+    "type": "crptoCurrency",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "coingeckoCoinId": "bitcoin",
+    "address": "0xa03B9f2826a11cC96cC62E5beADc2fA4a56C1e5f",
+    "pair": "0x4f3257d9214e102ff500137c6138b63a39774589",
+    "deploy": false,
+    "icon": "https://api.kalata.io/api/deployed/icons/KBTC.png"
+  },
+  "kETH": {
+    "name": "ETH Token",
+    "symbol": "kETH",
+    "initialSupply": "980000000000000000000000000",
+    "type": "crptoCurrency",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "coingeckoCoinId": "ethereum",
+    "address": "0xF96613DE1EEf578656b4BE4b23822A6052f59E64",
+    "pair": "0xEA658f57EA40652Bc3458F26c579710877Aa591f",
+    "deploy": false,
+    "icon": "https://api.kalata.io/api/deployed/icons/KETH.png"
+  },
+  "kBCH": {
+    "name": "BCH Token",
+    "symbol": "kBCH",
+    "initialSupply": "980000000000000000000000000",
+    "type": "crptoCurrency",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "coingeckoCoinId": "bitcoin-cash",
+    "address": "0xB0C95c7a05f1A19E7B8900a7093Cb3564f2c8F4e",
+    "pair": "0xBa2a3610D53294AfB3bBB08FFc1ABAAC4f85b5Ff",
+    "deploy": false,
+    "icon": "https://api.kalata.io/api/deployed/icons/KBCH.png"
+  }
+}

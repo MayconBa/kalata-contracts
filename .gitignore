@@ -1,0 +1,15 @@
+scripts
+node_modules
+#Hardhat files
+cache
+artifacts
+.idea
+package-lock.json
+env.js
+.openzeppelin
+tmp
+deployments
+publish/deployed/hardhat
+publish/deployed/localhost
+doc
+scripts
