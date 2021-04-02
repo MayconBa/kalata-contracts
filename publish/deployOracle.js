@@ -13,6 +13,8 @@ async function deploy(hre) {
     if (deployedContract.deploy || deployedContract.upgrade) {
         if (deployedContract.upgrade) {
             const instance = await hre.upgrades.upgradeProxy(deployedContract.address, ContractClass, {});
+            deployedContract.abi = abi;
+            deployedContract.bytecode = bytecode;
             console.log(`${ORACLE_CONTRACT_CLASS} upgraded:`, instance.address);
         } else {
             //mock factory firstly, Will use the factory address after the factory is deployed.

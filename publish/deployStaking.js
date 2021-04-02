@@ -12,6 +12,8 @@ async function deploy(hre) {
         const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
         if (deployedContract.upgrade) {
             const instance = await hre.upgrades.upgradeProxy(deployedContract.address, ContractClass, {});
+            deployedContract.abi = abi;
+            deployedContract.bytecode = bytecode;
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
             //mock factory firstly, Will use the factory address after the factory is deployed.

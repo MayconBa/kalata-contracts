@@ -24,6 +24,8 @@ async function deploy(hre) {
         const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
         if (deployedContract.upgrade) {
             const instance = await hre.upgrades.upgradeProxy(deployedContract.address, ContractClass, {});
+            deployedContract.abi = abi;
+            deployedContract.bytecode = bytecode;
             console.log(`${CONTRACT_CLASS} upgraded:`, instance.address);
         } else {
             const instance = await hre.upgrades.deployProxy(ContractClass, [params.govToken, params.quorum, params.threshold, params.votingPeriod, params.effectiveDelay, params.expirationPeriod, params.proposalDeposit], {
