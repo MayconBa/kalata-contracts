@@ -75,9 +75,10 @@ contract Factory is OwnableUpgradeable, IFactory {
     //time schedule should be ordered by time
     //times are not allowed to overlap
     function updateDistributionSchedules(uint[] calldata startTimes, uint[] calldata endTimes, uint[] calldata amounts) override external onlyOwner {
-        require(startTimes.length > 0, "Invalid arguments");
-        require(startTimes.length == endTimes.length, "Invalid arguments");
-        require(startTimes.length == amounts.length, "Invalid arguments");
+        require(
+            startTimes.length > 0 && startTimes.length == endTimes.length && startTimes.length == amounts.length,
+            "Invalid arguments"
+        );
 
         delete distributionSchedules;
         lastDistributeIndex = 0;
@@ -105,7 +106,7 @@ contract Factory is OwnableUpgradeable, IFactory {
     //    1.Instantiate the mAsset contract as a new Uniswap CW20 token
     //    2.Register the mAsset with Kalata Oracle and Kalata Mint
     //    3.Create a new Uniswap Pair for the new mAsset against USD
-    //    4.Instantiate the LP Token contract associated with the pool as a new Uniswap CW20 token
+    //    4.Instantiate the LP Token contract associated with the pool as a new Uniswap token
     //    5.Register the LP token with the Kalata Staking contract
     function whitelist(bytes32 name, bytes32 symbol, address oracleFeeder, uint auctionDiscount, uint minCollateralRatio, uint weight) override external onlyOwnerOrGovernance {
         addToken(owner(), oracleFeeder, name, symbol, 0, auctionDiscount, minCollateralRatio, weight);
