@@ -161,6 +161,6 @@ module.exports = {
         //await deployStockAssets(hre);
         //await deployCrptoCurrencyAssets(hre);
         await createPairs(hre);
-        await addLiquidity(hre);
+        //await addLiquidity(hre);
     }
 }

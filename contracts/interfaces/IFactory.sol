@@ -10,6 +10,14 @@ pragma solidity >=0.6.0;
 ///the Factory is assigned to be the owner for the Mint, Oracle, Staking,
 ///and Collector contracts. The Factory is owned by the Governance Contract.
 interface IFactory {
+
+    struct Token {
+        bytes32 tokenName;
+        bytes32 tokenSymbol;
+        address tokenAddress;
+        address busdPairAddress;
+    }
+
     struct DistributionSchedule {
         uint startTime;
         uint endTime;
@@ -115,6 +123,13 @@ interface IFactory {
     function queryTotalWeight() external view returns (uint);
 
     function queryToken(bytes32 symbol) external view returns (address token);
+
+    function queryTokens() external view returns (
+        bytes32[] memory tokenNames,
+        bytes32[] memory tokenSymbols,
+        address[] memory tokenAddresses,
+        address[] memory busdPairAddresses
+    );
 
     event RevokeAsset(address assetToken, uint endPrice);
     event Distribute(uint distributedAmount);

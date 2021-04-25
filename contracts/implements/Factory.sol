@@ -21,7 +21,6 @@ import "./BEP20Token.sol";
 //After the initial bootstrapping of Kalata Protocol contracts, the Factory is assigned to be the owner for the Mint, Oracle, Staking, and Collector contracts.
 //The Factory is owned by the Governance Contract.
 contract Factory is OwnableUpgradeable, IFactory {
-
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using Bytes32 for bytes32;
@@ -33,23 +32,25 @@ contract Factory is OwnableUpgradeable, IFactory {
 
     uint constant DISTRIBUTION_INTERVAL = 60;
 
-    Config config;
-    uint genesisTime;
+    Config _config;
+    uint _genesisTime;
+
     //Distribution schedule for the minting of new KALA tokens.
     //Determines the total amount of new KALA tokens minted as rewards for LP stakers over the interval [start time, end time].
-    DistributionSchedule[] distributionSchedules;
+    DistributionSchedule[] _distributionSchedules;
 
-    uint lastDistributeIndex;
-    uint lastDistributed;
-    uint totalWeight;
+    uint _lastDistributeIndex;
+    uint _lastDistributed;
+    uint _totalWeight;
 
-    mapping(address => uint)  assetWeights;
-    address[] assetTokens;
+    mapping(address => uint)  _assetWeights;
+    address[] _tokenAddresses;
 
-    mapping(bytes32 => address) symbolTokenMap;
+    mapping(bytes32 => address) _symbolTokenMap;
+    Token[] _tokens;
 
     modifier onlyOwnerOrGovernance() {
-        require(config.governance == _msgSender() || _msgSender() == owner(), "Unauthorized,need governace/owner to perform.");
+        require(_config.governance == _msgSender() || _msgSender() == owner(), "Unauthorized,need governace/owner to perform.");
         _;
     }
 
@@ -60,8 +61,8 @@ contract Factory is OwnableUpgradeable, IFactory {
     ) external virtual initializer {
         __Ownable_init();
         _updateConfig(governance, mint, oracle, staking, uniswapFactory, baseToken, govToken);
-        totalWeight = 32;
-        genesisTime = block.timestamp;
+        _totalWeight = 32;
+        _genesisTime = block.timestamp;
     }
 
     function updateConfig(
@@ -80,24 +81,24 @@ contract Factory is OwnableUpgradeable, IFactory {
             "Invalid arguments"
         );
 
-        delete distributionSchedules;
-        lastDistributeIndex = 0;
+        delete _distributionSchedules;
+        _lastDistributeIndex = 0;
         for (uint i; i < startTimes.length; i++) {
             require(endTimes[i] > startTimes[i], "End time should be greater than start time");
             if (i > 0) {
                 require(startTimes[i] >= endTimes[i - 1], "Time overlap");
             }
-            distributionSchedules.push(DistributionSchedule(startTimes[i], endTimes[i], amounts[i]));
+            _distributionSchedules.push(DistributionSchedule(startTimes[i], endTimes[i], amounts[i]));
         }
     }
 
 
     function updateWeight(address assetToken, uint weight) override external onlyOwnerOrGovernance {
-        uint originWeight = assetWeights[assetToken];
+        uint originWeight = _assetWeights[assetToken];
 
         saveWeight(assetToken, weight);
 
-        totalWeight = totalWeight.add(weight).sub(originWeight);
+        _totalWeight = _totalWeight.add(weight).sub(originWeight);
 
         emit UpdateWeight(assetToken, weight);
     }
@@ -129,36 +130,36 @@ contract Factory is OwnableUpgradeable, IFactory {
     //3rd year: genesisTime+(63093600 to 94629600),   distribute 137250 kala tokens
     //4th year: genesisTime+(94629600 to 126165600),  distribute 68625 kala tokens
     function distribute() override external {
-        require(block.timestamp.sub(lastDistributed) >= DISTRIBUTION_INTERVAL, "Cannot distribute Kalata Token before interval");
+        require(block.timestamp.sub(_lastDistributed) >= DISTRIBUTION_INTERVAL, "Cannot distribute Kalata Token before interval");
 
-        uint timeElapsed = block.timestamp.sub(genesisTime);
+        uint timeElapsed = block.timestamp.sub(_genesisTime);
 
         uint distributedAmount = 0;
 
-        for (uint i = lastDistributeIndex; i < distributionSchedules.length; i++) {
-            DistributionSchedule memory schedule = distributionSchedules[i];
+        for (uint i = _lastDistributeIndex; i < _distributionSchedules.length; i++) {
+            DistributionSchedule memory schedule = _distributionSchedules[i];
             if (timeElapsed >= schedule.startTime) {
                 uint timeSlot = schedule.endTime.sub(schedule.startTime);
-                uint timeDuration = Math.min(timeElapsed, schedule.endTime).sub(Math.max(schedule.startTime, lastDistributed));
+                uint timeDuration = Math.min(timeElapsed, schedule.endTime).sub(Math.max(schedule.startTime, _lastDistributed));
                 uint amount = timeDuration.multiplyDecimal(schedule.amount.divideDecimal(timeSlot));
                 distributedAmount = amount;
-                if (lastDistributeIndex != i) {
-                    lastDistributeIndex = i;
+                if (_lastDistributeIndex != i) {
+                    _lastDistributeIndex = i;
                 }
                 break;
             }
         }
         if (distributedAmount > 0) {
-            for (uint i = 0; i < assetTokens.length; i++) {
-                address token = assetTokens[i];
-                uint amount = distributedAmount.multiplyDecimal(assetWeights[token]).divideDecimal(totalWeight);
+            for (uint i = 0; i < _tokenAddresses.length; i++) {
+                address token = _tokenAddresses[i];
+                uint amount = distributedAmount.multiplyDecimal(_assetWeights[token]).divideDecimal(_totalWeight);
                 if (amount > 0) {
-                    IBEP20Token(config.govToken).mint(config.staking, amount);
-                    IStaking(config.staking).depositReward(config.govToken, amount);
+                    IBEP20Token(_config.govToken).mint(_config.staking, amount);
+                    IStaking(_config.staking).depositReward(_config.govToken, amount);
                 }
             }
         }
-        lastDistributed = block.timestamp;
+        _lastDistributed = block.timestamp;
         emit Distribute(distributedAmount);
     }
 
@@ -184,7 +185,7 @@ contract Factory is OwnableUpgradeable, IFactory {
     //    Deprecation will not directly affect the functionality of the mAsset's Uniswap pool and users will still be able to make trades against it, although price is likely to be very unstable. Users are urged to burn the mAsset to recover their collateral if they have an open position, and are free to open a new CDP / engage in liquidity provision for the new, replacement mAsset. The old mAsset will be retired and marked as "deprecated" on front-end interfaces.
     // Oracle Feeder of the assetToken execute this method
     function migrateAsset(bytes32 name, bytes32 symbol, address assetToken, uint endPrice) override external {
-        (uint auctionDiscount, uint minCollateralRatio,) = IMint(config.mint).queryAssetConfig(assetToken);
+        (uint auctionDiscount, uint minCollateralRatio,) = IMint(_config.mint).queryAssetConfig(assetToken);
         (uint weight,address feeder) = _revokeAsset(assetToken, endPrice);
         addToken(owner(), feeder, name, symbol, 0, auctionDiscount, minCollateralRatio, weight);
         emit MigrateAsset(endPrice, assetToken);
@@ -199,7 +200,7 @@ contract Factory is OwnableUpgradeable, IFactory {
         address baseToken,
         address govToken
     ){
-        Config memory m = config;
+        Config memory m = _config;
         governance = m.governance;
         govToken = m.govToken;
         mint = m.mint;
@@ -216,55 +217,73 @@ contract Factory is OwnableUpgradeable, IFactory {
         uint[] memory amounts//distribution amount for the interval
     ){
 
-        startTimes = new uint[](distributionSchedules.length);
-        endTimes = new uint[](distributionSchedules.length);
-        amounts = new uint[](distributionSchedules.length);
+        startTimes = new uint[](_distributionSchedules.length);
+        endTimes = new uint[](_distributionSchedules.length);
+        amounts = new uint[](_distributionSchedules.length);
 
-        for (uint i = 0; i < distributionSchedules.length; i++) {
-            startTimes[i] = distributionSchedules[i].startTime;
-            endTimes[i] = distributionSchedules[i].endTime;
-            amounts[i] = distributionSchedules[i].amount;
+        for (uint i = 0; i < _distributionSchedules.length; i++) {
+            startTimes[i] = _distributionSchedules[i].startTime;
+            endTimes[i] = _distributionSchedules[i].endTime;
+            amounts[i] = _distributionSchedules[i].amount;
         }
     }
 
     function queryWeight(address token) override external view returns (uint){
-        return assetWeights[token];
+        return _assetWeights[token];
     }
 
     function queryTotalWeight() override external view returns (uint){
-        return totalWeight;
+        return _totalWeight;
     }
 
     function queryToken(bytes32 symbol) override external view returns (address token){
-        token = symbolTokenMap[symbol];
+        token = _symbolTokenMap[symbol];
     }
 
+    function queryTokens() override external view returns (
+        bytes32[] memory tokenNames,
+        bytes32[] memory tokenSymbols,
+        address[] memory tokenAddresses,
+        address[] memory busdPairAddresses
+    ){
+        tokenNames = new bytes32[](_tokens.length);
+        tokenSymbols = new bytes32[](_tokens.length);
+        tokenAddresses = new address[](_tokens.length);
+        busdPairAddresses = new address[](_tokens.length);
+        for (uint i = 0; i < _tokens.length; i++) {
+            Token memory token = _tokens[i];
+            tokenNames[i] = token.tokenName;
+            tokenSymbols[i] = token.tokenSymbol;
+            tokenAddresses[i] = token.tokenAddress;
+            busdPairAddresses[i] = token.busdPairAddress;
+        }
+    }
 
     //////////////////////internal methods//////////////////
 
     function saveWeight(address assetToken, uint weight) private {
         bool exists = false;
-        for (uint i = 0; i < assetTokens.length; i++) {
-            if (assetTokens[i] == assetToken) {
+        for (uint i = 0; i < _tokenAddresses.length; i++) {
+            if (_tokenAddresses[i] == assetToken) {
                 exists = true;
                 break;
             }
         }
         if (!exists) {
-            assetTokens.push(assetToken);
+            _tokenAddresses.push(assetToken);
         }
-        assetWeights[assetToken] = weight;
+        _assetWeights[assetToken] = weight;
     }
 
     function removeWeight(address assetToken) private {
-        delete assetWeights[assetToken];
-        uint length = assetTokens.length;
+        delete _assetWeights[assetToken];
+        uint length = _tokenAddresses.length;
         for (uint i = 0; i < length; i++) {
-            if (assetTokens[i] == assetToken) {
+            if (_tokenAddresses[i] == assetToken) {
                 if (i != length - 1) {
-                    assetTokens[i] = assetTokens[length - 1];
+                    _tokenAddresses[i] = _tokenAddresses[length - 1];
                 }
-                delete assetTokens[length - 1];
+                delete _tokenAddresses[length - 1];
             }
         }
     }
@@ -273,26 +292,28 @@ contract Factory is OwnableUpgradeable, IFactory {
     function addToken(address tokenOwner, address oracleFeeder, bytes32 name, bytes32 symbol, uint initialSupply,
         uint auctionDiscount, uint minCollateralRatio, uint weight) private {
 
-        address assetToken = createToken(tokenOwner, name, symbol, initialSupply);
-        require(assetToken != address(0), "createToken failed");
+        address tokenAddress = createToken(tokenOwner, name, symbol, initialSupply);
+        require(tokenAddress != address(0), "createToken failed");
 
         weight = weight == 0 ? NORMAL_TOKEN_WEIGHT : weight;
 
-        saveWeight(assetToken, weight);
-        totalWeight = totalWeight.add(weight);
+        saveWeight(tokenAddress, weight);
+        _totalWeight = _totalWeight.add(weight);
 
-        IMint(config.mint).registerAsset(assetToken, auctionDiscount, minCollateralRatio);
-        IOracle(config.oracle).registerAsset(assetToken, oracleFeeder);
+        IMint(_config.mint).registerAsset(tokenAddress, auctionDiscount, minCollateralRatio);
+        IOracle(_config.oracle).registerAsset(tokenAddress, oracleFeeder);
 
-        IUniswapV2Factory(config.uniswapFactory).createPair(config.baseToken, assetToken);
+        address pairAddress = IUniswapV2Factory(_config.uniswapFactory).createPair(_config.baseToken, tokenAddress);
 
-        address lpToken = IUniswapV2Factory(config.uniswapFactory).getPair(assetToken, config.baseToken);
-        IStaking(config.staking).registerAsset(assetToken, lpToken);
+        _tokens.push(Token(name, symbol, tokenAddress, pairAddress));
+
+        //address lpToken = IUniswapV2Factory(_config.uniswapFactory).getPair(assetToken, _config.baseToken);
+        IStaking(_config.staking).registerAsset(tokenAddress, pairAddress);
     }
 
 
     function createToken(address tokenOwner, bytes32 name, bytes32 symbol, uint initialSupply) private returns (address addr) {
-        require(symbolTokenMap[symbol] == address(0), "symbol already exists");
+        require(_symbolTokenMap[symbol] == address(0), "symbol already exists");
 
         bytes memory code = type(BEP20Token).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(name, symbol, block.timestamp));
@@ -300,10 +321,11 @@ contract Factory is OwnableUpgradeable, IFactory {
         BEP20Token(addr).initialize(name.convertToString(), symbol.convertToString(), initialSupply);
         address[] memory minters = new address[](2);
         minters[0] = address(this);
-        minters[1] = config.mint;
+        minters[1] = _config.mint;
         BEP20Token(addr).registerMinters(minters);
         BEP20Token(addr).transferOwnership(tokenOwner);
-        symbolTokenMap[symbol] = addr;
+        _symbolTokenMap[symbol] = addr;
+
         emit TokenCreated(name, symbol, initialSupply, addr);
     }
 
@@ -318,18 +340,18 @@ contract Factory is OwnableUpgradeable, IFactory {
         require(uniswapFactory != address(0), "Invalid uniswapFactory address");
         require(baseToken != address(0), "Invalid baseToken address");
         require(govToken != address(0), "Invalid govToken address");
-        config = Config(governance, mint, oracle, staking, uniswapFactory, baseToken, govToken);
+        _config = Config(governance, mint, oracle, staking, uniswapFactory, baseToken, govToken);
     }
 
     function _revokeAsset(address assetToken, uint endPrice) private returns (uint weight, address feeder){
         require(assetToken != address(0), "Invalid assetToken");
         require(endPrice != 0, "Invalid endPrice");
-        feeder = IOracle(config.oracle).queryFeeder(assetToken);
+        feeder = IOracle(_config.oracle).queryFeeder(assetToken);
         require(feeder == _msgSender(), "unauthorized");
-        weight = assetWeights[assetToken];
+        weight = _assetWeights[assetToken];
         removeWeight(assetToken);
-        totalWeight = totalWeight.sub(weight);
-        IMint(config.mint).registerMigration(assetToken, endPrice);
+        _totalWeight = _totalWeight.sub(weight);
+        IMint(_config.mint).registerMigration(assetToken, endPrice);
     }
 
 }
