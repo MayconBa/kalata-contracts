@@ -257,7 +257,7 @@ describe(CONTRACT_NAME, () => {
             let feeder = await oracleInstance.queryFeeder(assetAddress);
             expect(feeder).to.equal(params.oracleFeeder);
 
-            let stakingPool = await stakingInstance.queryStakingPool(assetAddress);
+            let stakingPool = await stakingInstance.queryStake(assetAddress);
             expect(stakingPool.stakingToken).to.equal(pair);
             expect(stakingPool.pendingReward.toString()).to.equal('0');
             expect(stakingPool.totalStakingAmount.toString()).to.equal('0');

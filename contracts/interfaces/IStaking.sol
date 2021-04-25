@@ -13,7 +13,7 @@ interface IStaking {
         address govToken;
     }
 
-    struct StakingPool {
+    struct Stake {
         //lp token
         address stakingToken;
         // not distributed amount due to zero bonding
@@ -43,12 +43,19 @@ interface IStaking {
 
     function claim(address assetToken) external;
 
-    function queryStakingPool(address assetToken) external view returns (address stakingToken, uint pendingReward, uint totalStakingAmount, uint rewardIndex);
+    function queryStake(address assetToken) external view returns (address stakingToken, uint pendingReward, uint totalStakingAmount, uint rewardIndex);
+
+    function queryStakes()   external view returns (
+        address[] memory tokens,
+        address[] memory stakingTokens,
+        uint[] memory pendingRewards,
+        uint[] memory totalStakingAmounts,
+        uint[] memory rewardIndexes
+    );
 
     function queryConfig() external view returns (address configOwner, address govToken);
 
     function queryAssetReward(address staker, address assetToken) external view returns (uint index, uint bondAmount, uint pendingReward);
-
 
     function queryAllAssetRewards(address staker) external view returns (
         address[] memory assetTokens,

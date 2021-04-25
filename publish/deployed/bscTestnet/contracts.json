@@ -1751,7 +1751,7 @@
             "type": "address"
           }
         ],
-        "name": "queryStakingPool",
+        "name": "queryStake",
         "outputs": [
           {
             "internalType": "address",
