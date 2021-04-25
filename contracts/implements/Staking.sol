@@ -16,11 +16,11 @@ contract Staking is OwnableUpgradeable, IStaking {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
-    Config config;
+    Config _config;
 
     mapping(address => StakingPool) assetPoolMap;
 
-    //sender=>assetToken=>Reward
+    //staker=>assetToken=>Reward
     mapping(address => mapping(address => Reward)) stakerAssetRewardMap;
 
     //sender=>assetToken[], used for loop stakerAssetRewardMap easily
@@ -28,20 +28,20 @@ contract Staking is OwnableUpgradeable, IStaking {
 
 
     modifier onlyFactoryOrOwner() {
-        require(config.factory == msg.sender || msg.sender == owner(), "Unauthorized,only Staking's owner/factory can perform");
+        require(_config.factory == msg.sender || msg.sender == owner(), "Unauthorized,only Staking's owner/factory can perform");
         _;
     }
 
-    function initialize(address _factory, address _govToken) override external virtual initializer {
+    function initialize(address factory, address govToken) override external virtual initializer {
         __Ownable_init();
-        config.factory = _factory;
-        config.govToken = _govToken;
+        _config.factory = factory;
+        _config.govToken = govToken;
     }
 
 
     function setFactory(address factory) override external onlyOwner {
         require(factory != address(0), "Invalid parameter");
-        config.factory = factory;
+        _config.factory = factory;
     }
 
     // Registers a new staking pool for an asset token and associates the LP token(Pair) with the staking pool.
@@ -57,7 +57,7 @@ contract Staking is OwnableUpgradeable, IStaking {
 
     // Can be issued when the user sends LP Tokens to the Staking contract.
     // The LP token must be recognized by the staking pool of the specified asset token.
-    function bond(address assetToken, uint amount) override external {
+    function stake(address assetToken, uint amount) override external {
         require(assetToken != address(0), "invalid asset token");
         require(amount > 0, "invalid amount");
 
@@ -90,7 +90,7 @@ contract Staking is OwnableUpgradeable, IStaking {
         assetToken: Contract address of mAsset/KALA token (staking pool identifier)
         amount: Amount of LP tokens to unbond
     */
-    function unBond(address assetToken, uint amount) override external {
+    function unstake(address assetToken, uint amount) override external {
         require(amount > 0, "invalid amount");
 
         address sender = msg.sender;
@@ -130,7 +130,6 @@ contract Staking is OwnableUpgradeable, IStaking {
         if (stakingPool.totalBondAmount == 0) {
             stakingPool.pendingReward = stakingPool.pendingReward.add(amount);
         } else {
-
             uint rewardPerBond = (amount.add(stakingPool.pendingReward)).divideDecimal(stakingPool.totalBondAmount);
             stakingPool.rewardIndex = stakingPool.rewardIndex.add(rewardPerBond);
             stakingPool.pendingReward = 0;
@@ -139,13 +138,12 @@ contract Staking is OwnableUpgradeable, IStaking {
     }
 
 
-
     /*
          Page Stake  -> Claim all rewards
          withdraw all rewards or single reward depending on asset_token
          Withdraws a user's rewards for a specific staking position.
     */
-    function withdraw(address _assetToken) override public {
+    function claim(address _assetToken) override public {
         // require(_assetToken != address(0), "Invalid assetToken address");
         uint amount;
         address sender = msg.sender;
@@ -154,7 +152,6 @@ contract Staking is OwnableUpgradeable, IStaking {
             uint pendingReward = withdrawReward(sender, _assetToken, reward.index, reward.bondAmount, reward.pendingReward);
             amount = amount.add(pendingReward);
         } else {
-
             uint stakerAssetSize = stakerAssetsMap[sender].length;
             for (uint i = 0; i < stakerAssetSize; i++) {
                 Reward memory reward = stakerAssetRewardMap[sender][stakerAssetsMap[sender][i]];
@@ -163,23 +160,10 @@ contract Staking is OwnableUpgradeable, IStaking {
             }
         }
         if (amount > 0) {
-            IBEP20Token(config.govToken).transfer(sender, amount);
+            IBEP20Token(_config.govToken).transfer(sender, amount);
         }
 
         emit Withdraw(_assetToken, sender, amount);
-    }
-
-
-    function withdrawReward(address sender, address assetToken, uint rewardIndex, uint rewardBondAmount, uint rewardPendingReward) private returns (uint){
-        StakingPool memory stakingPool = assetPoolMap[assetToken];
-
-        if (rewardBondAmount == 0) {
-            removeReward(sender, assetToken);
-        } else {
-            saveReward(sender, assetToken, stakingPool.rewardIndex, rewardBondAmount, 0);
-        }
-
-        return rewardPendingReward.add(rewardBondAmount.multiplyDecimal(stakingPool.rewardIndex.sub(rewardIndex)));
     }
 
 
@@ -193,7 +177,7 @@ contract Staking is OwnableUpgradeable, IStaking {
     }
 
     function queryConfig() override external view returns (address factory, address govToken){
-        Config memory m = config;
+        Config memory m = _config;
         factory = m.factory;
         govToken = m.govToken;
     }
@@ -234,6 +218,17 @@ contract Staking is OwnableUpgradeable, IStaking {
     }
 
     ///// private methods ///
+
+    function withdrawReward(address sender, address assetToken, uint rewardIndex, uint rewardBondAmount, uint rewardPendingReward) private returns (uint){
+        StakingPool memory stakingPool = assetPoolMap[assetToken];
+        if (rewardBondAmount == 0) {
+            removeReward(sender, assetToken);
+        } else {
+            saveReward(sender, assetToken, stakingPool.rewardIndex, rewardBondAmount, 0);
+        }
+        return rewardPendingReward.add(rewardBondAmount.multiplyDecimal(stakingPool.rewardIndex.sub(rewardIndex)));
+    }
+
     function saveReward(address sender, address assetToken, uint _index, uint _bondAmount, uint _pendingReward) private {
         uint exists = 0;
 

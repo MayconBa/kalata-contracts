@@ -29,26 +29,19 @@ interface IStaking {
         uint pendingReward;
     }
 
-    struct RewardPair {
-        address assetToken;
-        Reward rewardInfo;
-    }
-
     function initialize(address factory, address _govToken) external;
-
-    //function receiveCw20(address sender, uint amount, bytes message) external;
 
     function setFactory(address factory) external;
 
     function registerAsset(address assetToken, address stakingToken) external;
 
-    function bond(address assetToken, uint amount) external;
+    function stake(address assetToken, uint amount) external;
 
-    function unBond(address assetToken, uint amount) external;
+    function unstake(address assetToken, uint amount) external;
 
     function depositReward(address assetToken, uint amount) external;
 
-    function withdraw(address assetToken) external;
+    function claim(address assetToken) external;
 
     function queryStakingPool(address assetToken) external view returns (address stakingToken, uint pendingReward, uint totalBondAmount, uint rewardIndex);
 

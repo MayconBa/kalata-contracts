@@ -39,7 +39,7 @@ describe("Staking", () => {
       assetToken = await AssetToken.deploy();
       await assetToken.initialize("mAsset-token", "mApple", toUnitString('1000'));
 
-      //lp-token 
+      //lp-token
       const StakingToken =  await ethers.getContractFactory(CONTRACT_NAME, owner);
       stakingToken = await StakingToken.deploy();
       await stakingToken.initialize("lp-token", "lp", toUnitString('1000'));
@@ -48,7 +48,7 @@ describe("Staking", () => {
        const AssetToken2 =  await ethers.getContractFactory(CONTRACT_NAME, owner);
        assetToken2 = await AssetToken2.deploy();
        await assetToken2.initialize("mAsset-token", "mTesla", toUnitString('1000'));
- 
+
        //lp-token2
        const StakingToken2 =  await ethers.getContractFactory(CONTRACT_NAME, owner);
        stakingToken2 = await StakingToken2.deploy();
@@ -87,30 +87,30 @@ describe("Staking", () => {
 
       });
 
-      it("bond lp ", async () => {
+      it("stake lp ", async () => {
 
          //balances
          let ownerStakingTokenBalance = await stakingToken.balanceOf(owner.address);
          expect(ownerStakingTokenBalance).to.equal(toUnitString('1000'));
 
-         //approve 
+         //approve
          await stakingToken.connect(owner).approve(instance.address, toUnitString('50'));
 
          //allowance
          let approveStakingTokenbalance = await stakingToken.allowance(owner.address, instance.address);
          expect(approveStakingTokenbalance).to.equal(toUnitString('50'));
-         
-         //bond
-         await instance.bond(assetToken.address, toUnitString('50'));
+
+         //stake
+         await instance.stake(assetToken.address, toUnitString('50'));
 
          //check balance
          let instanceStakingTokenBalance = await stakingToken.balanceOf(instance.address);
          expect(instanceStakingTokenBalance).to.equal(toUnitString('50'));
 
          //queryAssetReward
-         let [_index, _bondAmount, _pendingReward] = await instance.queryAssetReward(owner.address, assetToken.address);
+         let [_index, _stakingAmount, _pendingReward] = await instance.queryAssetReward(owner.address, assetToken.address);
          expect(_index).to.equal(0);
-         expect(_bondAmount).to.equal(toUnitString('50'));
+         expect(_stakingAmount).to.equal(toUnitString('50'));
          expect(_pendingReward).to.equal(0);
 
          //queryStakingPool
@@ -130,7 +130,7 @@ describe("Staking", () => {
          //factory call transfer and depositReward
          await govToken.connect(owner).transfer(instance.address, toUnitString('101'));
          await instance.depositReward(assetToken.address, toUnitString('101'));
-         
+
 
          [_stakingToken, _pendingReward, _totalBondAmount, _rewardIndex] = await instance.queryStakingPool(assetToken.address);
          expect(_stakingToken).to.equal(stakingToken.address);
@@ -147,42 +147,42 @@ describe("Staking", () => {
          expect(ownerGovBalance).to.equal(toUnitString('899'));
 
          //queryAssetReward
-         let [_index, _bondAmount, _pendingRewardOwner] = await instance.queryAssetReward(owner.address, assetToken.address);
+         let [_index, _stakingAmount, _pendingRewardOwner] = await instance.queryAssetReward(owner.address, assetToken.address);
          expect(_index).to.equal(0);
-         expect(_bondAmount).to.equal(toUnitString('50'));
+         expect(_stakingAmount).to.equal(toUnitString('50'));
          expect(_pendingRewardOwner).to.equal(0);
 
-         let bondAmount = new BigNumber(_bondAmount.toString()).dividedBy(1e18);
+         let stakingAmount = new BigNumber(_stakingAmount.toString()).dividedBy(1e18);
          let rewardIndex = new BigNumber(_rewardIndex.toString()).dividedBy(1e18);
          let index = new BigNumber(_index.toString()).dividedBy(1e18);
 
-         //withdraw before
-         let ownerReward = bondAmount.multipliedBy(rewardIndex).minus(bondAmount.multipliedBy(index));
+         //claim before
+         let ownerReward = stakingAmount.multipliedBy(rewardIndex).minus(stakingAmount.multipliedBy(index));
          expect(ownerReward.toString()).to.equal('101');
 
-         //withdraw 
-         await instance.connect(owner).withdraw(assetToken.address);
-        
-         [_index, _bondAmount, _pendingRewardOwner] = await instance.queryAssetReward(owner.address, assetToken.address);
-         bondAmount = new BigNumber(_bondAmount.toString()).dividedBy(1e18);
+         //claim
+         await instance.connect(owner).claim(assetToken.address);
+
+         [_index, _stakingAmount, _pendingRewardOwner] = await instance.queryAssetReward(owner.address, assetToken.address);
+         stakingAmount = new BigNumber(_stakingAmount.toString()).dividedBy(1e18);
          rewardIndex = new BigNumber(_rewardIndex.toString()).dividedBy(1e18);
          index = new BigNumber(_index.toString()).dividedBy(1e18);
-        
-          //withdraw after
-         ownerReward = bondAmount.multipliedBy(rewardIndex).minus(bondAmount.multipliedBy(index));
+
+          //claim after
+         ownerReward = stakingAmount.multipliedBy(rewardIndex).minus(stakingAmount.multipliedBy(index));
          expect(ownerReward.toString()).to.equal('0');
 
          //staking gov balance
          govBalance = await govToken.balanceOf(instance.address);
          expect(govBalance).to.equal(0);
-       
+
          //owner gov balance
          ownerGovBalance = await govToken.balanceOf(owner.address);
          expect(ownerGovBalance).to.equal(toUnitString('1000'));
 
       });
 
-      it("unbond lp", async () => {
+      it("unstake lp", async () => {
 
          //query staking pool
          let [_stakingToken, _pendingReward, _totalBondAmount, _rewardIndex] = await instance.queryStakingPool(assetToken.address);
@@ -191,19 +191,19 @@ describe("Staking", () => {
          expect(_totalBondAmount).to.equal(toUnitString('50'));
          expect(_rewardIndex.toString()).to.equal(toUnitString('2.02'));
 
-         //unbond before query lp 
-         let [_index, _bondAmount, _pendingRewardOwner] = await instance.queryAssetReward(owner.address, assetToken.address);
+         //unstake before query lp
+         let [_index, _stakingAmount, _pendingRewardOwner] = await instance.queryAssetReward(owner.address, assetToken.address);
          expect(_index).to.equal(toUnitString('2.02'));
-         expect(_bondAmount).to.equal(toUnitString('50'));
+         expect(_stakingAmount).to.equal(toUnitString('50'));
          expect(_pendingRewardOwner).to.equal(toUnitString('0'));
 
-         //unbond lp 
-         await instance.connect(owner).unBond(assetToken.address, toUnitString('10'));
+         //unstake lp
+         await instance.connect(owner).unstake(assetToken.address, toUnitString('10'));
 
-         //unbond after query lp 
-         [_index, _bondAmount, _pendingRewardOwner] = await instance.queryAssetReward(owner.address, assetToken.address);
+         //unstake after query lp
+         [_index, _stakingAmount, _pendingRewardOwner] = await instance.queryAssetReward(owner.address, assetToken.address);
          expect(_index).to.equal(toUnitString('2.02'));
-         expect(_bondAmount).to.equal(toUnitString('40'));
+         expect(_stakingAmount).to.equal(toUnitString('40'));
          expect(_pendingRewardOwner).to.equal(toUnitString('0'));
 
 
@@ -213,13 +213,13 @@ describe("Staking", () => {
          expect(_totalBondAmount).to.equal(toUnitString('40'));
          expect(_rewardIndex.toString()).to.equal(toUnitString('2.02'));
 
-         //unbond lp 
-         await instance.connect(owner).unBond(assetToken.address, toUnitString('40'));
+         //unstake lp
+         await instance.connect(owner).unstake(assetToken.address, toUnitString('40'));
 
          //delete asset reawrd info
-         [_index, _bondAmount, _pendingRewardOwner] = await instance.queryAssetReward(owner.address, assetToken.address);
+         [_index, _stakingAmount, _pendingRewardOwner] = await instance.queryAssetReward(owner.address, assetToken.address);
          expect(_index).to.equal(toUnitString('0'));
-         expect(_bondAmount).to.equal(toUnitString('0'));
+         expect(_stakingAmount).to.equal(toUnitString('0'));
          expect(_pendingRewardOwner).to.equal(toUnitString('0'));
 
          [_stakingToken, _pendingReward, _totalBondAmount, _rewardIndex] = await instance.queryStakingPool(assetToken.address);
@@ -230,7 +230,7 @@ describe("Staking", () => {
 
       });
 
-      it("withdraw all", async () => {
+      it("claim all", async () => {
 
          //balances
          let ownerStakingTokenBalance = await stakingToken.balanceOf(owner.address);
@@ -238,7 +238,7 @@ describe("Staking", () => {
          expect(ownerStakingTokenBalance).to.equal(toUnitString('1000'));
          expect(ownerStakingTokenBalance2).to.equal(toUnitString('1000'));
 
-         //approve 
+         //approve
          await stakingToken.connect(owner).approve(instance.address, toUnitString('50'));
          await stakingToken2.connect(owner).approve(instance.address, toUnitString('80'));
 
@@ -247,10 +247,10 @@ describe("Staking", () => {
          let approveStakingTokenbalance2 = await stakingToken2.allowance(owner.address, instance.address);
          expect(approveStakingTokenbalance).to.equal(toUnitString('50'));
          expect(approveStakingTokenbalance2).to.equal(toUnitString('80'));
-         
-         //bond
-         await instance.bond(assetToken.address, toUnitString('50'));
-         await instance.bond(assetToken2.address, toUnitString('80'));
+
+         //stake
+         await instance.stake(assetToken.address, toUnitString('50'));
+         await instance.stake(assetToken2.address, toUnitString('80'));
 
          //check balance
          let instanceStakingTokenBalance = await stakingToken.balanceOf(instance.address);
@@ -266,14 +266,14 @@ describe("Staking", () => {
          await instance.depositReward(assetToken2.address, toUnitString('100'));
 
 
-         let [_index, _bondAmount, _pendingReward] = await instance.queryAssetReward(owner.address, assetToken.address);
+         let [_index, _stakingAmount, _pendingReward] = await instance.queryAssetReward(owner.address, assetToken.address);
          expect(_index).to.equal(toUnitString('2.02'));
-         expect(_bondAmount).to.equal(toUnitString('50'));
+         expect(_stakingAmount).to.equal(toUnitString('50'));
          expect(_pendingReward).to.equal(0);
 
-         [_index, _bondAmount, _pendingReward] = await instance.queryAssetReward(owner.address, assetToken2.address);
+         [_index, _stakingAmount, _pendingReward] = await instance.queryAssetReward(owner.address, assetToken2.address);
          expect(_index).to.equal(0);
-         expect(_bondAmount).to.equal(toUnitString('80'));
+         expect(_stakingAmount).to.equal(toUnitString('80'));
          expect(_pendingReward).to.equal(0);
 
            //check balance
@@ -281,17 +281,17 @@ describe("Staking", () => {
          expect(ownerGovTokenBalance).to.equal(toUnitString('800'));
 
 
-         //withdraw all
-         await instance.withdraw(ZERO_ADDRESS);
-         
-         [_index, _bondAmount, _pendingReward] = await instance.queryAssetReward(owner.address, assetToken.address);
+         //claim all
+         await instance.claim(ZERO_ADDRESS);
+
+         [_index, _stakingAmount, _pendingReward] = await instance.queryAssetReward(owner.address, assetToken.address);
          expect(_index).to.equal(toUnitString('4.02'));
-         expect(_bondAmount).to.equal(toUnitString('50'));
+         expect(_stakingAmount).to.equal(toUnitString('50'));
          expect(_pendingReward).to.equal(0);
 
-         [_index, _bondAmount, _pendingReward] = await instance.queryAssetReward(owner.address, assetToken2.address);
+         [_index, _stakingAmount, _pendingReward] = await instance.queryAssetReward(owner.address, assetToken2.address);
          expect(_index).to.equal(toUnitString('1.25'));
-         expect(_bondAmount).to.equal(toUnitString('80'));
+         expect(_stakingAmount).to.equal(toUnitString('80'));
          expect(_pendingReward).to.equal(0);
 
           //check balance
@@ -300,5 +300,5 @@ describe("Staking", () => {
 
       });
    });
-   
+
 });
