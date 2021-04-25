@@ -18,7 +18,7 @@ interface IStaking {
         address stakingToken;
         // not distributed amount due to zero bonding
         uint pendingReward;
-        uint totalBondAmount;
+        uint totalStakingAmount;
         uint rewardIndex;
     }
 
@@ -43,7 +43,7 @@ interface IStaking {
 
     function claim(address assetToken) external;
 
-    function queryStakingPool(address assetToken) external view returns (address stakingToken, uint pendingReward, uint totalBondAmount, uint rewardIndex);
+    function queryStakingPool(address assetToken) external view returns (address stakingToken, uint pendingReward, uint totalStakingAmount, uint rewardIndex);
 
     function queryConfig() external view returns (address configOwner, address govToken);
 

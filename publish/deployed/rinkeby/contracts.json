@@ -540,7 +540,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "totalBondAmount",
+            "name": "totalStakingAmount",
             "type": "uint256"
           },
           {
