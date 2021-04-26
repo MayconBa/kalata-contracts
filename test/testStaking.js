@@ -114,10 +114,10 @@ describe("Staking", () => {
          expect(_pendingReward).to.equal(0);
 
          //queryStake
-         let [_stakingToken, _poolPendingReward, _stakingAmount, _rewardIndex] = await instance.queryStake(assetToken.address);
+         let [_stakingToken, _poolPendingReward, _stakingAmount2, _rewardIndex] = await instance.queryStake(assetToken.address);
          expect(_stakingToken).to.equal(stakingToken.address);
          expect(_poolPendingReward).to.equal(0);
-         expect(_stakingAmount).to.equal(toUnitString('50'));
+         expect(_stakingAmount2).to.equal(toUnitString('50'));
          expect(_rewardIndex).to.equal(0);
 
       });
