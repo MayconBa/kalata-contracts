@@ -260,7 +260,7 @@ describe(CONTRACT_NAME, () => {
             let stakingPool = await stakingInstance.queryStake(assetAddress);
             expect(stakingPool.stakingToken).to.equal(pair);
             expect(stakingPool.pendingReward.toString()).to.equal('0');
-            expect(stakingPool.totalStakingAmount.toString()).to.equal('0');
+            expect(stakingPool.stakingAmount.toString()).to.equal('0');
             expect(stakingPool.rewardIndex.toString()).to.equal('0');
 
         });

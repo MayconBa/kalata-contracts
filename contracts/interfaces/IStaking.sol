@@ -13,19 +13,17 @@ interface IStaking {
         address govToken;
     }
 
-    struct Stake {
-        //lp token
+    struct AssetStake {
         address stakingToken;
-        // not distributed amount due to zero bonding
         uint pendingReward;
-        uint totalStakingAmount;
+        uint stakingAmount;
         uint rewardIndex;
     }
 
 
     struct Reward {
         uint index;
-        uint bondAmount;
+        uint stakingAmount;
         uint pendingReward;
     }
 
@@ -33,41 +31,48 @@ interface IStaking {
 
     function setFactory(address factory) external;
 
-    function registerAsset(address assetToken, address stakingToken) external;
+    function registerAsset(address asset, address stakingToken) external;
 
-    function stake(address assetToken, uint amount) external;
+    function stake(address asset, uint amount) external;
 
-    function unstake(address assetToken, uint amount) external;
+    function unStake(address asset, uint amount) external;
 
-    function depositReward(address assetToken, uint amount) external;
+    function depositReward(address asset, uint amount) external;
 
-    function claim(address assetToken) external;
+    function claim(address asset) external;
 
-    function queryStake(address assetToken) external view returns (address stakingToken, uint pendingReward, uint totalStakingAmount, uint rewardIndex);
-
-    function queryStakes()   external view returns (
-        address[] memory tokens,
-        address[] memory stakingTokens,
+    function queryStakes() external view returns (
+        address[] memory assets,
         uint[] memory pendingRewards,
-        uint[] memory totalStakingAmounts,
-        uint[] memory rewardIndexes
+        uint[] memory stakingAmounts
     );
 
-    function queryConfig() external view returns (address configOwner, address govToken);
+    function queryStake(address asset) external view returns (
+        address stakingToken,
+        uint pendingReward,
+        uint stakingAmount,
+        uint rewardIndex
+    );
 
-    function queryAssetReward(address staker, address assetToken) external view returns (uint index, uint bondAmount, uint pendingReward);
 
-    function queryAllAssetRewards(address staker) external view returns (
-        address[] memory assetTokens,
-        uint[] memory indexes,
-        uint[] memory bondAmounts,
+    function queryReward(address staker, address asset) external view returns (
+        uint stakingAmount,
+        uint pendingReward
+    );
+
+    function queryRewards(address staker) external view returns (
+        address[] memory assets,
+        uint[] memory stakingAmounts,
         uint[] memory pendingRewards
     );
 
-    event RegisterAsset(address indexed assetToken, address indexed stakingToken);
-    event Withdraw(address indexed assetToken, address indexed sender, uint amount);
-    event Bond(address indexed assetToken, uint amount);
-    event UnBond(address indexed assetToken, uint amount);
+
+    function queryConfig() external view returns (address configOwner, address govToken);
+
+    event RegisterAsset(address indexed asset, address indexed stakingToken);
+    event Withdraw(address indexed asset, address indexed sender, uint amount);
+    event Bond(address indexed asset, uint amount);
+    event UnBond(address indexed asset, uint amount);
 
 }
 

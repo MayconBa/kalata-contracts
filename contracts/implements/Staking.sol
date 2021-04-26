@@ -19,13 +19,18 @@ contract Staking is OwnableUpgradeable, IStaking {
     Config _config;
 
     //asset => Stake
-    mapping(address => Stake) _stakes;
+    mapping(address => AssetStake) _stakes;
+
+    //used for loop _stakes
+    address[] _assets;
 
     //staker=>assetToken=>Reward
     mapping(address => mapping(address => Reward)) _rewards;
 
     //staker=>assetToken[], used for loop _rewards easily
     mapping(address => address[]) _stakedAssets;
+
+
 
 
     modifier onlyFactoryOrOwner() {
@@ -48,40 +53,39 @@ contract Staking is OwnableUpgradeable, IStaking {
     // Registers a new staking pool for an asset token and associates the LP token(Pair) with the staking pool.
     // assetToken: Contract address of mAsset/Kala token (staking pool identifier)
     // stakingToken: Contract address of asset's corresponding LP Token
-    function registerAsset(address assetToken, address stakingToken) override external onlyFactoryOrOwner {
-        require(_stakes[assetToken].stakingToken == address(0), "Asset was already registered");
-
-        _stakes[assetToken] = Stake({stakingToken : stakingToken, pendingReward : 0, totalStakingAmount : 0, rewardIndex : 0});
-
-        emit RegisterAsset(assetToken, stakingToken);
+    function registerAsset(address asset, address pair) override external onlyFactoryOrOwner {
+        require(_stakes[asset].stakingToken == address(0), "Asset was already registered");
+        _stakes[asset] = AssetStake({stakingToken : pair, pendingReward : 0, stakingAmount : 0, rewardIndex : 0});
+        _assets.push(asset);
+        emit RegisterAsset(asset, pair);
     }
 
     // Can be issued when the user sends LP Tokens to the Staking contract.
     // The LP token must be recognized by the staking pool of the specified asset token.
-    function stake(address assetToken, uint amount) override external {
-        require(assetToken != address(0), "invalid asset token");
+    function stake(address asset, uint amount) override external {
+        require(asset != address(0), "invalid asset token");
         require(amount > 0, "invalid amount");
 
-        Stake memory pool = _stakes[assetToken];
+        AssetStake memory pool = _stakes[asset];
         require(pool.stakingToken != address(0), "unauthorized");
 
-        Reward memory reward = _rewards[msg.sender][assetToken];
+        Reward memory reward = _rewards[msg.sender][asset];
 
         reward.index = pool.rewardIndex;
-        reward.pendingReward = reward.pendingReward.add(reward.bondAmount.multiplyDecimal(pool.rewardIndex.sub(reward.index)));
+        reward.pendingReward = reward.pendingReward.add(reward.stakingAmount.multiplyDecimal(pool.rewardIndex.sub(reward.index)));
 
         require(IBEP20Token(pool.stakingToken).transferFrom(msg.sender, address(this), amount), "transferFrom fail");
 
         //Increase bond_amount
-        pool.totalStakingAmount = pool.totalStakingAmount.add(amount);
-        reward.bondAmount = reward.bondAmount.add(amount);
+        pool.stakingAmount = pool.stakingAmount.add(amount);
+        reward.stakingAmount = reward.stakingAmount.add(amount);
 
         //save
-        _stakes[assetToken] = pool;
+        _stakes[asset] = pool;
 
-        saveReward(msg.sender, assetToken, reward.index, reward.bondAmount, reward.pendingReward);
+        saveReward(msg.sender, asset, reward.index, reward.stakingAmount, reward.pendingReward);
 
-        emit Bond(assetToken, amount);
+        emit Bond(asset, amount);
     }
 
 
@@ -91,32 +95,32 @@ contract Staking is OwnableUpgradeable, IStaking {
         assetToken: Contract address of mAsset/KALA token (staking pool identifier)
         amount: Amount of LP tokens to unbond
     */
-    function unstake(address assetToken, uint amount) override external {
+    function unStake(address asset, uint amount) override external {
         require(amount > 0, "invalid amount");
 
         address sender = msg.sender;
 
-        Stake memory stakingPool = _stakes[assetToken];
-        Reward memory rewardInfo = _rewards[sender][assetToken];
+        AssetStake memory stakingPool = _stakes[asset];
+        Reward memory rewardInfo = _rewards[sender][asset];
         require(stakingPool.stakingToken != address(0), "unauthorized");
-        require(rewardInfo.bondAmount >= amount, "Cannot unbond more than bond amount");
+        require(rewardInfo.stakingAmount >= amount, "Cannot unbond more than bond amount");
 
         rewardInfo.index = stakingPool.rewardIndex;
-        rewardInfo.pendingReward = rewardInfo.pendingReward.add(rewardInfo.bondAmount.multiplyDecimal(stakingPool.rewardIndex.sub(rewardInfo.index)));
+        rewardInfo.pendingReward = rewardInfo.pendingReward.add(rewardInfo.stakingAmount.multiplyDecimal(stakingPool.rewardIndex.sub(rewardInfo.index)));
 
-        stakingPool.totalStakingAmount = stakingPool.totalStakingAmount.sub(amount);
-        rewardInfo.bondAmount = rewardInfo.bondAmount.sub(amount);
+        stakingPool.stakingAmount = stakingPool.stakingAmount.sub(amount);
+        rewardInfo.stakingAmount = rewardInfo.stakingAmount.sub(amount);
 
-        if (rewardInfo.pendingReward == 0 && rewardInfo.bondAmount == 0) {
-            removeReward(sender, assetToken);
+        if (rewardInfo.pendingReward == 0 && rewardInfo.stakingAmount == 0) {
+            removeReward(sender, asset);
         } else {
-            saveReward(sender, assetToken, rewardInfo.index, rewardInfo.bondAmount, rewardInfo.pendingReward);
+            saveReward(sender, asset, rewardInfo.index, rewardInfo.stakingAmount, rewardInfo.pendingReward);
         }
 
-        _stakes[assetToken] = stakingPool;
+        _stakes[asset] = stakingPool;
         IBEP20Token(stakingPool.stakingToken).transfer(msg.sender, amount);
 
-        emit UnBond(assetToken, amount);
+        emit UnBond(asset, amount);
     }
 
 
@@ -127,11 +131,11 @@ contract Staking is OwnableUpgradeable, IStaking {
     **/
     function depositReward(address assetToken, uint amount) override external {
         //require(config.govToken == msg.sender, "unauthorized");
-        Stake memory stakingPool = _stakes[assetToken];
-        if (stakingPool.totalStakingAmount == 0) {
+        AssetStake memory stakingPool = _stakes[assetToken];
+        if (stakingPool.stakingAmount == 0) {
             stakingPool.pendingReward = stakingPool.pendingReward.add(amount);
         } else {
-            uint rewardPerBond = (amount.add(stakingPool.pendingReward)).divideDecimal(stakingPool.totalStakingAmount);
+            uint rewardPerBond = (amount.add(stakingPool.pendingReward)).divideDecimal(stakingPool.stakingAmount);
             stakingPool.rewardIndex = stakingPool.rewardIndex.add(rewardPerBond);
             stakingPool.pendingReward = 0;
         }
@@ -148,7 +152,7 @@ contract Staking is OwnableUpgradeable, IStaking {
         require(_assetToken != address(0), "Invalid assetToken address");
         address staker = msg.sender;
         Reward memory reward = _rewards[staker][_assetToken];
-        uint amount = withdrawReward(staker, _assetToken, reward.index, reward.bondAmount, reward.pendingReward);
+        uint amount = withdrawReward(staker, _assetToken, reward.index, reward.stakingAmount, reward.pendingReward);
         if (amount > 0) {
             IBEP20Token(_config.govToken).transfer(staker, amount);
         }
@@ -156,36 +160,29 @@ contract Staking is OwnableUpgradeable, IStaking {
     }
 
 
-    function queryStake(address assetToken) override external view returns (address stakingToken, uint pendingReward, uint totalStakingAmount, uint rewardIndex) {
-        require(assetToken != address(0), "Invalid assetToken address");
-        Stake memory stakingPool = _stakes[assetToken];
-        stakingToken = stakingPool.stakingToken;
-        pendingReward = stakingPool.pendingReward;
-        totalStakingAmount = stakingPool.totalStakingAmount;
-        rewardIndex = stakingPool.rewardIndex;
+    function queryStakes() override external   view returns (
+        address[] memory assets,
+        uint[] memory pendingRewards,
+        uint[] memory stakingAmounts
+    ) {
+        assets = _assets;
+        pendingRewards = new uint[](assets.length);
+        stakingAmounts = new uint[](assets.length);
+        for (uint i = 0; i < assets.length; i++) {
+            AssetStake memory assetStake = _stakes[assets[i]];
+            pendingRewards[i] = assetStake.pendingReward;
+            stakingAmounts[i] = assetStake.stakingAmount;
+        }
     }
 
-    function queryStakes() override external view returns (
-        address[] memory tokens,
-        address[] memory stakingTokens,
-        uint[] memory pendingRewards,
-        uint[] memory totalStakingAmounts,
-        uint[] memory rewardIndexes
-    ) {
-        tokens = _stakedAssets[msg.sender];
-        stakingTokens = new address[](tokens.length);
-        pendingRewards = new uint[](tokens.length);
-        totalStakingAmounts = new uint[](tokens.length);
-        rewardIndexes = new uint[](tokens.length);
 
-        for (uint i = 0; i < tokens.length; i++) {
-            Stake memory stake = _stakes[tokens[i]];
-            stakingTokens[i] = stake.stakingToken;
-            pendingRewards[i] = stake.pendingReward;
-            totalStakingAmounts[i] = stake.totalStakingAmount;
-            rewardIndexes[i] = stake.rewardIndex;
-        }
-
+    function queryStake(address assetToken) override external view returns (address stakingToken, uint pendingReward, uint stakingAmount, uint rewardIndex) {
+        require(assetToken != address(0), "Invalid assetToken address");
+        AssetStake memory stakingPool = _stakes[assetToken];
+        stakingToken = stakingPool.stakingToken;
+        pendingReward = stakingPool.pendingReward;
+        stakingAmount = stakingPool.stakingAmount;
+        rewardIndex = stakingPool.rewardIndex;
     }
 
     function queryConfig() override external view returns (address factory, address govToken){
@@ -194,45 +191,37 @@ contract Staking is OwnableUpgradeable, IStaking {
         govToken = m.govToken;
     }
 
-    function queryAssetReward(address staker, address assetToken) override external view returns (uint index, uint bondAmount, uint pendingReward){
+
+    function queryReward(address staker, address asset) external override view returns (
+        uint stakingAmount,
+        uint pendingReward){
         require(staker != address(0), "Invalid staker address");
-        require(assetToken != address(0), "Invalid assetToken address");
-        Reward memory reward = _rewards[staker][assetToken];
-        index = reward.index;
-        bondAmount = reward.bondAmount;
-        pendingReward = reward.pendingReward;
+        require(asset != address(0), "Invalid asset address");
+        stakingAmount = _rewards[staker][asset].stakingAmount;
+        pendingReward = _rewards[staker][asset].pendingReward;
     }
 
-    function queryAllAssetRewards(address staker) override external view returns (
-        address[] memory assetTokens,
-        uint[] memory indexes,
-        uint[] memory bondAmounts,
+    function queryRewards(address staker) external override view returns (
+        address[] memory assets,
+        uint[] memory stakingAmounts,
         uint[] memory pendingRewards
-    ) {
+    ){
         require(staker != address(0), "Invalid staker address");
-        uint length = _stakedAssets[staker].length;
-
-        assetTokens = new address[](length);
-        indexes = new uint[](length);
-        bondAmounts = new uint[](length);
-        pendingRewards = new uint[](length);
-
-        for (uint i = 0; i < length; i++) {
-            address assetToken = _stakedAssets[staker][i];
-            Reward memory reward = _rewards[staker][assetToken];
-            assetTokens[i] = assetToken;
-            indexes[i] = reward.index;
-            bondAmounts[i] = reward.bondAmount;
-            pendingRewards[i] = reward.pendingReward;
+        assets = _stakedAssets[staker];
+        stakingAmounts = new uint[](assets.length);
+        pendingRewards = new uint[](assets.length);
+        for (uint i = 0; i < assets.length; i++) {
+            stakingAmounts[i] = _rewards[staker][assets[i]].stakingAmount;
+            pendingRewards[i] = _rewards[staker][assets[i]].pendingReward;
         }
-
-
     }
+
+
 
     ///// private methods ///
 
     function withdrawReward(address sender, address assetToken, uint rewardIndex, uint rewardBondAmount, uint rewardPendingReward) private returns (uint){
-        Stake memory stakingPool = _stakes[assetToken];
+        AssetStake memory stakingPool = _stakes[assetToken];
         if (rewardBondAmount == 0) {
             removeReward(sender, assetToken);
         } else {
@@ -241,7 +230,7 @@ contract Staking is OwnableUpgradeable, IStaking {
         return rewardPendingReward.add(rewardBondAmount.multiplyDecimal(stakingPool.rewardIndex.sub(rewardIndex)));
     }
 
-    function saveReward(address sender, address assetToken, uint _index, uint _bondAmount, uint _pendingReward) private {
+    function saveReward(address sender, address assetToken, uint _index, uint _stakingAmount, uint _pendingReward) private {
         uint exists = 0;
 
         for (uint i = 0; i < _stakedAssets[sender].length; i++) {
@@ -254,7 +243,7 @@ contract Staking is OwnableUpgradeable, IStaking {
             _stakedAssets[sender].push(assetToken);
         }
 
-        _rewards[sender][assetToken] = Reward({index : _index, bondAmount : _bondAmount, pendingReward : _pendingReward});
+        _rewards[sender][assetToken] = Reward({index : _index, stakingAmount : _stakingAmount, pendingReward : _pendingReward});
     }
 
     function removeReward(address sender, address assetToken) private {

@@ -1679,7 +1679,7 @@
           },
           {
             "internalType": "uint256[]",
-            "name": "bondAmounts",
+            "name": "stakingAmounts",
             "type": "uint256[]"
           },
           {
@@ -1713,7 +1713,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "bondAmount",
+            "name": "stakingAmount",
             "type": "uint256"
           },
           {
@@ -1765,7 +1765,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "totalStakingAmount",
+            "name": "stakingAmount",
             "type": "uint256"
           },
           {
@@ -1841,7 +1841,7 @@
             "type": "uint256"
           }
         ],
-        "name": "unstake",
+        "name": "unStake",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
