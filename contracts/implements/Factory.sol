@@ -44,7 +44,7 @@ contract Factory is OwnableUpgradeable, IFactory {
     uint _totalWeight;
 
     mapping(address => uint)  _assetWeights;
-    address[] _tokenAddresses;
+    address[] _addresses;
 
     mapping(bytes32 => address) _symbolTokenMap;
     Token[] _tokens;
@@ -150,8 +150,8 @@ contract Factory is OwnableUpgradeable, IFactory {
             }
         }
         if (distributedAmount > 0) {
-            for (uint i = 0; i < _tokenAddresses.length; i++) {
-                address token = _tokenAddresses[i];
+            for (uint i = 0; i < _addresses.length; i++) {
+                address token = _addresses[i];
                 uint amount = distributedAmount.multiplyDecimal(_assetWeights[token]).divideDecimal(_totalWeight);
                 if (amount > 0) {
                     IBEP20Token(_config.govToken).mint(_config.staking, amount);
@@ -240,21 +240,21 @@ contract Factory is OwnableUpgradeable, IFactory {
         token = _symbolTokenMap[symbol];
     }
 
-    function queryTokens() override external view returns (
-        bytes32[] memory tokenNames,
-        bytes32[] memory tokenSymbols,
-        address[] memory tokenAddresses,
+    function queryAssets() override external view returns (
+        bytes32[] memory names,
+        bytes32[] memory symbols,
+        address[] memory addresses,
         address[] memory busdPairAddresses
     ){
-        tokenNames = new bytes32[](_tokens.length);
-        tokenSymbols = new bytes32[](_tokens.length);
-        tokenAddresses = new address[](_tokens.length);
+        names = new bytes32[](_tokens.length);
+        symbols = new bytes32[](_tokens.length);
+        addresses = new address[](_tokens.length);
         busdPairAddresses = new address[](_tokens.length);
         for (uint i = 0; i < _tokens.length; i++) {
             Token memory token = _tokens[i];
-            tokenNames[i] = token.tokenName;
-            tokenSymbols[i] = token.tokenSymbol;
-            tokenAddresses[i] = token.tokenAddress;
+            names[i] = token.tokenName;
+            symbols[i] = token.tokenSymbol;
+            addresses[i] = token.tokenAddress;
             busdPairAddresses[i] = token.busdPairAddress;
         }
     }
@@ -263,27 +263,27 @@ contract Factory is OwnableUpgradeable, IFactory {
 
     function saveWeight(address assetToken, uint weight) private {
         bool exists = false;
-        for (uint i = 0; i < _tokenAddresses.length; i++) {
-            if (_tokenAddresses[i] == assetToken) {
+        for (uint i = 0; i < _addresses.length; i++) {
+            if (_addresses[i] == assetToken) {
                 exists = true;
                 break;
             }
         }
         if (!exists) {
-            _tokenAddresses.push(assetToken);
+            _addresses.push(assetToken);
         }
         _assetWeights[assetToken] = weight;
     }
 
     function removeWeight(address assetToken) private {
         delete _assetWeights[assetToken];
-        uint length = _tokenAddresses.length;
+        uint length = _addresses.length;
         for (uint i = 0; i < length; i++) {
-            if (_tokenAddresses[i] == assetToken) {
+            if (_addresses[i] == assetToken) {
                 if (i != length - 1) {
-                    _tokenAddresses[i] = _tokenAddresses[length - 1];
+                    _addresses[i] = _addresses[length - 1];
                 }
-                delete _tokenAddresses[length - 1];
+                delete _addresses[length - 1];
             }
         }
     }

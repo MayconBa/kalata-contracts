@@ -35,8 +35,8 @@ async function feedPrices(addressPricePairs) {
     let addresses = addressPricePairs.map(item => item.address);
     let prices = addressPricePairs.map(item => toUnitString(item.price));
     await oracleInstance.feedPrices(addresses, prices);
-    let [queryTokens, queryPrices, queryUpdates] = await oracleInstance.queryAllPrices();
-    const queryResult = JSON.stringify(queryTokens.map((token, index) => {
+    let [queryAssets, queryPrices, queryUpdates] = await oracleInstance.queryAllPrices();
+    const queryResult = JSON.stringify(queryAssets.map((token, index) => {
         return {token, price: queryPrices[index].toString(), lastUpdateTime: queryUpdates[index].toString()}
     }));
     console.log(queryResult);

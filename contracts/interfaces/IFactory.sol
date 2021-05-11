@@ -124,10 +124,10 @@ interface IFactory {
 
     function queryToken(bytes32 symbol) external view returns (address token);
 
-    function queryTokens() external view returns (
-        bytes32[] memory tokenNames,
-        bytes32[] memory tokenSymbols,
-        address[] memory tokenAddresses,
+    function queryAssets() external view returns (
+        bytes32[] memory names,
+        bytes32[] memory symbols,
+        address[] memory addresses,
         address[] memory busdPairAddresses
     );
 

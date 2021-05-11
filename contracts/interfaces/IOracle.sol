@@ -18,19 +18,27 @@ interface IOracle {
 
     function setFactory(address factory) external;
 
-    function registerAssets(address[] memory assetTokens, address[] memory feeders) external;
+    function registerAssets(address[] memory assets, address[] memory feeders) external;
 
-    function registerAsset(address assetToken, address feeder) external;
+    function registerAsset(address asset, address feeder) external;
 
-    function feedPrice(address assetToken, uint price) external;
+    function feedPrice(address asset, uint price) external;
 
     function feedPrices(address[] calldata adddresses, uint[] calldata prices) external;
 
-    function queryFeeder(address assetToken) external view returns (address);
+    function queryFeeder(address asset) external view returns (address);
 
-    function queryPrice(address assetToken, address denominateToken) external view returns (uint relativePrice, uint lastUpdatedTime, uint denominateLastUpdatedTime);
+    function queryPrice(address asset, address denominateAsset) external view returns (
+        uint relativePrice,
+        uint lastUpdatedTime,
+        uint denominateLastUpdatedTime
+    );
 
-    function queryAllPrices() external view returns (address[] memory assetTokens, uint[] memory prices, uint[] memory lastUpdatedTimes);
+    function queryAllPrices() external view returns (
+        address[] memory assets,
+        uint[] memory prices,
+        uint[] memory lastUpdatedTimes
+    );
 }
 
 

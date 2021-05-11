@@ -56,12 +56,12 @@ describe(CONTRACT_NAME, () => {
             let feederOracleInstance = await loadContract(hre, CONTRACT_NAME, oracleInstance.address, feeder);
             await feederOracleInstance.feedPrices(tokens, prices);
 
-            let [queryTokens, queryPrices, queryUpdates] = await oracleInstance.queryAllPrices();
-            expect(queryTokens.length).to.equal(queryPrices.length);
-            expect(queryTokens.length).to.equal(queryUpdates.length);
+            let [queryAssets, queryPrices, queryUpdates] = await oracleInstance.queryAllPrices();
+            expect(queryAssets.length).to.equal(queryPrices.length);
+            expect(queryAssets.length).to.equal(queryUpdates.length);
             let queryPriceMap = {};
-            for (let i = 0; i < queryTokens.length; i++) {
-                queryPriceMap[queryTokens[i]] = queryPrices[i];
+            for (let i = 0; i < queryAssets.length; i++) {
+                queryPriceMap[queryAssets[i]] = queryPrices[i];
             }
             for (let i = 0; i < tokens.length; i++) {
                 expect(prices[i]).to.equal(queryPriceMap[tokens[i]].toString());
