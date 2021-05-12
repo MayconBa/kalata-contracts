@@ -19,18 +19,20 @@ function sleep(hre, seconds) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+//BIDU.US
+//TSLA.US
+//ARKK.US（ARK Innovation ETF）[Fintech]
+//SPCE.US  (Virgin Galactic Holdings Inc)
+//PACB.US (Pacific Biosciences of Californ)
 const MOCK_ASSETS = {
-    "kApple": {name: "Apple Token", type: "stock", sinaCode: "gb_aapl", gtimgCode: "usAAPL", initialSupply},
-    "kABNB": {name: "ABNB Token", type: "stock", sinaCode: "gb_abnb", gtimgCode: "usABNB", initialSupply},
-    "kAMC": {name: "Amc Token", type: "stock", sinaCode: "gb_amc", gtimgCode: "usAMC", initialSupply},
-    "kAMZN": {name: "Amzn Token", type: "stock", sinaCode: "gb_amzn", gtimgCode: "usAMZN", initialSupply},
-    "kBABA": {name: "Alibaba Token", type: "stock", sinaCode: "gb_baba", gtimgCode: "usBABA", initialSupply},
-    "kGOOGL": {name: "Google Token", type: "stock", sinaCode: "gb_goog", gtimgCode: "usGOOG", initialSupply},
+    "kBIDU": {name: "BIDU Token", type: "stock", sinaCode: "gb_bidu", gtimgCode: "usBIDU", initialSupply},
+    "kTSLA": {name: "BIDU Token", type: "stock", sinaCode: "gb_tsla", gtimgCode: "usTSLA", initialSupply},
+    "kARKK": {name: "ARKK Token", type: "stock", sinaCode: "gb_arkk", gtimgCode: "usARKK", initialSupply},
+    "kSPCE": {name: "SPCE Token", type: "stock", sinaCode: "gb_spce", gtimgCode: "usSPCE", initialSupply},
+    "kPACB": {name: "PACB Token", type: "stock", sinaCode: "gb_pacb", gtimgCode: "usPACB", initialSupply},
 
     //coin list:  https://api.coingecko.com/api/v3/coins/list?include_platform=false
-    "kBTC": {name: "BTC Token", type: "crptoCurrency", initialSupply, coingeckoCoinId: "bitcoin"},
-    "kETH": {name: "ETH Token", type: "crptoCurrency", initialSupply, coingeckoCoinId: "ethereum"},
-    "kBCH": {name: "BCH Token", type: "crptoCurrency", initialSupply, coingeckoCoinId: "bitcoin-cash"},
+    "mKala": {name: "BTC Token", type: "crptoCurrency", initialSupply, coingeckoCoinId: "bitcoin"},
 }
 
 let assetPath;

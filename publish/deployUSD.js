@@ -8,8 +8,8 @@ const ASSETS = {
     initialSupply: toUnitString(10000000000),
     isBaseAsset: true,
     addresses: {
-       bscMainnet: "0x55d398326f99059ff775485246999027b3197955",
-       // bscTestnet: "0x1a959f482AEcC14309B6855DcD7B591214CF2f25"
+       mainnet: "0x55d398326f99059ff775485246999027b3197955",
+       // testnet: "0x1a959f482AEcC14309B6855DcD7B591214CF2f25"
     }
 };
 

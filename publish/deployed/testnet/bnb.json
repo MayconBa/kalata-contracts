@@ -1,8 +1,8 @@
 {
-  "name": "Binance-Peg BUSD-T",
-  "symbol": "BUSD",
+  "name": "Token Wrapped BNB",
+  "symbol": "BNB",
   "initialSupply": "10000000000000000000000000000",
   "deployer": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
-  "address": "0x06c337e14ecCD06d679180fA6694b0ba144771AA",
+  "address": "0x84d431fEc64F2A8c5A3403aa0DaB7fF2AB939Cf0",
   "deploy": false
 }

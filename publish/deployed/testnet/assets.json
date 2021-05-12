@@ -1,0 +1,103 @@
+{
+  "kBIDU": {
+    "name": "BIDU Token",
+    "symbol": "kBIDU",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0x277619Ed28eFFa87225c96EbeDad64E636b6ae5c",
+    "pair": "0x5273F9F33E45342906c5A7dB126AabDa5c736aa3",
+    "deploy": false,
+    "sinaCode": "gb_bidu",
+    "gtimgCode": "usBIDU",
+    "icon": "https://api.kalata.io/api/deployed/icons/KBIDU.png"
+  },
+  "kTSLA": {
+    "name": "BIDU Token",
+    "symbol": "kTSLA",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0xA8a0cC71D4e8830afd9D6B45A427da7BA11b4481",
+    "pair": "0xD0d9d4dF55886D96629303c179B2CE9168F523c2",
+    "deploy": false,
+    "sinaCode": "gb_tsla",
+    "gtimgCode": "usTSLA",
+    "icon": "https://api.kalata.io/api/deployed/icons/KTSLA.png"
+  },
+  "kARKK": {
+    "name": "ARKK Token",
+    "symbol": "kARKK",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0x841f8Eb756Cb99F772e9f4a5d256d40bA832F8dA",
+    "pair": "0xc884882f1788fC2b249fDE5D4cdCE66C65B7a4e0",
+    "deploy": false,
+    "sinaCode": "gb_arkk",
+    "gtimgCode": "usARKK",
+    "icon": "https://api.kalata.io/api/deployed/icons/KARKK.png"
+  },
+  "kSPCE": {
+    "name": "SPCE Token",
+    "symbol": "kSPCE",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0x142FdCEADF17aC1b46155b2a5c7c640Aa73E4D88",
+    "pair": "0x02C3ba0fbD54ad286233507088e2083A1713e701",
+    "deploy": false,
+    "sinaCode": "gb_spce",
+    "gtimgCode": "usSPCE",
+    "icon": "https://api.kalata.io/api/deployed/icons/KSPCE.png"
+  },
+  "kPACB": {
+    "name": "PACB Token",
+    "symbol": "kPACB",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0xE94CCb1c4d77a581ED6319508256875bB68ad744",
+    "pair": "0xdAf3dc39CceAf9561e512e14472cc6B8EBF28c80",
+    "deploy": false,
+    "sinaCode": "gb_pacb",
+    "gtimgCode": "usPACB",
+    "icon": "https://api.kalata.io/api/deployed/icons/KPACB.png"
+  },
+  "mKala": {
+    "name": "BTC Token",
+    "symbol": "mKala",
+    "initialSupply": "980000000000000000000000000",
+    "type": "crptoCurrency",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0x369fB2C1B26ce9912d56CaFB038633aff0832fE9",
+    "pair": "0xd77846bD6ec04E9447679256f8e419D8dF3a5fc4",
+    "deploy": false,
+    "coingeckoCoinId": "bitcoin",
+    "icon": "https://api.kalata.io/api/deployed/icons/MKALA.png"
+  }
+}
