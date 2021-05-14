@@ -54,7 +54,7 @@ interface IMint {
 
     function registerMigration(address assetToken, uint endPrice) external;
 
-    function openPosition(address collateralContract, uint collateralAmount, address assetContract, uint collateralRatio) external returns (uint);
+    function openPosition(address collateralToken, uint collateralAmount, address assetToken, uint collateralRatio) external returns (uint);
 
     function queryPositionIndex(address postionOwner, address collateralToken, address assetToken) external view returns (uint positionIndex);
 

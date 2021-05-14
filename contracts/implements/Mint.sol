@@ -105,7 +105,7 @@ contract Mint is OwnableUpgradeable, IMint {
 
     /**
       *  OpenPosition
-      *  Used for creating a new CDP with USD collateral. For creating a CDP using mAsset collateral, you need to use the Receive Hook variant.
+      *  Used for creating a new CDP with USD collateral.
       *  Opens a new CDP with an initial deposit of collateral.
       *  The user specifies the target minted mAsset for the CDP, and sets the desired initial collateralization ratio,
       *  which must be greater or equal than the minimum for the mAsset.
