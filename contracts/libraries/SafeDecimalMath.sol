@@ -11,11 +11,11 @@ library SafeDecimalMath {
     uint8 internal constant highPrecisionDecimals = 27;
 
     /* The number representing 1.0. */
-    uint internal constant UNIT = 10**uint(decimals);
+    uint internal constant UNIT = 10 ** uint(decimals);
 
     /* The number representing 1.0 for higher fidelity numbers. */
-    uint internal constant PRECISE_UNIT = 10**uint(highPrecisionDecimals);
-    uint internal constant UNIT_TO_HIGH_PRECISION_CONVERSION_FACTOR = 10**uint(highPrecisionDecimals - decimals);
+    uint internal constant PRECISE_UNIT = 10 ** uint(highPrecisionDecimals);
+    uint internal constant UNIT_TO_HIGH_PRECISION_CONVERSION_FACTOR = 10 ** uint(highPrecisionDecimals - decimals);
 
     /**
      * @return Provides an interface to UNIT.

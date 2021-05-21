@@ -14,7 +14,7 @@ contract Community is OwnableUpgradeable, ICommunity {
     Config config;
 
     modifier onlyGovernanceOrOwner() {
-        require(config.governance == _msgSender() || owner() ==_msgSender(), "Only governance or owner can perform!");
+        require(config.governance == _msgSender() || owner() == _msgSender(), "Only governance or owner can perform!");
         _;
     }
 

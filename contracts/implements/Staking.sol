@@ -160,7 +160,7 @@ contract Staking is OwnableUpgradeable, IStaking {
     }
 
 
-    function queryStakes() override external   view returns (
+    function queryStakes() override external view returns (
         address[] memory assets,
         uint[] memory pendingRewards,
         uint[] memory stakingAmounts

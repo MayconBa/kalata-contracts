@@ -119,7 +119,7 @@ contract Mint is OwnableUpgradeable, IMint {
         require(collateralAmount > 0, "Wrong collateral");
 
         //User should invoke IERC20.approve
-        require(IERC20(collateralToken).transferFrom(sender, address(this), collateralAmount),"Unable to execute transferFrom, recipient may have reverted");
+        require(IERC20(collateralToken).transferFrom(sender, address(this), collateralAmount), "Unable to execute transferFrom, recipient may have reverted");
 
         AssetConfig memory assetConfig = assetConfigMap[assetToken];
 
@@ -173,7 +173,7 @@ contract Mint is OwnableUpgradeable, IMint {
 
         //IERC20(collateralToken).allowance(sender, address(this));
 
-        require(IERC20(collateralToken).transferFrom(sender, address(this), collateralAmount),"Unable to execute transferFrom, recipient may have reverted");
+        require(IERC20(collateralToken).transferFrom(sender, address(this), collateralAmount), "Unable to execute transferFrom, recipient may have reverted");
 
 
         position.collateralAmount = position.collateralAmount.add(collateralAmount);
@@ -277,7 +277,7 @@ contract Mint is OwnableUpgradeable, IMint {
 
         require(assetConfig.endPrice > 0, "Asset is not in deprecated state");
 
-        require(IERC20(assetToken).transferFrom(positionOwner, address(this), assetAmount),"Unable to execute transferFrom, recipient may have reverted");
+        require(IERC20(assetToken).transferFrom(positionOwner, address(this), assetAmount), "Unable to execute transferFrom, recipient may have reverted");
 
         Asset memory refundCollateral = Asset({token : position.collateralToken, amount : assetAmount.divideDecimal(assetConfig.endPrice)});
 
@@ -492,7 +492,7 @@ contract Mint is OwnableUpgradeable, IMint {
     }
 
     function transferAsset(address assetToken, address sender, address recipient, uint amount) internal virtual {
-        require(IERC20(assetToken).transferFrom(sender, recipient, amount),"Unable to execute transferFrom, recipient may have reverted");
+        require(IERC20(assetToken).transferFrom(sender, recipient, amount), "Unable to execute transferFrom, recipient may have reverted");
     }
 
     function burnAsset(address assetToken, address tokenOwner, uint amount) internal virtual {
