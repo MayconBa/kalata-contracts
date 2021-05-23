@@ -252,6 +252,16 @@ contract Mint is OwnableUpgradeable, IMint {
         emit MintEvent(positionIndex, assetToken, assetAmount);
     }
 
+    //TODO,add testcase
+    function closePosition(uint positionIndex) override external {
+        Position memory position = idxPositionMap[positionIndex];
+        require(position.assetAmount > 0 && position.assetToken != address(0) && position.collateralAmount > 0 && position.assetAmount > 0, "Nothing to close");
+        _burn(positionIndex, position.assetToken, position.assetAmount);
+    }
+
+    function burn(uint positionIndex, address assetToken, uint assetAmount) override external {
+        _burn(positionIndex, assetToken, assetAmount);
+    }
 
     /**
         1. User approve assetAmounts to Mint contract.
@@ -259,7 +269,7 @@ contract Mint is OwnableUpgradeable, IMint {
         Burns the sent tokens against a CDP and reduces the C-ratio.
         If all outstanding minted mAsset tokens are burned, the position is closed and the collateral is returned.
     */
-    function burn(uint positionIndex, address assetToken, uint assetAmount) override external {
+    function _burn(uint positionIndex, address assetToken, uint assetAmount) private {
         address positionOwner = _msgSender();
 
         require(assetToken != address(0) && positionOwner != address(0), "burn: invalid address");

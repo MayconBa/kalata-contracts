@@ -232,6 +232,15 @@ contract Factory is OwnableUpgradeable, IFactory {
         return _assetWeights[token];
     }
 
+    //TODO, add testcase
+    function queryAllAssetWeights() override external view returns (address[] memory assets, uint[] memory weights){
+        assets = _addresses;
+        weights = new uint[](assets.length);
+        for (uint i = 0; i < assets.length; i++) {
+            weights[i] = _assetWeights[assets[i]];
+        }
+    }
+
     function queryTotalWeight() override external view returns (uint){
         return _totalWeight;
     }

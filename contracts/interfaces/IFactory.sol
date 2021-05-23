@@ -120,6 +120,8 @@ interface IFactory {
 
     function queryWeight(address token) external view returns (uint);
 
+    function queryAllAssetWeights() external view returns (address[] memory assets, uint[] memory weights);
+
     function queryTotalWeight() external view returns (uint);
 
     function queryToken(bytes32 symbol) external view returns (address token);

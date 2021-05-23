@@ -64,6 +64,8 @@ interface IMint {
 
     function mint(uint positionIndex, address assetTOken, uint assetAmount) external;
 
+    function closePosition(uint positionIndex)   external;
+
     function burn(uint positionIndex, address assetToken, uint assetAmount) external;
 
     function auction(address sender, uint positionIndex, address assetToken, uint assetAmount) external;

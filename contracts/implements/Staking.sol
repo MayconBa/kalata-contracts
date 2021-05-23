@@ -217,7 +217,6 @@ contract Staking is OwnableUpgradeable, IStaking {
     }
 
 
-
     ///// private methods ///
 
     function withdrawReward(address sender, address assetToken, uint rewardIndex, uint rewardBondAmount, uint rewardPendingReward) private returns (uint){
