@@ -61,7 +61,6 @@ async function createPairs(hre) {
         let {name, type, initialSupply, sinaCode, gtimgCode, coingeckoCoinId} = MOCK_ASSETS[symbol];
         let assetInfo = deployedAssets[symbol] || {
             name, symbol, initialSupply, type, pool: null, address: null, pair: null, deploy: true, sinaCode, gtimgCode, coingeckoCoinId,
-            icon: `https://api.kalata.io/api/deployed/icons/${symbol.toUpperCase()}.png`
         }
         let assetAddress = assetInfo.address;
         if (assetInfo.deploy) {
@@ -120,6 +119,20 @@ async function createPairs(hre) {
     }
 }
 
+async function batchAddLiquidity(hre) {
+    assetPath = path.resolve(getResourceFolder(hre), "assets.json");
+    deployedAssets = readJson(assetPath) || {};
+    let [deployer] = await hre.ethers.getSigners();
+    for (const asset of Object.values(deployedAssets)) {
+        console.log(`addLiquidity for ${asset['symbol']}`)
+        let assetAddress = asset['address'];
+        let [assetAmount, usdAmount] = [toUnit("10000"), toUnit("10000")]
+        await addLiquidity(hre, deployer, assetAddress, assetAmount, usdAmount);
+        new Promise(resolve => setTimeout(resolve, 5000));
+
+    }
+}
+
 
 //function addLiquidity(address tokenA, address tokenB, uint amountADesired, uint amountBDesired, uint amountAMin, uint amountBMin, address to, uint deadline)
 async function addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount) {
@@ -160,9 +173,7 @@ async function addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount) 
 
 module.exports = {
     deploy: async (hre) => {
-        //await deployStockAssets(hre);
-        //await deployCrptoCurrencyAssets(hre);
         await createPairs(hre);
-        //await addLiquidity(hre);
+        await batchAddLiquidity(hre);
     }
 }
