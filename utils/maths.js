@@ -14,6 +14,13 @@ const fromUnit = amount => fromWei(amount, 'ether');
 const toBNString = amount => (new BN(amount)).toString(10);
 const toUnitString = amount => toUnit(amount).toString(10);
 
+const humanBN = d => {
+    return parseFloat(fromUnit(d.toString())).toFixed(2);
+}
+
+const humanBNNumber = (d) => {
+    return parseFloat(humanBN(d));
+}
 
 /**
  *  Translates an amount to our canonical precise unit. We happen to use 10^27, which means we can
@@ -173,7 +180,8 @@ module.exports = {
     toUnitString,
     toBNString,
     fromUnit,
-    toBN
-
+    toBN,
+    humanBN,
+    humanBNNumber
 };
 

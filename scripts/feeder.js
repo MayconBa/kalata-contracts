@@ -6,10 +6,10 @@ const {toUnitString} = require("../utils/maths")
 async function main() {
     while (true) {
         await loadAndFeed();
-        await new Promise(resolve => setTimeout(resolve, 55 * 1000));
+        //每5分钟更新一次价格
+        await new Promise(resolve => setTimeout(resolve, 300 * 1000));
     }
 }
-
 
 async function loadAndFeed() {
     const allAssets = Object.values(require(`../publish/deployed/${hre.network.name}/assets.json`))
@@ -23,7 +23,7 @@ async function feedPrices(addressPricePairs) {
     if (addressPricePairs.length === 0) {
         console.error("nothing to feed,please check");
     }
-
+    console.log('start feeding');
     const accounts = await hre.ethers.getSigners();
     const signer = accounts[0];
     const deployedContracts = readContracts(hre);

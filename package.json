@@ -20,6 +20,7 @@
     "hardhat:deploy": "hardhat deploy --network hardhat",
     "hardhat:test": "hardhat test --network hardhat",
     "feeder": "hardhat run scripts/feeder.js --network localhost",
+    "checkContracts": "hardhat run scripts/checkContracts.js --network testnet",
     "generateAccounts": "hardhat run scripts/generateAccounts.js",
     "partialTest": "hardhat test test/testFactory.js --network hardhat"
   },
