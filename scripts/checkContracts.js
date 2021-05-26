@@ -83,11 +83,12 @@ async function doBuy(deployedAssets, uniswapRouterInstance) {
 
     //console.log('balance(before buying)', humanBN(await biduToken.balanceOf(biduTokenReceiver.address)))
     console.log('balance(before buying)', (await biduToken.balanceOf(biduTokenReceiver.address)).toString())
-
+    let path = [busdToken.address, biduToken.address];
+    console.log('path', path);
     let receipt = await uniswapRouterInstance.swapTokensForExactTokens(
         buyBiduAmount.toString(),// 需要购买的Asset数量
         amountInMax.toString(), // 保护参数, 限制最多花费多少BUSD,防止滑点太大.
-        [busdToken.address, biduToken.address], //[asset,busd]
+        path, //[ busd,asset]
         biduTokenReceiver.address, // asset的接受者.
         new Date().getTime() //最迟交易时间,这也是保护参数
     )
