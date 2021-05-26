@@ -1,4 +1,5 @@
-const {readContracts, saveContracts, readKala, readUSD} = require("../utils/resources")
+const {readContracts, saveContracts } = require("../utils/resources")
+const {readKala, readBUSD} = require("../utils/assets")
 const {loadContract} = require("../utils/contract")
 const {toUnitString} = require("../utils/maths");
 
@@ -16,7 +17,7 @@ async function deploy(hre) {
             deployedContract.bytecode = bytecode;
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
-            let baseToken = readUSD(hre).address;
+            let baseToken = readBUSD(hre).address;
             let governance = deployedContracts['Governance'].address;
             let mint = deployedContracts['Mint'].address;
             let govToken = readKala(hre).address;

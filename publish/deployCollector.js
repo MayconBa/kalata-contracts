@@ -1,5 +1,5 @@
-const {readContracts, saveContracts, readKala, readUSD} = require("../utils/resources")
-
+const {readContracts, saveContracts} = require("../utils/resources")
+const {readKala, readBUSD} = require("../utils/assets")
 const CONTRACT_CLASS = "Collector";
 
 async function deploy(hre) {
@@ -19,7 +19,7 @@ async function deploy(hre) {
             let govToken = readKala(hre).address;
             let governance = deployedContracts['Governance'].address;
             let uniswapFactory = deployedContracts['UniswapV2Factory'].address;
-            let baseToken = readUSD(hre).address;
+            let baseToken = readBUSD(hre).address;
             let uniswapRouter = deployedContracts['UniswapV2Router02'].address;
             const instance = await hre.upgrades.deployProxy(ContractClass, [governance, uniswapFactory, uniswapRouter, baseToken, govToken], {initializer: 'initialize'});
             await instance.deployed();

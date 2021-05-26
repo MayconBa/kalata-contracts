@@ -1,4 +1,5 @@
-const {readContracts, saveContracts, readKala, readUSD} = require("../utils/resources")
+const {readContracts, saveContracts } = require("../utils/resources")
+const {readKala, readBUSD} = require("../utils/assets")
 const {loadContract} = require("../utils/contract")
 const {toUnitString} = require("../utils/maths");
 
@@ -20,7 +21,7 @@ async function deploy(hre) {
         } else {
             let oracle = deployedContracts['Oracle'].address;
             let collector = deployedContracts['Collector'].address;
-            let baseToken = readUSD(hre).address;
+            let baseToken = readBUSD(hre).address;
             let protocolFeeRate = toUnitString("0.015");
             //mock factory firstly, Will use the factory address after the factory is deployed.
             let factory = deployer.address;

@@ -1,4 +1,5 @@
-const {getResourceFolder, readContracts, readUSD} = require("../utils/resources")
+const {getResourceFolder, readContracts } = require("../utils/resources")
+const {  readBUSD} = require("../utils/assets")
 const path = require('path');
 const {readJson, saveJson} = require("../utils/json")
 const {toUnit,} = require("../utils/maths")
@@ -51,7 +52,7 @@ async function createPairs(hre) {
     let auctionDiscount = toUnit("0.50")
     let minCollateralRatio = toUnit("1.5");
     let weight = toUnit("1");
-    let usdInfo = readUSD(hre);
+    let usdInfo = readBUSD(hre);
     usdToken = await loadToken(hre, usdInfo.address);
 
     assetPath = path.resolve(getResourceFolder(hre), "assets.json");

@@ -1,4 +1,5 @@
-const {readUSD, saveUSD} = require("../utils/resources")
+const {readBUSD, saveBUSD} = require("../utils/assets")
+
 const {toUnitString} = require("../utils/maths");
 const {deployToken} = require("../utils/contract")
 
@@ -19,15 +20,15 @@ async function deploy(hre) {
     let {name, symbol, initialSupply} = ASSETS;
     let address = ASSETS.addresses[hre.network.name];
     if (address) {
-        saveUSD(hre,{name, symbol, address})
+        saveBUSD(hre,{name, symbol, address})
         return;
     }
-    let config = readUSD(hre) || {name, symbol, initialSupply, deployer: deployer.address, address: null, deploy: true};
+    let config = readBUSD(hre) || {name, symbol, initialSupply, deployer: deployer.address, address: null, deploy: true};
     if (config.deploy) {
         let token = await deployToken(hre, name, symbol, initialSupply);
         config.address = token.address;
         config.deploy = false;
-        saveUSD(hre, config)
+        saveBUSD(hre, config)
         console.log(`MockUSD deployed to network ${hre.network.name} with address ${token.address}`);
     }
 }

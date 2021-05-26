@@ -11,44 +11,6 @@ function deleteResource(hre) {
 }
 
 
-function getBNBPath(hre) {
-    return path.resolve(getResourceFolder(hre), "bnb.json");
-}
-
-function readBNB(hre) {
-    return readJson(getBNBPath(hre))
-}
-
-function saveBNB(hre, content) {
-    saveJson(getBNBPath(hre), content);
-}
-
-function getUSDPath(hre) {
-    return path.resolve(getResourceFolder(hre), "usd.json");
-}
-
-function readUSD(hre) {
-    return readJson(getUSDPath(hre))
-}
-
-function saveUSD(hre, content) {
-    saveJson(getUSDPath(hre), content);
-}
-
-
-function getKalaPath(hre) {
-    return path.resolve(getResourceFolder(hre), "kala.json");
-}
-
-function readKala(hre) {
-    return readJson(getKalaPath(hre))
-}
-
-function saveKala(hre, content) {
-    saveJson(getKalaPath(hre), content);
-}
-
-
 function getContractsPath(hre) {
     return path.resolve(getResourceFolder(hre), "contracts.json");
 }
@@ -68,9 +30,4 @@ module.exports = {
     deleteResource,
     readContracts,
     saveContracts,
-    getKalaPath,
-    readKala,
-    saveKala,
-    readBNB, saveBNB,
-    readUSD, saveUSD,
 }

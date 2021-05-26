@@ -1,5 +1,5 @@
-const {readContracts, saveContracts, readUSD} = require("../utils/resources")
-
+const {readContracts, saveContracts,} = require("../utils/resources")
+const {readBUSD} = require("../utils/assets")
 const ORACLE_CONTRACT_CLASS = "Oracle";
 
 async function deploy(hre) {
@@ -8,7 +8,7 @@ async function deploy(hre) {
     const ContractClass = await hre.ethers.getContractFactory(ORACLE_CONTRACT_CLASS, {});
     const {abi, bytecode} = await hre.artifacts.readArtifact(ORACLE_CONTRACT_CLASS);
     let deployedContracts = readContracts(hre) || {};
-    let deployedContract = deployedContracts[ORACLE_CONTRACT_CLASS] || {name: ORACLE_CONTRACT_CLASS, address: null, initialize: null,deployer:deployer.address,abi, bytecode, deploy: true, upgrade: false};
+    let deployedContract = deployedContracts[ORACLE_CONTRACT_CLASS] || {name: ORACLE_CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true, upgrade: false};
 
     if (deployedContract.deploy || deployedContract.upgrade) {
         if (deployedContract.upgrade) {
@@ -19,7 +19,7 @@ async function deploy(hre) {
         } else {
             //mock factory firstly, Will use the factory address after the factory is deployed.
             let factory = deployer.address;
-            let baseAsset = readUSD(hre).address;
+            let baseAsset = readBUSD(hre).address;
             const instance = await hre.upgrades.deployProxy(ContractClass, [factory, baseAsset], {
                 initializer: 'initialize',
             });
