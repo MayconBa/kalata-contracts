@@ -1,4 +1,4 @@
-//npx hardhat run script\checkContracts.js --network testnet --no-compile
+//npx hardhat run scripts\checkContracts.js --network testnet --no-compile
 const {bytesToString} = require("../utils/bytes");
 const hre = require("hardhat");
 const {readContracts} = require("../utils/resources");
@@ -52,19 +52,24 @@ async function doBuy(deployedAssets, uniswapRouterInstance) {
 
     let busdReserve = busdToken.address < biduToken.address ? reserve0 : reserve1;
     let biduReserve = busdToken.address < biduToken.address ? reserve1 : reserve0;
-    console.log(humanBN(busdReserve), humanBN(biduReserve));
 
+    console.log('busdReserve', busdReserve.toString());
+    console.log('biduReserve', biduReserve.toString());
+    //console.log(humanBN(busdReserve), humanBN(biduReserve));
 
     let buyBiduAmount = toUnit("20")
-    let amountIn = toBN(await uniswapRouterInstance.getAmountIn(buyBiduAmount.toString(), busdReserve.toString(), biduReserve.toString()))
-    console.log('required busd amount:', humanBN(amountIn));
 
-    console.log(amountIn.toString())
+    console.log('buyBiduAmount', buyBiduAmount.toString());
+
+    let amountIn = toBN(await uniswapRouterInstance.getAmountIn(buyBiduAmount.toString(), busdReserve.toString(), biduReserve.toString()))
+    //console.log('required busd amount:', humanBN(amountIn));
+    console.log('required busd amount:', amountIn.toString());
 
     // 0.1 slippage
     let amountInMax = amountIn.add(amountIn.div(toBN(10)));
 
-    console.log(humanBN(amountInMax))
+    //console.log(humanBN(amountInMax))
+    console.log("amountInMax:", amountInMax.toString());
 
     let allowance = toBN(await busdToken.allowance(walletAccount.address, uniswapRouterInstance.address));
     if (amountInMax.gte(allowance)) {
@@ -76,7 +81,8 @@ async function doBuy(deployedAssets, uniswapRouterInstance) {
         }
     }
 
-    console.log('balance(before buying)', humanBN(await biduToken.balanceOf(biduTokenReceiver.address)))
+    //console.log('balance(before buying)', humanBN(await biduToken.balanceOf(biduTokenReceiver.address)))
+    console.log('balance(before buying)', (await biduToken.balanceOf(biduTokenReceiver.address)).toString())
 
     let receipt = await uniswapRouterInstance.swapTokensForExactTokens(
         buyBiduAmount.toString(),// 需要购买的Asset数量
@@ -85,16 +91,10 @@ async function doBuy(deployedAssets, uniswapRouterInstance) {
         biduTokenReceiver.address, // asset的接受者.
         new Date().getTime() //最迟交易时间,这也是保护参数
     )
-    console.log(receipt)
+    console.log("receipt.hash", receipt.hash);
     await new Promise(resolve => setTimeout(resolve, 5000));
 
-    console.log('balance(after buying)', humanBN(await biduToken.balanceOf(biduTokenReceiver.address)))
-    // console.log(humanBN(allowance));
-    // await busdToken.connect(walletAccount).approve(uniswapRouterInstance.address, toUnitString("1000"));
-    //
-    // allowance = await busdToken.allowance(walletAccount.address, uniswapRouterInstance.address);
-    // await new Promise(resolve => setTimeout(resolve, 2 * 1000));
-
+    console.log('balance(after buying)', (await biduToken.balanceOf(biduTokenReceiver.address)).toString())
 
 }
 
