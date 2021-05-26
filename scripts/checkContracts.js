@@ -2,8 +2,8 @@
 const {bytesToString} = require("../utils/bytes");
 const hre = require("hardhat");
 const {readContracts} = require("../utils/resources");
-const {readAssets} = require("../utils/assets");
-const {toUnitString, humanBN, humanBNNumber} = require("../utils/maths")
+const {readAssets, readBUSD} = require("../utils/assets");
+const {toUnitString, humanBN, humanBNNumber, toUnit, toBN} = require("../utils/maths")
 
 async function main() {
     const deployedContracts = readContracts(hre);
@@ -13,7 +13,8 @@ async function main() {
     const uniswapFactoryInstance = await loadContract(deployedContracts, 'UniswapV2Factory', 'IUniswapV2Factory');
 
     const deployedAssets = readAssets(hre);
-    console.log(deployedAssets);
+    //console.log(deployedAssets);
+    await doBuy(deployedAssets, uniswapRouterInstance);
 
     // let assets = await checkQueryAssets(factoryInstance);
     // await checkQueryAllPrices(oracleInstance);
@@ -26,13 +27,75 @@ async function main() {
 }
 
 async function loadPairInstance(pairAddress) {
+    const accounts = await hre.ethers.getSigners();
     const Artifact = await hre.artifacts.readArtifact('IUniswapV2Pair');
-    return new hre.ethers.Contract(pairAddress, Artifact.abi)
+    return new hre.ethers.Contract(pairAddress, Artifact.abi, accounts[0])
 }
 
 async function loadAssetInstance(assetAddress) {
+    const accounts = await hre.ethers.getSigners();
     const Artifact = await hre.artifacts.readArtifact('IBEP20Token');
-    return new hre.ethers.Contract(assetAddress, Artifact.abi)
+    return new hre.ethers.Contract(assetAddress, Artifact.abi, accounts[0])
+}
+
+
+// https://hackmd.io/zDybBWVAQN67BkFujyf52Q#13-%E8%B4%AD%E4%B9%B0Buy
+async function doBuy(deployedAssets, uniswapRouterInstance) {
+    const accounts = await hre.ethers.getSigners();
+    const walletAccount = accounts[0];
+    const biduTokenReceiver = accounts[1]
+    const busdToken = await loadAssetInstance(readBUSD(hre).address);
+    const biduToken = await loadAssetInstance(deployedAssets['kBIDU'].address);
+
+    let pairToken = await loadPairInstance(deployedAssets['kBIDU'].pair);
+    let {reserve0, reserve1} = await pairToken.getReserves();
+
+    let busdReserve = busdToken.address < biduToken.address ? reserve0 : reserve1;
+    let biduReserve = busdToken.address < biduToken.address ? reserve1 : reserve0;
+    console.log(humanBN(busdReserve), humanBN(biduReserve));
+
+
+    let buyBiduAmount = toUnit("20")
+    let amountIn = toBN(await uniswapRouterInstance.getAmountIn(buyBiduAmount.toString(), busdReserve.toString(), biduReserve.toString()))
+    console.log('required busd amount:', humanBN(amountIn));
+
+    console.log(amountIn.toString())
+
+    // 0.1 slippage
+    let amountInMax = amountIn.add(amountIn.div(toBN(10)));
+
+    console.log(humanBN(amountInMax))
+
+    let allowance = toBN(await busdToken.allowance(walletAccount.address, uniswapRouterInstance.address));
+    if (amountInMax.gte(allowance)) {
+        await busdToken.connect(walletAccount).approve(uniswapRouterInstance.address, toUnitString("1000"));
+        while (amountInMax.gte(allowance)) {
+            allowance = toBN(await busdToken.allowance(walletAccount.address, uniswapRouterInstance.address));
+            console.log("waiting 0.5 seconds for transaction to complete")
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+    }
+
+    console.log('balance(before buying)', humanBN(await biduToken.balanceOf(biduTokenReceiver.address)))
+
+    let receipt = await uniswapRouterInstance.swapTokensForExactTokens(
+        buyBiduAmount.toString(),// 需要购买的Asset数量
+        amountInMax.toString(), // 保护参数, 限制最多花费多少BUSD,防止滑点太大.
+        [busdToken.address, biduToken.address], //[asset,busd]
+        biduTokenReceiver.address, // asset的接受者.
+        new Date().getTime() //最迟交易时间,这也是保护参数
+    )
+    console.log(receipt)
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    console.log('balance(after buying)', humanBN(await biduToken.balanceOf(biduTokenReceiver.address)))
+    // console.log(humanBN(allowance));
+    // await busdToken.connect(walletAccount).approve(uniswapRouterInstance.address, toUnitString("1000"));
+    //
+    // allowance = await busdToken.allowance(walletAccount.address, uniswapRouterInstance.address);
+    // await new Promise(resolve => setTimeout(resolve, 2 * 1000));
+
+
 }
 
 
@@ -59,10 +122,6 @@ async function checkQueryAssets(factoryInstance) {
 
 }
 
-// https://hackmd.io/zDybBWVAQN67BkFujyf52Q#13-%E8%B4%AD%E4%B9%B0Buy
-async function doBuy(uniswapRouterInstance) {
-    let busdAmount = toUnitString("")
-}
 
 async function checkQueryAllPrices(oracleInstance) {
     let result = await oracleInstance.queryAllPrices();
