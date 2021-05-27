@@ -14,7 +14,8 @@ async function main() {
 
     const deployedAssets = readAssets(hre);
     //console.log(deployedAssets);
-    await doBuy(deployedAssets, uniswapRouterInstance);
+    //await doBuy(deployedAssets, uniswapRouterInstance);
+    await checkAllowance(deployedAssets, uniswapRouterInstance);
 
     // let assets = await checkQueryAssets(factoryInstance);
     // await checkQueryAllPrices(oracleInstance);
@@ -40,6 +41,16 @@ async function loadAssetInstance(assetAddress) {
 
 
 // https://hackmd.io/zDybBWVAQN67BkFujyf52Q#13-%E8%B4%AD%E4%B9%B0Buy
+async function checkAllowance(deployedAssets, uniswapRouterInstance) {
+    const busdToken = await loadAssetInstance(readBUSD(hre).address);
+    let allowance = toBN(await busdToken.allowance("0x948cCB51B4cC9Cefb12BE932960C60F00010c90E", uniswapRouterInstance.address));
+    let balance = toBN(await busdToken.balanceOf("0x948cCB51B4cC9Cefb12BE932960C60F00010c90E"));
+
+    console.log('balance', humanBN(balance));
+    console.log('allowance', humanBN(allowance));
+}
+
+// https://hackmd.io/zDybBWVAQN67BkFujyf52Q#13-%E8%B4%AD%E4%B9%B0Buy
 async function doBuy(deployedAssets, uniswapRouterInstance) {
     const accounts = await hre.ethers.getSigners();
     const walletAccount = accounts[0];
@@ -53,8 +64,8 @@ async function doBuy(deployedAssets, uniswapRouterInstance) {
     let busdReserve = busdToken.address < biduToken.address ? reserve0 : reserve1;
     let biduReserve = busdToken.address < biduToken.address ? reserve1 : reserve0;
 
-    console.log('busdReserve', busdReserve.toString());
-    console.log('biduReserve', biduReserve.toString());
+    console.log('busdReserve', busdReserve.toString(), humanBN(busdReserve));
+    console.log('biduReserve', biduReserve.toString(), humanBN(biduReserve));
     //console.log(humanBN(busdReserve), humanBN(biduReserve));
 
     let buyBiduAmount = toUnit("20")
