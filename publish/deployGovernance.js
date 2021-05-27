@@ -1,4 +1,5 @@
-const {readContracts, saveContracts, readKala} = require("../utils/resources")
+const {readContracts, saveContracts,  } = require("../utils/resources")
+const {  readKala} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths");
 const CONTRACT_CLASS = "Governance";
 

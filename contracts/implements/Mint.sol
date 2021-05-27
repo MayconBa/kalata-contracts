@@ -434,6 +434,37 @@ contract Mint is OwnableUpgradeable, IMint {
         assetAmount = m.assetAmount;
     }
 
+    function queryAllPositions(address owner) override external view returns (
+        uint[] memory idxes,
+        address[]  memory positionOwners,
+        address[]  memory collateralTokens,
+        uint[] memory collateralAmounts,
+        address[]  memory assetTokens,
+        uint[] memory assetAmounts
+    ){
+        require(owner != address(0), "Invalid address");
+        uint length = postionIdxArray.length;
+        idxes = new uint[](length);
+        positionOwners = new address[](length);
+        collateralTokens = new address[](length);
+        collateralAmounts = new uint[](length);
+        assetTokens = new address[](length);
+        assetAmounts = new uint[](length);
+        uint index = 0;
+        for (uint i = 0; i < length; i++) {
+            Position memory position = idxPositionMap[postionIdxArray[i]];
+            if (position.owner == owner) {
+                idxes[index] = position.idx;
+                positionOwners[index] = (position.owner);
+                collateralTokens[index] = (position.collateralToken);
+                collateralAmounts[index] = (position.collateralAmount);
+                assetTokens[index] = (position.assetToken);
+                assetAmounts[index] = (position.assetAmount);
+                index++;
+            }
+        }
+    }
+
     function queryPositions(address owner, address assetToken) override external view returns (
         uint[] memory idxes,
         address[]  memory positionOwners,

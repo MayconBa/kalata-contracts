@@ -1,4 +1,4 @@
-const {readBNB, saveBNB} = require("../utils/resources")
+const {readBNB, saveBNB} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths");
 const {deployToken} = require("../utils/contract")
 

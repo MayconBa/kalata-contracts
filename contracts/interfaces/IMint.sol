@@ -64,7 +64,7 @@ interface IMint {
 
     function mint(uint positionIndex, address assetTOken, uint assetAmount) external;
 
-    function closePosition(uint positionIndex)   external;
+    function closePosition(uint positionIndex) external;
 
     function burn(uint positionIndex, address assetToken, uint assetAmount) external;
 
@@ -82,6 +82,16 @@ interface IMint {
         uint collateralAmount,
         address assetToken,
         uint assetAmount
+    );
+
+
+    function queryAllPositions(address owner) external view returns (
+        uint[] memory idxes,
+        address[]  memory positionOwners,
+        address[]  memory collateralTokens,
+        uint[] memory collateralAmounts,
+        address[]  memory assetTokens,
+        uint[] memory assetAmounts
     );
 
     function queryPositions(address owner, address assetToken) external view returns (

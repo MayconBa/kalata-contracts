@@ -1,5 +1,5 @@
-const {getResourceFolder, readContracts } = require("../utils/resources")
-const {  readBUSD} = require("../utils/assets")
+const {getResourceFolder, readContracts} = require("../utils/resources")
+const {readBUSD} = require("../utils/assets")
 const path = require('path');
 const {readJson, saveJson} = require("../utils/json")
 const {toUnit,} = require("../utils/maths")
@@ -175,6 +175,6 @@ async function addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount) 
 module.exports = {
     deploy: async (hre) => {
         await createPairs(hre);
-        await batchAddLiquidity(hre);
+        // await batchAddLiquidity(hre);
     }
 }
