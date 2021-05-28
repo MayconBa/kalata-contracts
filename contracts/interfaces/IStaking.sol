@@ -66,6 +66,14 @@ interface IStaking {
         uint[] memory pendingRewards
     );
 
+    function queryAllAssets() external view returns (
+        address[] memory assets,
+        address[] memory stakingTokens,
+        uint[] memory pendingRewards,
+        uint[] memory stakingAmounts,
+        uint[] memory rewardIndexs
+    );
+
 
     function queryConfig() external view returns (address configOwner, address govToken);
 

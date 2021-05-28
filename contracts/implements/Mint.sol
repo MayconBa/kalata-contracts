@@ -62,8 +62,8 @@ contract Mint is OwnableUpgradeable, IMint {
 
     function _updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate) private {
         config = Config({
-        factory : factory,
-        oracle : oracle,
+            factory : factory,
+            oracle : oracle,
         collector : collector,
         baseToken : baseToken,
         protocolFeeRate : protocolFeeRate
@@ -522,7 +522,8 @@ contract Mint is OwnableUpgradeable, IMint {
         (uint relativePrice, uint targetLastUpdatedTime, uint denominateLastUpdatedTime) = IOracle(config.oracle).queryPrice(targetAssetToken, denominateAssetToken);
         if (blockTime > 0) {
             uint requiredTime = blockTime.sub(PRICE_EXPIRE_TIME);
-            require(targetLastUpdatedTime >= requiredTime && denominateLastUpdatedTime >= requiredTime, "Price is too old");
+            //TODO,add time check
+            //require(targetLastUpdatedTime >= requiredTime && denominateLastUpdatedTime >= requiredTime, "Price is too old");
         }
         return relativePrice;
 

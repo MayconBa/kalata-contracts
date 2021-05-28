@@ -32,7 +32,6 @@ contract Staking is OwnableUpgradeable, IStaking {
 
 
 
-
     modifier onlyFactoryOrOwner() {
         require(_config.factory == msg.sender || msg.sender == owner(), "Unauthorized,only Staking's owner/factory can perform");
         _;
@@ -213,6 +212,27 @@ contract Staking is OwnableUpgradeable, IStaking {
         for (uint i = 0; i < assets.length; i++) {
             stakingAmounts[i] = _rewards[staker][assets[i]].stakingAmount;
             pendingRewards[i] = _rewards[staker][assets[i]].pendingReward;
+        }
+    }
+
+    function queryAllAssets() override external view returns (
+        address[] memory assets,
+        address[] memory stakingTokens,
+        uint[] memory pendingRewards,
+        uint[] memory stakingAmounts,
+        uint[] memory rewardIndexs)
+    {
+        assets = _assets;
+        stakingTokens = new address[](assets.length);
+        pendingRewards = new uint[](assets.length);
+        stakingAmounts = new uint[](assets.length);
+        rewardIndexs = new uint[](assets.length);
+        for (uint i = 0; i < assets.length; i++) {
+            AssetStake memory stake = _stakes[assets[i]];
+            stakingTokens[i] = stake.stakingToken;
+            pendingRewards[i] = stake.pendingReward;
+            stakingAmounts[i] = stake.stakingAmount;
+            rewardIndexs[i] = stake.rewardIndex;
         }
     }
 

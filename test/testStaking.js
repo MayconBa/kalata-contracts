@@ -124,7 +124,7 @@ describe("Staking", () => {
 
       it("deposit reward ", async () => {
 
-         let [_stakingToken, _pendingReward, _stakingAmount, _rewardIndex] = await instance.queryStake(assetToken.address);
+           [_stakingToken, _pendingReward, _stakingAmount, _rewardIndex] = await instance.queryStake(assetToken.address);
          expect(_stakingAmount).to.equal(toUnitString('50'));
 
          //factory call transfer and depositReward
@@ -185,7 +185,7 @@ describe("Staking", () => {
       it("unStake lp", async () => {
 
          //query staking pool
-         let [_stakingToken, _pendingReward, _stakingAmount, _rewardIndex] = await instance.queryStake(assetToken.address);
+           [_stakingToken, _pendingReward, _stakingAmount, _rewardIndex] = await instance.queryStake(assetToken.address);
          expect(_stakingToken).to.equal(stakingToken.address);
          expect(_pendingReward).to.equal(0);
          expect(_stakingAmount).to.equal(toUnitString('50'));
