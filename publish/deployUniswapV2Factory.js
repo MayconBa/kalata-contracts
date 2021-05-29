@@ -1,6 +1,7 @@
 const {readContracts, saveContracts} = require("../utils/resources")
 
 const UniswapV2FactoryArtifact = require("@uniswap/v2-core/build/UniswapV2Factory.json");
+const {updateWebContracts} = require("../utils/resources");
 
 const CONTRACT_CLASS = "UniswapV2Factory";
 
@@ -9,7 +10,8 @@ async function deploy(hre) {
     const accounts = await hre.ethers.getSigners();
     let deployer = accounts[0];
     let feeToSetter = deployer.address;
-    const {abi, bytecode} = UniswapV2FactoryArtifact;
+    const {bytecode} = UniswapV2FactoryArtifact;
+    const {abi} = await hre.artifacts.readArtifact("IUniswapV2Factory");
     let deployedContracts = readContracts(hre) || {};
     let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, deploy: true, upgradable: false, abi, bytecode};
     if (deployedContract.deploy) {
@@ -25,6 +27,7 @@ async function deploy(hre) {
         deployedContracts[CONTRACT_CLASS] = deployedContract
         saveContracts(hre, deployedContracts);
     }
+    updateWebContracts(hre,CONTRACT_CLASS, {address: deployedContract.address, abi});
 }
 
 

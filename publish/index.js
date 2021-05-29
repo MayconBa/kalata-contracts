@@ -7,6 +7,7 @@ const {deploy: deployCollector} = require("./deployCollector")
 const {deploy: deployCommunity} = require("./deployCommunity")
 const {deploy: deployFactory} = require("./deployFactory")
 const {deploy: deployMint} = require("./deployMint")
+const {deploy: deployRouter} = require("./deployRouter")
 const {deploy: deployKala} = require("./deployKala")
 const {deploy: deployUSD} = require("./deployUSD")
 const {deploy: deployBNB} = require("./deployBNB")
@@ -25,6 +26,7 @@ async function deployAll(hre) {
     await deployCommunity(hre);
     await deployMint(hre);
     await deployFactory(hre);
+    await deployRouter(hre);
 }
 
 module.exports = {

@@ -5,6 +5,7 @@ const {readJson, saveJson} = require("../utils/json")
 const {toUnit,} = require("../utils/maths")
 const {loadToken, loadUniswapV2Factory, loadUniswapV2Router02, ZERO_ADDRESS, estiamteGasAndCallMethod} = require("../utils/contract")
 const {stringToBytes32} = require('../utils/bytes')
+const {requestGtimgStockPrices} = require("../utils/price")
 
 let initialSupply = toUnit("980000000").toString();
 
@@ -26,14 +27,13 @@ function sleep(hre, seconds) {
 //SPCE.US  (Virgin Galactic Holdings Inc)
 //PACB.US (Pacific Biosciences of Californ)
 const MOCK_ASSETS = {
-    "kBIDU": {name: "BIDU Token", type: "stock", sinaCode: "gb_bidu", gtimgCode: "usBIDU", initialSupply},
-    "kTSLA": {name: "BIDU Token", type: "stock", sinaCode: "gb_tsla", gtimgCode: "usTSLA", initialSupply},
-    "kARKK": {name: "ARKK Token", type: "stock", sinaCode: "gb_arkk", gtimgCode: "usARKK", initialSupply},
-    "kSPCE": {name: "SPCE Token", type: "stock", sinaCode: "gb_spce", gtimgCode: "usSPCE", initialSupply},
-    "kPACB": {name: "PACB Token", type: "stock", sinaCode: "gb_pacb", gtimgCode: "usPACB", initialSupply},
-
+    "kBIDU": {name: "Wrapped Kalata BIDU Token", type: "stock", sinaCode: "gb_bidu", gtimgCode: "usBIDU", initialSupply},
+    "kTSLA": {name: "Wrapped Kalata TSLA Token", type: "stock", sinaCode: "gb_tsla", gtimgCode: "usTSLA", initialSupply},
+    "kARKK": {name: "Wrapped Kalata ARKK Token", type: "stock", sinaCode: "gb_arkk", gtimgCode: "usARKK", initialSupply},
+    "kSPCE": {name: "Wrapped Kalata SPCE Token", type: "stock", sinaCode: "gb_spce", gtimgCode: "usSPCE", initialSupply},
+    "kPACB": {name: "Wrapped Kalata PACB Token", type: "stock", sinaCode: "gb_pacb", gtimgCode: "usPACB", initialSupply},
     //coin list:  https://api.coingecko.com/api/v3/coins/list?include_platform=false
-    "mKala": {name: "BTC Token", type: "crptoCurrency", initialSupply, coingeckoCoinId: "bitcoin"},
+    "Kala": {name: "Kala", type: "crptoCurrency", initialSupply, coingeckoCoinId: "kala"},
 }
 
 let assetPath;
@@ -72,7 +72,6 @@ async function createPairs(hre) {
                 console.error("factory.baseToken != usdToken")
                 process.exit(503);
             }
-
             await factoryInstance.whitelist(
                 bytes32Name,
                 bytes32Symbol,
@@ -115,8 +114,6 @@ async function createPairs(hre) {
                 saveJson(assetPath, deployedAssets);
             }
         }
-
-
     }
 }
 
@@ -133,7 +130,6 @@ async function batchAddLiquidity(hre) {
 
     }
 }
-
 
 //function addLiquidity(address tokenA, address tokenB, uint amountADesired, uint amountBDesired, uint amountAMin, uint amountBMin, address to, uint deadline)
 async function addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount) {

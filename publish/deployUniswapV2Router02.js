@@ -1,10 +1,12 @@
 const {saveContracts, readContracts, readBNB} = require("../utils/resources")
 const UniswapV2Router02Artifact = require("@uniswap/v2-periphery/build/UniswapV2Router02.json");
+const {updateWebContracts} = require("../utils/resources");
 const CONTRACT_CLASS = "UniswapV2Router02";
 
 async function deploy(hre) {
     let deployedContracts = readContracts(hre) || {};
-    const {abi, bytecode} = UniswapV2Router02Artifact;
+    const {bytecode} = UniswapV2Router02Artifact;
+    const {abi} = await hre.artifacts.readArtifact("IUniswapV2Router02");
     const accounts = await hre.ethers.getSigners();
     let deployer = accounts[0];
     let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true, upgradable: false};
@@ -25,6 +27,7 @@ async function deploy(hre) {
         deployedContracts[CONTRACT_CLASS] = deployedContract
         saveContracts(hre, deployedContracts);
     }
+    updateWebContracts(hre,CONTRACT_CLASS, {address: deployedContract.address, abi});
 }
 
 module.exports = {

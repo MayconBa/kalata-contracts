@@ -1,3 +1,4 @@
+const {updateWebContracts} = require("../utils/resources");
 const {readBUSD, saveBUSD} = require("../utils/assets")
 
 const {toUnitString} = require("../utils/maths");
@@ -9,8 +10,8 @@ const ASSETS = {
     initialSupply: toUnitString(10000000000),
     isBaseAsset: true,
     addresses: {
-       mainnet: "0x55d398326f99059ff775485246999027b3197955",
-       // testnet: "0x1a959f482AEcC14309B6855DcD7B591214CF2f25"
+        mainnet: "0x55d398326f99059ff775485246999027b3197955",
+        // testnet: "0x1a959f482AEcC14309B6855DcD7B591214CF2f25"
     }
 };
 
@@ -20,7 +21,7 @@ async function deploy(hre) {
     let {name, symbol, initialSupply} = ASSETS;
     let address = ASSETS.addresses[hre.network.name];
     if (address) {
-        saveBUSD(hre,{name, symbol, address})
+        saveBUSD(hre, {name, symbol, address})
         return;
     }
     let config = readBUSD(hre) || {name, symbol, initialSupply, deployer: deployer.address, address: null, deploy: true};
@@ -31,6 +32,7 @@ async function deploy(hre) {
         saveBUSD(hre, config)
         console.log(`MockUSD deployed to network ${hre.network.name} with address ${token.address}`);
     }
+    updateWebContracts(hre,symbol, {address: config.address});
 }
 
 module.exports = {

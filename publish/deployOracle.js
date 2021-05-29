@@ -1,3 +1,4 @@
+const {updateWebContracts} = require("../utils/resources");
 const {readContracts, saveContracts,} = require("../utils/resources")
 const {readBUSD} = require("../utils/assets")
 const ORACLE_CONTRACT_CLASS = "Oracle";
@@ -6,7 +7,8 @@ async function deploy(hre) {
     const accounts = await hre.ethers.getSigners();
     let deployer = accounts[0];
     const ContractClass = await hre.ethers.getContractFactory(ORACLE_CONTRACT_CLASS, {});
-    const {abi, bytecode} = await hre.artifacts.readArtifact(ORACLE_CONTRACT_CLASS);
+    const {bytecode} = await hre.artifacts.readArtifact(ORACLE_CONTRACT_CLASS);
+    const {abi} = await hre.artifacts.readArtifact("IMint");
     let deployedContracts = readContracts(hre) || {};
     let deployedContract = deployedContracts[ORACLE_CONTRACT_CLASS] || {name: ORACLE_CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true, upgrade: false};
 
@@ -33,6 +35,7 @@ async function deploy(hre) {
         deployedContracts[ORACLE_CONTRACT_CLASS] = deployedContract
         saveContracts(hre, deployedContracts);
     }
+    updateWebContracts(hre,ORACLE_CONTRACT_CLASS, {address: deployedContract.address, abi});
 }
 
 

@@ -4,14 +4,14 @@ const {readKala, readBUSD} = require("../utils/assets")
 const {loadContract} = require("../utils/contract")
 const {toUnitString} = require("../utils/maths");
 
-const CONTRACT_CLASS = "Mint";
+const CONTRACT_CLASS = "Router";
 
 async function deploy(hre) {
     const accounts = await hre.ethers.getSigners();
     let deployer = accounts[0];
     let deployedContracts = readContracts(hre) || {};
     const {bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
-    const {abi} = await hre.artifacts.readArtifact("IMint");
+    const {abi} = await hre.artifacts.readArtifact("IRouter");
     let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true, upgrade: false};
     if (deployedContract.deploy || deployedContract.upgrade) {
         const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
@@ -21,18 +21,14 @@ async function deploy(hre) {
             deployedContract.bytecode = bytecode;
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
-            let oracle = deployedContracts['Oracle'].address;
-            let collector = deployedContracts['Collector'].address;
-            let baseToken = readBUSD(hre).address;
-            let protocolFeeRate = toUnitString("0.015");
-            //mock factory firstly, Will use the factory address after the factory is deployed.
-            let factory = deployer.address;
-            const instance = await hre.upgrades.deployProxy(ContractClass, [factory, oracle, collector, baseToken, protocolFeeRate], {
+            let factory = deployedContracts['Factory'].address;
+            let busdToken = readBUSD(hre).address;
+            const instance = await hre.upgrades.deployProxy(ContractClass, [factory, busdToken], {
                 initializer: 'initialize',
             });
             await instance.deployed();
             deployedContract.address = instance.address;
-            deployedContract.initialize = {factory: factory, oracle, collector, baseToken, protocolFeeRate};
+            deployedContract.initialize = {factory, busdToken};
             console.log(`${CONTRACT_CLASS} deployed to network ${hre.network.name} with address ${instance.address}`);
         }
         deployedContract.deploy = false;
@@ -40,7 +36,7 @@ async function deploy(hre) {
         deployedContracts[CONTRACT_CLASS] = deployedContract
         saveContracts(hre, deployedContracts);
     }
-    updateWebContracts(hre,CONTRACT_CLASS, {address: deployedContract.address, abi});
+    updateWebContracts(hre, CONTRACT_CLASS, {address: deployedContract.address, abi});
     return deployedContract;
 
 }

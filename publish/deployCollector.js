@@ -1,11 +1,13 @@
-const {readContracts, saveContracts} = require("../utils/resources")
+const {readContracts, saveContracts, updateWebContracts} = require("../utils/resources")
 const {readKala, readBUSD} = require("../utils/assets")
 const CONTRACT_CLASS = "Collector";
 
 async function deploy(hre) {
     const accounts = await hre.ethers.getSigners();
     let deployer = accounts[0];
-    const {abi, bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
+    const {bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
+    const {abi} = await hre.artifacts.readArtifact("ICollector");
+
     let deployedContracts = readContracts(hre) || {};
     let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true, upgrade: false};
     if (deployedContract.deploy || deployedContract.upgrade) {
@@ -33,6 +35,7 @@ async function deploy(hre) {
         deployedContracts[CONTRACT_CLASS] = deployedContract
         saveContracts(hre, deployedContracts);
     }
+    updateWebContracts(hre,CONTRACT_CLASS, {address: deployedContract.address, abi});
 }
 
 

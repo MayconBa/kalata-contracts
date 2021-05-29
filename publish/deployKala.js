@@ -1,3 +1,4 @@
+const {updateWebContracts} = require("../utils/resources");
 const {readKala, saveKala} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths");
 
@@ -6,8 +7,9 @@ async function deploy(hre) {
     let deployer = accounts[0];
     let name = "Kalata";
     let symbol = "Kala";
+
     let initialSupply = toUnitString("120000000");
-    let config = readKala(hre) || {deploy: true, upgrade: false, name, symbol, deployer:deployer.address,initialSupply};
+    let config = readKala(hre) || {deploy: true, upgrade: false, name, symbol, deployer: deployer.address, initialSupply};
     if (config.deploy || config.upgrade) {
         const contractFactory = await hre.ethers.getContractFactory("BEP20Token");
         if (config.upgrade) {
@@ -28,6 +30,9 @@ async function deploy(hre) {
         }
     }
     saveKala(hre, config);
+    updateWebContracts(hre, symbol, {address: config.address});
+    const {abi} = await hre.artifacts.readArtifact("IBEP20");
+    updateWebContracts(hre, "IBEP20", {abi});
     return config;
 }
 

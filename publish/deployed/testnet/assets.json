@@ -99,5 +99,20 @@
     "deploy": false,
     "coingeckoCoinId": "bitcoin",
     "icon": "https://api.kalata.io/api/deployed/icons/MKALA.png"
+  },
+  "Kala": {
+    "name": "Kala",
+    "symbol": "Kala",
+    "initialSupply": "980000000000000000000000000",
+    "type": "crptoCurrency",
+    "pool": {
+      "lp": "0x7d04963AfCaf8935590F2847d08f225B774a4db3",
+      "assetAmount": "1000000000000000000000",
+      "usdAmount": "1000000000000000000000"
+    },
+    "address": "0x1DA2b721d4C66B9938ad3500dBB2d42A7aDD0158",
+    "pair": "0x28Eff322E90554D574A72aF2ac3c6ac24b3641F1",
+    "deploy": false,
+    "coingeckoCoinId": "kala"
   }
 }

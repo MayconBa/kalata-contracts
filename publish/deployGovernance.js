@@ -1,15 +1,16 @@
-const {readContracts, saveContracts,  } = require("../utils/resources")
-const {  readKala} = require("../utils/assets")
+const {updateWebContracts} = require("../utils/resources");
+const {readContracts, saveContracts,} = require("../utils/resources")
+const {readKala} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths");
 const CONTRACT_CLASS = "Governance";
 
 async function deploy(hre) {
     const accounts = await hre.ethers.getSigners();
     let deployer = accounts[0];
-    const {abi, bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
+    const {bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
+    const {abi} = await hre.artifacts.readArtifact("IFactory");
     let deployedContracts = readContracts(hre) || {};
-    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, address: null, initialize: null,deployer:deployer.address,abi, bytecode, deploy: true, upgrade: false};
-
+    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true, upgrade: false};
 
     const params = {
         "votingPeriod": 201600, //Number of blocks during which votes can be cast
@@ -42,6 +43,7 @@ async function deploy(hre) {
         deployedContracts[CONTRACT_CLASS] = deployedContract
         saveContracts(hre, deployedContracts);
     }
+    updateWebContracts(hre,CONTRACT_CLASS, {address: deployedContract.address, abi});
 }
 
 

@@ -5,17 +5,29 @@ const {readContracts} = require("../utils/resources");
 const {readAssets, readBUSD} = require("../utils/assets");
 const {toUnitString, humanBN, humanBNNumber, toUnit, toBN} = require("../utils/maths")
 
-async function main() {
-    const deployedContracts = readContracts(hre);
-    const factoryInstance = await loadContract(deployedContracts, 'Factory');
-    const oracleInstance = await loadContract(deployedContracts, 'Oracle');
-    const uniswapRouterInstance = await loadContract(deployedContracts, 'UniswapV2Router02', 'IUniswapV2Router02');
-    const uniswapFactoryInstance = await loadContract(deployedContracts, 'UniswapV2Factory', 'IUniswapV2Factory');
+let factoryInstance;
+let oracleInstance;
+let stakingInstance;
+let mintInstance;
+let uniswapRouterInstance;
+let uniswapFactoryInstance;
+let deployedAssets;
+let busdToken;
 
-    const deployedAssets = readAssets(hre);
+async function main() {
+    busdToken = await loadAssetInstance(readBUSD(hre).address);
+    const deployedContracts = readContracts(hre);
+    factoryInstance = await loadContract(deployedContracts, 'Factory');
+    oracleInstance = await loadContract(deployedContracts, 'Oracle');
+    stakingInstance = await loadContract(deployedContracts, 'Staking');
+    uniswapRouterInstance = await loadContract(deployedContracts, 'UniswapV2Router02', 'IUniswapV2Router02');
+    uniswapFactoryInstance = await loadContract(deployedContracts, 'UniswapV2Factory', 'IUniswapV2Factory');
+    mintInstance = await loadContract(deployedContracts, 'Mint');
+
+    deployedAssets = readAssets(hre);
     //console.log(deployedAssets);
     //await doBuy(deployedAssets, uniswapRouterInstance);
-    await checkAllowance(deployedAssets, uniswapRouterInstance);
+    await aaa();
 
     // let assets = await checkQueryAssets(factoryInstance);
     // await checkQueryAllPrices(oracleInstance);
@@ -26,6 +38,25 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 2 * 1000));
 
 }
+
+
+async function aaa() {
+    let accountAddress = '0x948cCB51B4cC9Cefb12BE932960C60F00010c90E';
+    // let result = await mintInstance.queryAllPositions(accountAddress);
+    //console.log(result)
+    //let result = await mintInstance.queryAllPositions(accountAddress);
+    let result = await mintInstance.queryPositionIndex(accountAddress, busdToken.address, deployedAssets['kBIDU'].address)
+    console.log("positionIndex", result.toString())
+
+}
+
+
+async function checkStaking() {
+    let {assets, stakingTokens, pendingRewards, stakingAmounts, rewardIndexs} = await stakingInstance.queryAllAssets();
+    console.log('assets', assets);
+    console.log('stakingTokens', stakingTokens);
+}
+
 
 async function loadPairInstance(pairAddress) {
     const accounts = await hre.ethers.getSigners();
@@ -41,8 +72,8 @@ async function loadAssetInstance(assetAddress) {
 
 
 // https://hackmd.io/zDybBWVAQN67BkFujyf52Q#13-%E8%B4%AD%E4%B9%B0Buy
-async function checkAllowance(deployedAssets, uniswapRouterInstance) {
-    const busdToken = await loadAssetInstance(readBUSD(hre).address);
+async function checkAllowance() {
+
     let allowance = toBN(await busdToken.allowance("0x948cCB51B4cC9Cefb12BE932960C60F00010c90E", uniswapRouterInstance.address));
     let balance = toBN(await busdToken.balanceOf("0x948cCB51B4cC9Cefb12BE932960C60F00010c90E"));
 
