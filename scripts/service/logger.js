@@ -2,7 +2,7 @@ let winston = require('winston');
 require('winston-daily-rotate-file');
 
 let transport = new (winston.transports.DailyRotateFile)({
-    filename: '/var/log/service-%DATE%.log',
+    filename: '/var/log/kalata/service-%DATE%.log',
     datePattern: 'YYYY-MM-DD',
     zippedArchive: true,
     maxSize: '2G',
