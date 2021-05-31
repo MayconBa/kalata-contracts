@@ -8,7 +8,7 @@ function getResourceFolder(hre) {
 
 
 function getBNBPath(hre) {
-    return path.resolve(getResourceFolder(hre), "bnb.json");
+    return path.resolve(getResourceFolder(hre), "wbnb.json");
 }
 
 function readBNB(hre) {
@@ -20,7 +20,7 @@ function saveBNB(hre, content) {
 }
 
 function getUSDPath(hre) {
-    return path.resolve(getResourceFolder(hre), "usd.json");
+    return path.resolve(getResourceFolder(hre), "busd.json");
 }
 
 function readBUSD(hre) {

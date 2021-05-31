@@ -2,10 +2,10 @@ const {getResourceFolder, readContracts} = require("../utils/resources")
 const {readBUSD} = require("../utils/assets")
 const path = require('path');
 const {readJson, saveJson} = require("../utils/json")
-const {toUnit,} = require("../utils/maths")
+const {toUnit, humanBN} = require("../utils/maths")
 const {loadToken, loadUniswapV2Factory, loadUniswapV2Router02, ZERO_ADDRESS, estiamteGasAndCallMethod} = require("../utils/contract")
 const {stringToBytes32} = require('../utils/bytes')
-const {requestGtimgStockPrices} = require("../utils/price")
+const {queryPricesFromSina} = require("../utils/equity")
 
 let initialSupply = toUnit("980000000").toString();
 
@@ -33,7 +33,7 @@ const MOCK_ASSETS = {
     "kSPCE": {name: "Wrapped Kalata SPCE Token", type: "stock", sinaCode: "gb_spce", gtimgCode: "usSPCE", initialSupply},
     "kPACB": {name: "Wrapped Kalata PACB Token", type: "stock", sinaCode: "gb_pacb", gtimgCode: "usPACB", initialSupply},
     //coin list:  https://api.coingecko.com/api/v3/coins/list?include_platform=false
-    "Kala": {name: "Kala", type: "crptoCurrency", initialSupply, coingeckoCoinId: "kala"},
+    //"Kala": {name: "Kala", type: "crptoCurrency", initialSupply, coingeckoCoinId: "kala"},
 }
 
 let assetPath;
@@ -99,20 +99,9 @@ async function createPairs(hre) {
                 assetInfo.pair = pair;
                 assetInfo.deploy = false;
                 deployedAssets[symbol] = assetInfo;
-
                 console.log(`Pair ${symbol}/${usdInfo.symbol} deployed to network ${hre.network.name} with address ${pair}`);
-
-                //saveJson(assetPath, deployedAssets);
-
-                let [assetAmount, usdAmount] = [toUnit("1000"), toUnit("1000")]
-                await addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount);
-                assetInfo.pool = {
-                    lp: lpOwner.address,
-                    assetAmount: assetAmount.toString(),
-                    usdAmount: usdAmount.toString()
-                };
-                saveJson(assetPath, deployedAssets);
             }
+            saveJson(assetPath, deployedAssets);
         }
     }
 }
@@ -122,12 +111,15 @@ async function batchAddLiquidity(hre) {
     deployedAssets = readJson(assetPath) || {};
     let [deployer] = await hre.ethers.getSigners();
     for (const asset of Object.values(deployedAssets)) {
-        console.log(`addLiquidity for ${asset['symbol']}`)
-        let assetAddress = asset['address'];
-        let [assetAmount, usdAmount] = [toUnit("10000"), toUnit("10000")]
-        await addLiquidity(hre, deployer, assetAddress, assetAmount, usdAmount);
+        let {sinaCode, address} = asset;
+        let price = (await queryPricesFromSina(sinaCode))[sinaCode];
+        let assetAmount = 10000;
+        let busdAmount = price * assetAmount;
+        assetAmount = toUnit(assetAmount);
+        busdAmount = toUnit(busdAmount);
+        console.log(`addLiquidity for ${asset['symbol']}, busdAmount:${humanBN(busdAmount)},assetAmount:${humanBN(assetAmount)}`)
+        await addLiquidity(hre, deployer, address, assetAmount, busdAmount);
         new Promise(resolve => setTimeout(resolve, 5000));
-
     }
 }
 
@@ -171,6 +163,6 @@ async function addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount) 
 module.exports = {
     deploy: async (hre) => {
         await createPairs(hre);
-        // await batchAddLiquidity(hre);
+        //await batchAddLiquidity(hre);
     }
 }

@@ -9,14 +9,14 @@ const {deploy: deployFactory} = require("./deployFactory")
 const {deploy: deployMint} = require("./deployMint")
 const {deploy: deployRouter} = require("./deployRouter")
 const {deploy: deployKala} = require("./deployKala")
-const {deploy: deployUSD} = require("./deployUSD")
-const {deploy: deployBNB} = require("./deployBNB")
+const {deploy: deployBUSD} = require("./deployBUSD")
+const {deploy: deployWBNB} = require("./deployWBNB")
 const {deploy: deployMockData} = require("./deployMockData")
 
 async function deployAll(hre) {
-    await deployUSD(hre);
-    await deployBNB(hre);
+    await deployBUSD(hre);
     await deployKala(hre);
+    await deployWBNB(hre);
     await deployUniswapV2Factory(hre);
     await deployUniswapV2Router02(hre);
     await deployOracle(hre);
@@ -41,7 +41,7 @@ module.exports = {
     deployMint,
     deployKala,
     deployAll,
-    deployUSD,
-    deployBNB,
+    deployBUSD,
+    //deployWBNB,
     deployMockData,
 }

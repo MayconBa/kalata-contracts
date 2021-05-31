@@ -57,7 +57,7 @@ module.exports = {
             accounts: {mnemonic: env.mnemonic}
             //ccounts: env.devAccounts.map(item => {return {privateKey:item.privateKey, balance: "100000000000000000000000000"}}),
         },
-        mainnet: {
+        ethMainnet: {
             url: `https://mainnet.infura.io/v3/${env.infuraApiKey}`,
             accounts: env.devAccounts.map(item => item.privateKey),
             gasPrice: 120 * 1000000000,

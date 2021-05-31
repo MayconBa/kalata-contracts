@@ -1,7 +1,8 @@
 const hre = require("hardhat");
 const {readContracts} = require("../utils/resources");
 const {toUnitString} = require("../utils/maths")
-const {requestGtimgStockPrices, requestSinaStockPrices, loadCrptoCurrency} = require("../utils/equity")
+const {queryPricesFromSina, queryPricesFromGtimg} = require("../utils/equity")
+const got = require('got');
 
 async function main() {
     while (true) {
@@ -16,6 +17,53 @@ async function loadAndFeed() {
     let stockPrices = await loadStockPrices(allAssets.filter(item => item.type === "stock"));
     let crptoCurrencyPrices = await loadCrptoCurrency(allAssets.filter(item => item.type === "crptoCurrency"));
     await feedPrices([...stockPrices, ...crptoCurrencyPrices]);
+}
+
+
+async function requestSinaStockPrices(assets) {
+    let codes = Object.values(assets).filter(item => item.sinaCode).map(item => item.sinaCode);
+    const prices = await queryPricesFromSina(codes.join(","));
+    if (codes.length !== Object.keys(prices).length) {
+        console.error("sina-feeder-error,please check");
+    }
+    return Object.values(assets).filter(asset => prices[asset.sinaCode]).map(asset => {
+        return {address: asset.address, price: prices[asset.sinaCode]};
+    })
+
+}
+
+
+async function loadCrptoCurrency(assets) {
+    let pairs = []
+    if (assets.length > 0) {
+        let ids = assets.map(item => item.coingeckoCoinId).join(",");
+        let url = `https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${ids}`;
+        console.log(url);
+        const response = await got(url);
+        if (response.statusCode === 200) {
+            let result = JSON.parse(response.body);
+            for (let {coingeckoCoinId, address} of assets) {
+                let price = (result[coingeckoCoinId] || {})['usd'];
+                if (price) {
+                    pairs.push({address, price})
+                }
+
+            }
+        }
+    }
+    return pairs
+}
+
+async function requestGtimgStockPrices(assets) {
+    let codes = Object.values(assets).filter(item => item.gtimgCode).map(item => item.gtimgCode);
+    const prices = await queryPricesFromGtimg(codes.join(","));
+    if (codes.length !== Object.keys(prices).length) {
+        console.error("gtimg-feeder-error,please check");
+    }
+    return Object.values(assets).filter(asset => prices[asset.gtimgCode]).map(asset => {
+        return {address: asset.address, price: prices[asset.gtimgCode]};
+    })
+
 }
 
 

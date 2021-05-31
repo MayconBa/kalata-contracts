@@ -4,11 +4,11 @@ const {deployToken} = require("../utils/contract")
 
 const ASSETS = {
     name: "Token Wrapped BNB",
-    symbol: "BNB",
+    symbol: "WBNB",
     initialSupply: toUnitString(10000000000),
     addresses: {
         mainnet: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
-        //testnet: "0xae13d989dac2f0debff460ac112a837c89baa7cd"
+        testnet: "0xae13d989dac2f0debff460ac112a837c89baa7cd"
     }
 };
 
@@ -27,7 +27,7 @@ async function deploy(hre) {
         config.address = token.address;
         config.deploy = false;
         saveBNB(hre, config)
-        console.log(`MockBNB deployed to network ${hre.network.name} with address ${token.address}`);
+        console.log(`MockWBNB deployed to network ${hre.network.name} with address ${token.address}`);
     }
 }
 
