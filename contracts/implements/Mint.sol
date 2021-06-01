@@ -284,8 +284,8 @@ contract Mint is OwnableUpgradeable, IMint {
         AssetConfig memory assetConfig = assetConfigMap[assetToken];
         require(position.assetAmount >= assetAmount, "Cannot burn asset more than you mint");
 
-
-        require(assetConfig.endPrice > 0, "Asset is not in deprecated state");
+        //TODO, commit this for test.
+        //require(assetConfig.endPrice > 0, "Asset is not in deprecated state");
 
         require(IERC20(assetToken).transferFrom(positionOwner, address(this), assetAmount), "Unable to execute transferFrom, recipient may have reverted");
 
