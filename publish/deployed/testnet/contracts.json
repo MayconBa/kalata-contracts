@@ -1,7 +1,7 @@
 {
   "UniswapV2Factory": {
     "name": "UniswapV2Factory",
-    "address": "0x2Cb8e146DF6Ea2579A6d077C219Cdec8e1DA7d57",
+    "address": "0xF8Ab1507ac0725298276E3Ae7Ff26A3F7F33Ec01",
     "initialize": {
       "feeToSetter": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0"
     },
@@ -215,9 +215,9 @@
   },
   "UniswapV2Router02": {
     "name": "UniswapV2Router02",
-    "address": "0x0870175e7d422cD63b4Cf233b65EC074170cE028",
+    "address": "0xA71D58dd85D21b6e7Ae9840593b93B4C424EcF30",
     "initialize": {
-      "factory": "0x2Cb8e146DF6Ea2579A6d077C219Cdec8e1DA7d57",
+      "factory": "0xF8Ab1507ac0725298276E3Ae7Ff26A3F7F33Ec01",
       "WETH": "0xae13d989dac2f0debff460ac112a837c89baa7cd"
     },
     "deployer": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
@@ -1237,9 +1237,9 @@
   },
   "Oracle": {
     "name": "Oracle",
-    "address": "0xf200f54B1CF19FbbcAa09eEba59B9847A741b6BE",
+    "address": "0xff6011322a3467Df8896D96527ec642E177EA2a3",
     "initialize": {
-      "factory": "0x47d2a8C2822F24D7C6C434fD7B10E0E548893Bfd",
+      "factory": "0xd64239c591f71A02666d754BE204B9E6157AcCDC",
       "baseAsset": "0x04e192DcCcF0DF2AE637CA89a51017eEcdF91Bd2"
     },
     "deployer": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
@@ -2049,9 +2049,9 @@
   },
   "Staking": {
     "name": "Staking",
-    "address": "0x3f2de213D4638B3517c563525Badcc70844BD370",
+    "address": "0x8726dB07dC5e1f1B44d0cc4B3e62F7D8cc1B3ed8",
     "initialize": {
-      "factory": "0x47d2a8C2822F24D7C6C434fD7B10E0E548893Bfd",
+      "factory": "0xd64239c591f71A02666d754BE204B9E6157AcCDC",
       "govToken": "0x32299c93960bb583a43c2220dc89152391a610c5"
     },
     "deployer": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
@@ -2427,7 +2427,7 @@
   },
   "Governance": {
     "name": "Governance",
-    "address": "0xcB2d6EC2f37A47A479272191cC42714295F1E4b8",
+    "address": "0x8AAc9fcd259eC3d033bAd468B74F5E634a28E601",
     "initialize": {
       "votingPeriod": 201600,
       "effectiveDelay": 100800,
@@ -2916,11 +2916,11 @@
   },
   "Collector": {
     "name": "Collector",
-    "address": "0x19819Dd6Be074764c5e98F6276cec00d1657B356",
+    "address": "0xBFaB92EA9CAe1386A9680B2C5B5a7B09ff494036",
     "initialize": {
-      "governance": "0xcB2d6EC2f37A47A479272191cC42714295F1E4b8",
-      "uniswapFactory": "0x2Cb8e146DF6Ea2579A6d077C219Cdec8e1DA7d57",
-      "uniswapRouter": "0x0870175e7d422cD63b4Cf233b65EC074170cE028",
+      "governance": "0x8AAc9fcd259eC3d033bAd468B74F5E634a28E601",
+      "uniswapFactory": "0xF8Ab1507ac0725298276E3Ae7Ff26A3F7F33Ec01",
+      "uniswapRouter": "0xA71D58dd85D21b6e7Ae9840593b93B4C424EcF30",
       "baseToken": "0x04e192DcCcF0DF2AE637CA89a51017eEcdF91Bd2",
       "govToken": "0x32299c93960bb583a43c2220dc89152391a610c5"
     },
@@ -3075,9 +3075,9 @@
   },
   "Community": {
     "name": "Community",
-    "address": "0x885D8D2ae410BebB3Cab66926C079B3C7097b754",
+    "address": "0x6D47Ea622cA5CCcA0EC3C75Df9e3a65364940071",
     "initialize": {
-      "governance": "0xcB2d6EC2f37A47A479272191cC42714295F1E4b8",
+      "governance": "0x8AAc9fcd259eC3d033bAd468B74F5E634a28E601",
       "govToken": "0x32299c93960bb583a43c2220dc89152391a610c5",
       "spendLimit": "500000000000000000000000"
     },
@@ -3192,11 +3192,11 @@
   },
   "Mint": {
     "name": "Mint",
-    "address": "0x3ed682d383Ef965419DaF9f82B7c88ffC7157998",
+    "address": "0xF84ddac8dEA4A10A18436E9E3AE233f6D1230892",
     "initialize": {
-      "factory": "0x47d2a8C2822F24D7C6C434fD7B10E0E548893Bfd",
-      "oracle": "0xf200f54B1CF19FbbcAa09eEba59B9847A741b6BE",
-      "collector": "0x19819Dd6Be074764c5e98F6276cec00d1657B356",
+      "factory": "0xd64239c591f71A02666d754BE204B9E6157AcCDC",
+      "oracle": "0xff6011322a3467Df8896D96527ec642E177EA2a3",
+      "collector": "0xBFaB92EA9CAe1386A9680B2C5B5a7B09ff494036",
       "baseToken": "0x04e192DcCcF0DF2AE637CA89a51017eEcdF91Bd2",
       "protocolFeeRate": "15000000000000000"
     },
@@ -4007,13 +4007,13 @@
   },
   "Factory": {
     "name": "Factory",
-    "address": "0x47d2a8C2822F24D7C6C434fD7B10E0E548893Bfd",
+    "address": "0xd64239c591f71A02666d754BE204B9E6157AcCDC",
     "initialize": {
-      "governance": "0xcB2d6EC2f37A47A479272191cC42714295F1E4b8",
-      "mint": "0x3ed682d383Ef965419DaF9f82B7c88ffC7157998",
-      "oracle": "0xf200f54B1CF19FbbcAa09eEba59B9847A741b6BE",
-      "staking": "0x3f2de213D4638B3517c563525Badcc70844BD370",
-      "uniswapFactory": "0x2Cb8e146DF6Ea2579A6d077C219Cdec8e1DA7d57",
+      "governance": "0x8AAc9fcd259eC3d033bAd468B74F5E634a28E601",
+      "mint": "0xF84ddac8dEA4A10A18436E9E3AE233f6D1230892",
+      "oracle": "0xff6011322a3467Df8896D96527ec642E177EA2a3",
+      "staking": "0x8726dB07dC5e1f1B44d0cc4B3e62F7D8cc1B3ed8",
+      "uniswapFactory": "0xF8Ab1507ac0725298276E3Ae7Ff26A3F7F33Ec01",
       "baseToken": "0x04e192DcCcF0DF2AE637CA89a51017eEcdF91Bd2",
       "govToken": "0x32299c93960bb583a43c2220dc89152391a610c5"
     },
@@ -4515,9 +4515,9 @@
   },
   "Router": {
     "name": "Router",
-    "address": "0xB3b916DB31495A549e6ea1A6e01C582BaA7716e6",
+    "address": "0x5CEC27CdF3862Eeb4cAE21b6A0e59C57CFa117C7",
     "initialize": {
-      "factory": "0x47d2a8C2822F24D7C6C434fD7B10E0E548893Bfd",
+      "factory": "0xd64239c591f71A02666d754BE204B9E6157AcCDC",
       "busdToken": "0x04e192DcCcF0DF2AE637CA89a51017eEcdF91Bd2"
     },
     "deployer": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",

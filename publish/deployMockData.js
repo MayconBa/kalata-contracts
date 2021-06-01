@@ -129,6 +129,7 @@ async function batchAddLiquidity(hre) {
 }
 
 async function addLiquidityForKala(hre) {
+    deployedWebAssets = readWebAssets(hre) || {};
     let [deployer] = await hre.ethers.getSigners();
     let kala = readKala(hre);
     if (!kala.pool) {
@@ -139,12 +140,26 @@ async function addLiquidityForKala(hre) {
         busdAmount = toUnit(busdAmount);
         console.log(`addLiquidity for KALA, busdAmount:${humanBN(busdAmount)},assetAmount:${humanBN(assetAmount)}`)
         await addLiquidity(hre, deployer, kala.address, assetAmount, busdAmount);
+
+        let pair = await uniswapV2Factory.getPair(kala.address, usdToken.address);
+
         kala.pool = {
+            pair,
             busd: busdAmount.toString(),
             asset: assetAmount.toString()
         }
         saveKala(hre, kala);
+        deployedWebAssets[kala.symbol] = {
+            name: kala.name,
+            symbol: kala.symbol,
+            address: kala.address,
+            pair,
+            png: `https://api.kalata.io/api/deployed/assets/KALA.png`,
+            svg: `https://api.kalata.io/api/deployed/assets/KALA.svg`,
+        }
+        saveWebAssets(hre, deployedWebAssets);
     }
+
 }
 
 //function addLiquidity(address tokenA, address tokenB, uint amountADesired, uint amountBDesired, uint amountAMin, uint amountBMin, address to, uint deadline)
@@ -186,8 +201,8 @@ async function addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount) 
 
 module.exports = {
     deploy: async (hre) => {
-        await createPairs(hre);
         await addLiquidityForKala(hre);
+        await createPairs(hre);
         await batchAddLiquidity(hre);
     }
 }
