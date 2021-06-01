@@ -1,0 +1,42 @@
+{
+  "kBIDU": {
+    "name": "Wrapped Kalata BIDU Token",
+    "symbol": "kBIDU",
+    "address": "0x33ecd49d50b36e141E3F82048839B6972495a0A2",
+    "pair": "0x83bb4a68F26d0701E247197Ec75ad45b0FbE04e5",
+    "png": "https://api.kalata.io/api/deployed/assets/BIDU.png",
+    "svg": "https://api.kalata.io/api/deployed/assets/BIDU.svg"
+  },
+  "kTSLA": {
+    "name": "Wrapped Kalata TSLA Token",
+    "symbol": "kTSLA",
+    "address": "0x87e944B21E2750FC3e753560d3feDf7bedB6d7cf",
+    "pair": "0x1f35BEE9F7A88A0DaBF1962bA26CCe13B0CB2d5A",
+    "png": "https://api.kalata.io/api/deployed/assets/TSLA.png",
+    "svg": "https://api.kalata.io/api/deployed/assets/TSLA.svg"
+  },
+  "kARKK": {
+    "name": "Wrapped Kalata ARKK Token",
+    "symbol": "kARKK",
+    "address": "0xEf26054a9A1666aD12D00FE0c4d8f216fb5Fdea3",
+    "pair": "0xB34c079327Fe4f6c63e282BAAeEE8016B1f3398a",
+    "png": "https://api.kalata.io/api/deployed/assets/ARKK.png",
+    "svg": "https://api.kalata.io/api/deployed/assets/ARKK.svg"
+  },
+  "kSPCE": {
+    "name": "Wrapped Kalata SPCE Token",
+    "symbol": "kSPCE",
+    "address": "0xd0C6574F2ad186039Fd322aE1C5e5fea9a0Ff895",
+    "pair": "0x8745ee468282ef5f96dFc4261D7E77c274C215eF",
+    "png": "https://api.kalata.io/api/deployed/assets/SPCE.png",
+    "svg": "https://api.kalata.io/api/deployed/assets/SPCE.svg"
+  },
+  "kPACB": {
+    "name": "Wrapped Kalata PACB Token",
+    "symbol": "kPACB",
+    "address": "0x49b8a14299C805F120bDA1C0f8265B5De97f13E4",
+    "pair": "0x24A423512F55be32e5a209fe732F06cf741b0A95",
+    "png": "https://api.kalata.io/api/deployed/assets/PACB.png",
+    "svg": "https://api.kalata.io/api/deployed/assets/PACB.svg"
+  }
+}

@@ -519,7 +519,7 @@ contract Mint is OwnableUpgradeable, IMint {
     }
 
     function queryPrice(address targetAssetToken, address denominateAssetToken, uint blockTime) internal virtual view returns (uint){
-        (uint relativePrice, uint targetLastUpdatedTime, uint denominateLastUpdatedTime) = IOracle(config.oracle).queryPrice(targetAssetToken, denominateAssetToken);
+        (uint relativePrice, uint targetLastUpdatedTime, uint denominateLastUpdatedTime) = IOracle(config.oracle).queryPriceByDenominate(targetAssetToken, denominateAssetToken);
         if (blockTime > 0) {
             uint requiredTime = blockTime.sub(PRICE_EXPIRE_TIME);
             //TODO,add time check

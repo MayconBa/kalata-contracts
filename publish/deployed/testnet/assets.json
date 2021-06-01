@@ -4,9 +4,12 @@
     "symbol": "kBIDU",
     "initialSupply": "980000000000000000000000000",
     "type": "stock",
-    "pool": null,
-    "address": "0x62c58f60296F75e85b1Eb3e74c98Ef4a48fb71Fb",
-    "pair": "0x9BCcaAf290aA4935904bef8474609A1d6B1132dE",
+    "pool": {
+      "busd": "1962700000000000000000000",
+      "asset": "10000000000000000000000"
+    },
+    "address": "0x33ecd49d50b36e141E3F82048839B6972495a0A2",
+    "pair": "0x83bb4a68F26d0701E247197Ec75ad45b0FbE04e5",
     "deploy": false,
     "sinaCode": "gb_bidu",
     "gtimgCode": "usBIDU"
@@ -16,9 +19,12 @@
     "symbol": "kTSLA",
     "initialSupply": "980000000000000000000000000",
     "type": "stock",
-    "pool": null,
-    "address": "0xD3b3b9366f92EDb9c5cE6eB21A274c8fb8A3b163",
-    "pair": "0xD7c43eE467482500415D933Ba86F649bFd5e1014",
+    "pool": {
+      "busd": "6252200000000000000000000",
+      "asset": "10000000000000000000000"
+    },
+    "address": "0x87e944B21E2750FC3e753560d3feDf7bedB6d7cf",
+    "pair": "0x1f35BEE9F7A88A0DaBF1962bA26CCe13B0CB2d5A",
     "deploy": false,
     "sinaCode": "gb_tsla",
     "gtimgCode": "usTSLA"
@@ -28,9 +34,12 @@
     "symbol": "kARKK",
     "initialSupply": "980000000000000000000000000",
     "type": "stock",
-    "pool": null,
-    "address": "0xB8F40A229cFc6C16516FAb848246b9413a80492C",
-    "pair": "0xc2394eB2daD19360410911eF93e09a7D11d91f7c",
+    "pool": {
+      "busd": "1121000000000000000000000",
+      "asset": "10000000000000000000000"
+    },
+    "address": "0xEf26054a9A1666aD12D00FE0c4d8f216fb5Fdea3",
+    "pair": "0xB34c079327Fe4f6c63e282BAAeEE8016B1f3398a",
     "deploy": false,
     "sinaCode": "gb_arkk",
     "gtimgCode": "usARKK"
@@ -40,9 +49,12 @@
     "symbol": "kSPCE",
     "initialSupply": "980000000000000000000000000",
     "type": "stock",
-    "pool": null,
-    "address": "0x1f7DB68dCD5f90918559AebaBF1e275Ab3aa48e2",
-    "pair": "0x3bba39bdBe1FC034E36B7c7DAb088611b66C137f",
+    "pool": {
+      "busd": "312300000000000000000000",
+      "asset": "10000000000000000000000"
+    },
+    "address": "0xd0C6574F2ad186039Fd322aE1C5e5fea9a0Ff895",
+    "pair": "0x8745ee468282ef5f96dFc4261D7E77c274C215eF",
     "deploy": false,
     "sinaCode": "gb_spce",
     "gtimgCode": "usSPCE"
@@ -52,9 +64,12 @@
     "symbol": "kPACB",
     "initialSupply": "980000000000000000000000000",
     "type": "stock",
-    "pool": null,
-    "address": "0x06f8fFBE1Bedaf5573410df3870E52C9561696Bd",
-    "pair": "0x53775f1196FC29874c106645e13E0742C4c18687",
+    "pool": {
+      "busd": "270500000000000000000000",
+      "asset": "10000000000000000000000"
+    },
+    "address": "0x49b8a14299C805F120bDA1C0f8265B5De97f13E4",
+    "pair": "0x24A423512F55be32e5a209fe732F06cf741b0A95",
     "deploy": false,
     "sinaCode": "gb_pacb",
     "gtimgCode": "usPACB"

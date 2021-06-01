@@ -11,7 +11,7 @@ const ASSETS = {
     isBaseAsset: true,
     addresses: {
         mainnet: "0x55d398326f99059ff775485246999027b3197955",
-        // testnet: "0x1a959f482AEcC14309B6855DcD7B591214CF2f25"
+        //testnet: "0x1a959f482AEcC14309B6855DcD7B591214CF2f25"
     }
 };
 
@@ -32,7 +32,11 @@ async function deploy(hre) {
         saveBUSD(hre, config)
         console.log(`MockUSD deployed to network ${hre.network.name} with address ${token.address}`);
     }
-    updateWebContracts(hre,symbol, {address: config.address});
+    updateWebContracts(hre,symbol, {
+        address: config.address,
+        png: `https://api.kalata.io/api/deployed/assets/USD.png`,
+        svg: `https://api.kalata.io/api/deployed/assets/USD.svg`,
+    });
 }
 
 module.exports = {

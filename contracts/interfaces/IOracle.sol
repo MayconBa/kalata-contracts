@@ -28,7 +28,7 @@ interface IOracle {
 
     function queryFeeder(address asset) external view returns (address);
 
-    function queryPrice(address asset, address denominateAsset) external view returns (
+    function queryPriceByDenominate(address asset, address denominateAsset) external view returns (
         uint relativePrice,
         uint lastUpdatedTime,
         uint denominateLastUpdatedTime
@@ -38,6 +38,11 @@ interface IOracle {
         address[] memory assets,
         uint[] memory prices,
         uint[] memory lastUpdatedTimes
+    );
+
+    function queryPrice(address asset) external view returns (
+        uint price,
+        uint lastUpdatedTime
     );
 }
 

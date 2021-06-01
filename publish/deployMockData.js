@@ -1,7 +1,5 @@
-const {getResourceFolder, readContracts} = require("../utils/resources")
-const {readBUSD} = require("../utils/assets")
-const path = require('path');
-const {readJson, saveJson} = require("../utils/json")
+const {readContracts} = require("../utils/resources")
+const {readBUSD, readAssets, saveAssets, readWebAssets, saveWebAssets, readKala, saveKala} = require("../utils/assets")
 const {toUnit, humanBN} = require("../utils/maths")
 const {loadToken, loadUniswapV2Factory, loadUniswapV2Router02, ZERO_ADDRESS, estiamteGasAndCallMethod} = require("../utils/contract")
 const {stringToBytes32} = require('../utils/bytes')
@@ -10,7 +8,6 @@ const {queryPricesFromSina} = require("../utils/equity")
 let initialSupply = toUnit("980000000").toString();
 
 function sleep(hre, seconds) {
-    //let ms = hre.network.name === "hardhat" || hre.network.name === "localhost" ? seconds : seconds * 1000;
     let network = hre.network.name;
     let ms = seconds * 1000;
     if (network === "hardhat") {
@@ -21,23 +18,16 @@ function sleep(hre, seconds) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-//BIDU.US
-//TSLA.US
-//ARKK.US（ARK Innovation ETF）[Fintech]
-//SPCE.US  (Virgin Galactic Holdings Inc)
-//PACB.US (Pacific Biosciences of Californ)
 const MOCK_ASSETS = {
     "kBIDU": {name: "Wrapped Kalata BIDU Token", type: "stock", sinaCode: "gb_bidu", gtimgCode: "usBIDU", initialSupply},
     "kTSLA": {name: "Wrapped Kalata TSLA Token", type: "stock", sinaCode: "gb_tsla", gtimgCode: "usTSLA", initialSupply},
     "kARKK": {name: "Wrapped Kalata ARKK Token", type: "stock", sinaCode: "gb_arkk", gtimgCode: "usARKK", initialSupply},
     "kSPCE": {name: "Wrapped Kalata SPCE Token", type: "stock", sinaCode: "gb_spce", gtimgCode: "usSPCE", initialSupply},
     "kPACB": {name: "Wrapped Kalata PACB Token", type: "stock", sinaCode: "gb_pacb", gtimgCode: "usPACB", initialSupply},
-    //coin list:  https://api.coingecko.com/api/v3/coins/list?include_platform=false
-    //"Kala": {name: "Kala", type: "crptoCurrency", initialSupply, coingeckoCoinId: "kala"},
 }
 
-let assetPath;
-let deployedAssets;
+
+let deployedAssets, deployedWebAssets;
 let uniswapV2Factory;
 let usdToken;
 let factoryInstance;
@@ -55,8 +45,8 @@ async function createPairs(hre) {
     let usdInfo = readBUSD(hre);
     usdToken = await loadToken(hre, usdInfo.address);
 
-    assetPath = path.resolve(getResourceFolder(hre), "assets.json");
-    deployedAssets = readJson(assetPath) || {};
+    deployedAssets = readAssets(hre) || {};
+    deployedWebAssets = readWebAssets(hre) || {};
 
     for (let symbol of Object.keys(MOCK_ASSETS)) {
         let {name, type, initialSupply, sinaCode, gtimgCode, coingeckoCoinId} = MOCK_ASSETS[symbol];
@@ -101,25 +91,59 @@ async function createPairs(hre) {
                 deployedAssets[symbol] = assetInfo;
                 console.log(`Pair ${symbol}/${usdInfo.symbol} deployed to network ${hre.network.name} with address ${pair}`);
             }
-            saveJson(assetPath, deployedAssets);
+            deployedWebAssets[symbol] = {
+                name, symbol,
+                address: assetInfo.address,
+                pair: assetInfo.pair,
+                png: `https://api.kalata.io/api/deployed/assets/${symbol.substring(1)}.png`,
+                svg: `https://api.kalata.io/api/deployed/assets/${symbol.substring(1)}.svg`,
+            }
+            saveAssets(hre, deployedAssets);
+            saveWebAssets(hre, deployedWebAssets);
         }
     }
 }
 
 async function batchAddLiquidity(hre) {
-    assetPath = path.resolve(getResourceFolder(hre), "assets.json");
-    deployedAssets = readJson(assetPath) || {};
+    deployedAssets = readAssets(hre) || {};
     let [deployer] = await hre.ethers.getSigners();
     for (const asset of Object.values(deployedAssets)) {
-        let {sinaCode, address} = asset;
-        let price = (await queryPricesFromSina(sinaCode))[sinaCode];
-        let assetAmount = 10000;
+        if (!asset.pool) {
+            let {sinaCode, address} = asset;
+            let price = (await queryPricesFromSina(sinaCode))[sinaCode];
+            let assetAmount = 10000;
+            let busdAmount = price * assetAmount;
+            assetAmount = toUnit(assetAmount);
+            busdAmount = toUnit(busdAmount);
+            console.log(`addLiquidity for ${asset['symbol']}, busdAmount:${humanBN(busdAmount)},assetAmount:${humanBN(assetAmount)}`)
+            await addLiquidity(hre, deployer, address, assetAmount, busdAmount);
+            asset.pool = {
+                busd: busdAmount.toString(),
+                asset: assetAmount.toString()
+            }
+            saveAssets(hre, deployedAssets);
+            new Promise(resolve => setTimeout(resolve, 5000));
+        }
+
+    }
+}
+
+async function addLiquidityForKala(hre) {
+    let [deployer] = await hre.ethers.getSigners();
+    let kala = readKala(hre);
+    if (!kala.pool) {
+        let price = 0.15;
+        let assetAmount = 10000000;
         let busdAmount = price * assetAmount;
         assetAmount = toUnit(assetAmount);
         busdAmount = toUnit(busdAmount);
-        console.log(`addLiquidity for ${asset['symbol']}, busdAmount:${humanBN(busdAmount)},assetAmount:${humanBN(assetAmount)}`)
-        await addLiquidity(hre, deployer, address, assetAmount, busdAmount);
-        new Promise(resolve => setTimeout(resolve, 5000));
+        console.log(`addLiquidity for KALA, busdAmount:${humanBN(busdAmount)},assetAmount:${humanBN(assetAmount)}`)
+        await addLiquidity(hre, deployer, kala.address, assetAmount, busdAmount);
+        kala.pool = {
+            busd: busdAmount.toString(),
+            asset: assetAmount.toString()
+        }
+        saveKala(hre, kala);
     }
 }
 
@@ -163,6 +187,7 @@ async function addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount) 
 module.exports = {
     deploy: async (hre) => {
         await createPairs(hre);
-        //await batchAddLiquidity(hre);
+        await addLiquidityForKala(hre);
+        await batchAddLiquidity(hre);
     }
 }

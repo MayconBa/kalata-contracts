@@ -30,7 +30,11 @@ async function deploy(hre) {
         }
     }
     saveKala(hre, config);
-    updateWebContracts(hre, symbol, {address: config.address});
+    updateWebContracts(hre, symbol, {
+        address: config.address,
+        png: `https://api.kalata.io/api/deployed/assets/KALA.png`,
+        svg: `https://api.kalata.io/api/deployed/assets/KALA.svg`,
+    });
     const {abi} = await hre.artifacts.readArtifact("IBEP20");
     updateWebContracts(hre, "IBEP20", {abi});
     return config;

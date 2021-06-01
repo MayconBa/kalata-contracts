@@ -51,9 +51,34 @@ function readAssets(hre) {
     return readJson(getAssetsPath(hre))
 }
 
+function saveAssets(hre,content) {
+    saveJson(getAssetsPath(hre), content);
+}
+
+function getWebAssetsPath(hre) {
+    return path.resolve(getResourceFolder(hre), "webAssets.json");
+}
+
+function readWebAssets(hre) {
+    return readJson(getWebAssetsPath(hre))
+}
+
+function saveWebAssets(hre,content) {
+    saveJson(getWebAssetsPath(hre), content);
+}
+
+
+
+
+
+
+
+
 
 module.exports = {
-    getResourceFolder,
+    readWebAssets,
+    saveWebAssets,
+    saveAssets,
     readAssets,
     getKalaPath,
     readKala,

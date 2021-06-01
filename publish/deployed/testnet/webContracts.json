@@ -1,9 +1,13 @@
 {
   "BUSD": {
-    "address": "0x04e192DcCcF0DF2AE637CA89a51017eEcdF91Bd2"
+    "address": "0x04e192DcCcF0DF2AE637CA89a51017eEcdF91Bd2",
+    "png": "https://api.kalata.io/api/deployed/assets/USD.png",
+    "svg": "https://api.kalata.io/api/deployed/assets/USD.svg"
   },
   "Kala": {
-    "address": "0x32299c93960bb583a43c2220dc89152391a610c5"
+    "address": "0x32299c93960bb583a43c2220dc89152391a610c5",
+    "png": "https://api.kalata.io/api/deployed/assets/KALA.png",
+    "svg": "https://api.kalata.io/api/deployed/assets/KALA.svg"
   },
   "IBEP20": {
     "abi": [
@@ -245,7 +249,7 @@
     ]
   },
   "UniswapV2Factory": {
-    "address": "0x92d63B982fc6d07b7bE2b3dbb6A3b485E9EB5955",
+    "address": "0x2Cb8e146DF6Ea2579A6d077C219Cdec8e1DA7d57",
     "abi": [
       {
         "anonymous": false,
@@ -413,7 +417,7 @@
     ]
   },
   "UniswapV2Router02": {
-    "address": "0xa4A86e4aeDa38D85a27FD81C059B3a51290AE50A",
+    "address": "0x0870175e7d422cD63b4Cf233b65EC074170cE028",
     "abi": [
       {
         "inputs": [],
@@ -1369,7 +1373,7 @@
     ]
   },
   "Oracle": {
-    "address": "0x10A50Be1f42454D619a3E3Cb3d890637548136AD",
+    "address": "0xf200f54B1CF19FbbcAa09eEba59B9847A741b6BE",
     "abi": [
       {
         "anonymous": false,
@@ -2172,7 +2176,7 @@
     ]
   },
   "Staking": {
-    "address": "0xf5b9Be3cE4A4651939095D3D71b1919B191Df120",
+    "address": "0x3f2de213D4638B3517c563525Badcc70844BD370",
     "abi": [
       {
         "anonymous": false,
@@ -2541,7 +2545,7 @@
     ]
   },
   "Governance": {
-    "address": "0x231d83fD56e6faAEa9a11EEe34b3561b3A5fFE47",
+    "address": "0xcB2d6EC2f37A47A479272191cC42714295F1E4b8",
     "abi": [
       {
         "anonymous": false,
@@ -3016,7 +3020,7 @@
     ]
   },
   "Collector": {
-    "address": "0x798504F9E5e6110CB9cFAbf3b8EB7a13948F09FD",
+    "address": "0x19819Dd6Be074764c5e98F6276cec00d1657B356",
     "abi": [
       {
         "anonymous": false,
@@ -3163,7 +3167,7 @@
     ]
   },
   "Community": {
-    "address": "0xFFcA56c71F96D76Ae1Fc4D9083760Dae89E39596",
+    "address": "0x885D8D2ae410BebB3Cab66926C079B3C7097b754",
     "abi": [
       {
         "anonymous": false,
@@ -3270,7 +3274,7 @@
     ]
   },
   "Mint": {
-    "address": "0xB5441D9ad4aF2ef934cF2D6A9Ec50beE641a1bF6",
+    "address": "0x3ed682d383Ef965419DaF9f82B7c88ffC7157998",
     "abi": [
       {
         "anonymous": false,
@@ -4073,7 +4077,7 @@
     ]
   },
   "Factory": {
-    "address": "0xffeeB21b647522DaD42E5CbB8493CdBD8fE815e9",
+    "address": "0x47d2a8C2822F24D7C6C434fD7B10E0E548893Bfd",
     "abi": [
       {
         "anonymous": false,
@@ -4548,7 +4552,7 @@
     ]
   },
   "Router": {
-    "address": "0x738727f845cE23A1EA1a41122e9005dBD69D76d4",
+    "address": "0xB3b916DB31495A549e6ea1A6e01C582BaA7716e6",
     "abi": [
       {
         "inputs": [],
