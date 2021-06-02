@@ -190,12 +190,15 @@ contract Staking is OwnableUpgradeable, IStaking {
 
 
     function queryReward(address staker, address asset) external override view returns (
+        uint index,
         uint stakingAmount,
-        uint pendingReward){
+        uint pendingReward
+    ){
         require(staker != address(0), "Invalid staker address");
         require(asset != address(0), "Invalid asset address");
         stakingAmount = _rewards[staker][asset].stakingAmount;
         pendingReward = _rewards[staker][asset].pendingReward;
+        index = _rewards[staker][asset].index;
     }
 
     function queryRewards(address staker) external override view returns (

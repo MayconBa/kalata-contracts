@@ -2377,6 +2377,11 @@
         "outputs": [
           {
             "internalType": "uint256",
+            "name": "index",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "stakingAmount",
             "type": "uint256"
           },

@@ -56,6 +56,7 @@ interface IStaking {
 
 
     function queryReward(address staker, address asset) external view returns (
+        uint index,
         uint stakingAmount,
         uint pendingReward
     );
