@@ -236,7 +236,7 @@ describe(CONTRACT_NAME, () => {
         it("check permissions", async () => {
             expect(factoryInstance.connect(account3).whitelist(
                 ...Object.values(getWhitelistParams())
-            )).to.revertedWith("unauthorized,need governace/owner to perform");
+            )).to.revertedWith("Unauthorized,need governace/owner to perform");
         });
 
         it("whitelist", async () => {
@@ -266,7 +266,7 @@ describe(CONTRACT_NAME, () => {
         });
     });
     it("distribute", async () => {
-        const getParams = (symbol, weight) => {
+        const composeWhitelistParams = (symbol, weight) => {
             return {
                 name: stringToBytes32(symbol),
                 symbol: stringToBytes32(symbol),
@@ -276,8 +276,12 @@ describe(CONTRACT_NAME, () => {
                 weight,
             }
         };
-        let params = getParams("mockDToken1", 5);
-        await factoryInstance.whitelist(...Object.values(params));
+        await factoryInstance.whitelist(...Object.values(composeWhitelistParams("kApple", 5)));
+        await factoryInstance.whitelist(...Object.values(composeWhitelistParams("kBidu", 5)));
+
+
+
+
         let stakingBalance = await govToken.balanceOf(stakingInstance.address);
 
         //wait 5 seconds;
