@@ -1,7 +1,7 @@
 const hre = require("hardhat");
 const {expect} = require("chai");
 const {addLiquidity} = require('../utils/uniswap')
-const {toUnit, toUnitString, toBN,humanBN} = require('../utils/maths')
+const {toUnit, toUnitString, toBN, humanBN} = require('../utils/maths')
 const {stringToBytes32} = require('../utils/bytes')
 const {
 
@@ -300,19 +300,39 @@ describe(CONTRACT_NAME, () => {
 
         await new Promise(resolve => setTimeout(resolve, 5000));
 
-        console.log(humanBN(await kAppleToken.balanceOf(alice.address)));
-        console.log(humanBN(await baseToken.balanceOf(alice.address)));
-
         await addLiquidity(uniswapRouter, alice, kAppleToken, baseToken, kAppleAmount, aliceUbsdAmount);
+        await addLiquidity(uniswapRouter, bob, kBiduToken, baseToken, kBiduAmount, bobUbsdAmount);
+
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        let stakingAmount = toUnit("100")
+
+        await kApplePair.connect(alice).approve(stakingInstance.address, stakingAmount.toString());
+        await kBiduPair.connect(bob).approve(stakingInstance.address, stakingAmount.toString());
+
+        await stakingInstance.connect(alice).stake(kAppleToken.address, stakingAmount.toString());
+        await stakingInstance.connect(bob).stake(kBiduToken.address, stakingAmount.toString());
+
+        console.log(`Alice's kala amount ${humanBN(await govToken.balanceOf(alice.address))}`)
+        console.log(`Bob's kala amount ${humanBN(await govToken.balanceOf(bob.address))}`)
+
+        // let pairBalanceOf = await kApplePair.balanceOf(alice.address);
+        //console.log('pairBalanceOf',humanBN(pairBalanceOf));
+        //console.log('pairBalanceOf',humanBN(pairBalanceOf));
         //await addLiquidity(uniswapRouter, bob, kBiduToken, baseToken, kBiduAmount, bobUbsdAmount);
 
         // let stakingBalance = await govToken.balanceOf(stakingInstance.address);
         //
         // //wait 5 seconds;
         // await new Promise(resolve => setTimeout(resolve, 5000));
-        // let schedule = {startTime: 0, endTime: 50, amount: toUnit("300")}
-        // await factoryInstance.updateDistributionSchedules([schedule.startTime], [schedule.endTime], [schedule.amount.toString()]);
-        // await factoryInstance.distribute();
+        let schedule = {startTime: 0, endTime: 50, amount: toUnit("300")}
+        await factoryInstance.updateDistributionSchedules([schedule.startTime], [schedule.endTime], [schedule.amount.toString()]);
+
+        await new Promise(resolve => setTimeout(resolve, 10 * 1000));
+        await factoryInstance.distribute();
+
+        console.log(`Alice's kala amount ${humanBN(await govToken.balanceOf(alice.address))}`)
+        console.log(`Bob's kala amount ${humanBN(await govToken.balanceOf(bob.address))}`)
         // let stakingBalanceAfter = await govToken.balanceOf(stakingInstance.address);
         // assert.bnGt(stakingBalanceAfter, stakingBalance)
     });
@@ -329,10 +349,10 @@ describe(CONTRACT_NAME, () => {
             await factoryInstance.whitelist(...Object.values(params));
             let tokenAddress = await factoryInstance.queryToken(params.symbol);
             let totalWeight = await factoryInstance.queryTotalWeight();
-            console.log('totalWeight before', totalWeight.toString());
+            //console.log('totalWeight before', totalWeight.toString());
             await factoryInstance.migrateAsset(name, symbol, tokenAddress, endPrice);
             expect(await factoryInstance.queryWeight(tokenAddress)).equal(0);
-            console.log('totalWeight after', (await factoryInstance.queryTotalWeight()).toString());
+            //console.log('totalWeight after', (await factoryInstance.queryTotalWeight()).toString());
 
             //the total weight should remains the same
             expect(await factoryInstance.queryTotalWeight()).equal(totalWeight);
