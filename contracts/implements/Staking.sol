@@ -61,9 +61,9 @@ contract Staking is OwnableUpgradeable, IStaking {
 
     // Can be issued when the user sends LP Tokens to the Staking contract.
     // The LP token must be recognized by the staking pool of the specified asset token.
-    function stake(address asset, uint amount) override external {
+    function stake(address asset, uint stakingTokenAmount) override external {
         require(asset != address(0), "invalid asset token");
-        require(amount > 0, "invalid amount");
+        require(stakingTokenAmount > 0, "invalid amount");
 
         AssetStake memory pool = _stakes[asset];
         require(pool.stakingToken != address(0), "unauthorized");
@@ -73,18 +73,18 @@ contract Staking is OwnableUpgradeable, IStaking {
         reward.index = pool.rewardIndex;
         reward.pendingReward = reward.pendingReward.add(reward.stakingAmount.multiplyDecimal(pool.rewardIndex.sub(reward.index)));
 
-        require(IBEP20Token(pool.stakingToken).transferFrom(msg.sender, address(this), amount), "transferFrom fail");
+        require(IBEP20Token(pool.stakingToken).transferFrom(msg.sender, address(this), stakingTokenAmount), "transferFrom fail");
 
         //Increase bond_amount
-        pool.stakingAmount = pool.stakingAmount.add(amount);
-        reward.stakingAmount = reward.stakingAmount.add(amount);
+        pool.stakingAmount = pool.stakingAmount.add(stakingTokenAmount);
+        reward.stakingAmount = reward.stakingAmount.add(stakingTokenAmount);
 
         //save
         _stakes[asset] = pool;
 
         saveReward(msg.sender, asset, reward.index, reward.stakingAmount, reward.pendingReward);
 
-        emit Bond(asset, amount);
+        emit Bond(asset, stakingTokenAmount);
     }
 
 

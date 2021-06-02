@@ -22,7 +22,7 @@
     "hardhat:test": "hardhat test --network hardhat",
     "checkContracts": "hardhat run scripts/checkContracts.js --network testnet",
     "generateAccounts": "hardhat run scripts/generateAccounts.js",
-    "hardhat:partial-test": "hardhat test test/testStaking.js --network hardhat"
+    "hardhat:partial-test": "hardhat test test/testFactory.js --network hardhat"
   },
   "author": "",
   "license": "ISC",

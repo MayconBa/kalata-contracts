@@ -33,7 +33,7 @@ interface IStaking {
 
     function registerAsset(address asset, address stakingToken) external;
 
-    function stake(address asset, uint amount) external;
+    function stake(address asset, uint stakingTokenAmount) external;
 
     function unStake(address asset, uint amount) external;
 
