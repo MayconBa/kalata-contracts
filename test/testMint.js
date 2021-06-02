@@ -229,7 +229,7 @@ describe(CONTRACT_NAME, () => {
 
             const postionBurnBefore = await mintInstance.queryPosition(positionIndex.toString());
 
-            let [relativePrice] = await oracleInstance.queryPrice(collateralToken, tokenAddress);
+            let [relativePrice] = await oracleInstance.queryPriceByDenominate(collateralToken, tokenAddress);
 
 
             let burnAmount = toUnit("100");

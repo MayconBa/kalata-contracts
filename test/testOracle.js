@@ -68,7 +68,7 @@ describe(CONTRACT_NAME, () => {
             }
         });
 
-        it("test queryPrice", async () => {
+        it("test queryPriceByDenominate", async () => {
             let tokenOnePrice = toUnit(Math.random() * 1000);
             let tokenTwoPrice = toUnit(Math.random() * 1000);
 
@@ -76,11 +76,11 @@ describe(CONTRACT_NAME, () => {
             await feederOracleInstance.feedPrice(tokenOne.address, tokenOnePrice.toString());
             await feederOracleInstance.feedPrice(tokenTwo.address, tokenTwoPrice.toString());
 
-            let [remoteTokenOnePrice,] = await oracleInstance.queryPrice(tokenOne.address, usdToken.address);
-            let [remoteTokenTwoPrice,] = await oracleInstance.queryPrice(tokenTwo.address, usdToken.address);
+            let [remoteTokenOnePrice,] = await oracleInstance.queryPriceByDenominate(tokenOne.address, usdToken.address);
+            let [remoteTokenTwoPrice,] = await oracleInstance.queryPriceByDenominate(tokenTwo.address, usdToken.address);
             assert.bnEqual(tokenOnePrice, remoteTokenOnePrice);
             assert.bnEqual(tokenTwoPrice, remoteTokenTwoPrice);
-            let [remotePrice, ...c] = await oracleInstance.queryPrice(tokenOne.address, tokenTwo.address);
+            let [remotePrice, ...c] = await oracleInstance.queryPriceByDenominate(tokenOne.address, tokenTwo.address);
             assert.bnEqual(divideDecimal(tokenOnePrice, tokenTwoPrice), remotePrice);
         });
 

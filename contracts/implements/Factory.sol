@@ -155,7 +155,8 @@ contract Factory is OwnableUpgradeable, IFactory {
                 uint amount = distributedAmount.multiplyDecimal(_assetWeights[token]).divideDecimal(_totalWeight);
                 if (amount > 0) {
                     IBEP20Token(_config.govToken).mint(_config.staking, amount);
-                    IStaking(_config.staking).depositReward(_config.govToken, amount);
+                    //IStaking(_config.staking).depositReward(_config.govToken, amount);
+                    IStaking(_config.staking).depositReward(token, amount);
                 }
             }
         }

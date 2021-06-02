@@ -28,26 +28,29 @@ const MOCK_ASSETS = {
 
 
 let deployedAssets, deployedWebAssets;
-let uniswapV2Factory;
-let usdToken;
+let uniswapV2Factory, deployedContracts;
+let usdToken, usdInfo;
 let factoryInstance;
 
-async function createPairs(hre) {
+
+async function init(hre) {
+    deployedAssets = readAssets(hre) || {};
     uniswapV2Factory = await loadUniswapV2Factory(hre);
-    let [deployer, lpOwner] = await hre.ethers.getSigners();
-    let deployedContracts = readContracts(hre) || {};
+    usdInfo = readBUSD(hre);
+    usdToken = await loadToken(hre, usdInfo.address);
+    deployedContracts = readContracts(hre) || {};
     let Artifact = await hre.artifacts.readArtifact("Factory");
+    let [deployer] = await hre.ethers.getSigners();
     factoryInstance = new hre.ethers.Contract(deployedContracts["Factory"].address, Artifact.abi, deployer);
+    deployedWebAssets = readWebAssets(hre) || {};
+}
+
+async function createPairs(hre) {
+    let [deployer] = await hre.ethers.getSigners();
     let oracleFeeder = deployer.address;
     let auctionDiscount = toUnit("0.50")
     let minCollateralRatio = toUnit("1.5");
     let weight = toUnit("1");
-    let usdInfo = readBUSD(hre);
-    usdToken = await loadToken(hre, usdInfo.address);
-
-    deployedAssets = readAssets(hre) || {};
-    deployedWebAssets = readWebAssets(hre) || {};
-
     for (let symbol of Object.keys(MOCK_ASSETS)) {
         let {name, type, initialSupply, sinaCode, gtimgCode, coingeckoCoinId} = MOCK_ASSETS[symbol];
         let assetInfo = deployedAssets[symbol] || {
@@ -201,8 +204,10 @@ async function addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount) 
 
 module.exports = {
     deploy: async (hre) => {
+        await init(hre);
         await addLiquidityForKala(hre);
         await createPairs(hre);
         await batchAddLiquidity(hre);
+
     }
 }

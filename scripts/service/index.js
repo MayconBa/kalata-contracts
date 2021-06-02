@@ -3,6 +3,7 @@ const {exec} = require('child_process');
 const fastify = require('fastify')({logger: true})
 const {collectPrices} = require('./collector')
 const {batchFeed} = require('./feeder')
+const {distribute} = require('./factory')
 const {logger} = require('./logger')
 
 //http://127.0.0.1:3001/api/private/build
@@ -17,15 +18,15 @@ fastify.get('/api/app/build', async (request, reply) => {
 
 
 const start = async () => {
+    await distribute(hre)
+    // await distribute(hre).catch(error => {
+    //     logger.error(`distribute error:${error}`)
+    // })
     try {
-        setInterval(function () {
-            collectPrices(hre);
-        }, 5 * 1000);
-
-        setInterval(function () {
-            batchFeed(hre);
-        }, 60 * 10 * 1000);
-        await fastify.listen(3001)
+        //setInterval(() => collectPrices(hre), 5 * 1000);
+        //setInterval(() => batchFeed(hre), 60 * 10 * 1000);
+        //setInterval(() => distribute(hre), 5 * 1000);
+        //await fastify.listen(3001)
     } catch (err) {
         fastify.log.error(err)
         process.exit(1)
