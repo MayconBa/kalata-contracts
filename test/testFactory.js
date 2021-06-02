@@ -1,15 +1,16 @@
 const hre = require("hardhat");
 const {expect} = require("chai");
 const {addLiquidity} = require('../utils/uniswap')
-const {toUnit, toUnitString, toBN} = require('../utils/maths')
+const {toUnit, toUnitString, toBN,humanBN} = require('../utils/maths')
 const {stringToBytes32} = require('../utils/bytes')
 const {
+
     deployToken,
     deployAndInitializeContract,
     deployUniswapV2Router02,
     deployUniswapV2Factory,
     randomAddress,
-    loadPair,
+    loadPair, loadToken,
     ZERO_ADDRESS
 } = require("../utils/contract")
 const assert = require('../utils/assert')
@@ -18,7 +19,7 @@ let factoryInstance, oracleInstance, stakingInstance, mintInstance;
 let baseToken, govToken, wethToken, appleToken;
 let deployer;
 let defaultConfig;
-let account1, account2, account3, account4;
+let account1, account2, account3, account4, alice, bob;
 let uniswapFactory, uniswapRouter, govPair, applePair;
 let mockedGovernance;
 
@@ -54,7 +55,7 @@ const getWhitelistParams = (symbol, weight) => {
 const CONTRACT_NAME = 'Factory';
 describe(CONTRACT_NAME, () => {
     before(async () => {
-        [deployer, mockedGovernance, account1, account2, account3, account4] = await hre.ethers.getSigners();
+        [deployer, mockedGovernance, account1, account2, account3, account4, alice, bob] = await hre.ethers.getSigners();
         baseToken = await deployToken(hre, "usd-token", "busd", toUnitString('1200000000000'));
         govToken = await deployToken(hre, "kalata", "kala", toUnitString('1200000000000'));
         appleToken = await deployToken(hre, "Apple", "Apple", toUnitString('1200000000000'));
@@ -280,17 +281,40 @@ describe(CONTRACT_NAME, () => {
         await factoryInstance.whitelist(...Object.values(composeWhitelistParams("kBidu", 5)));
 
 
+        let kAppleToken = await loadToken(hre, await factoryInstance.queryToken(stringToBytes32('kApple')), deployer);
+        let kBiduToken = await loadToken(hre, await factoryInstance.queryToken(stringToBytes32('kBidu')), deployer);
 
+        let kApplePair = await loadPair(hre, await uniswapFactory.getPair(baseToken.address, kAppleToken.address), deployer);
+        let kBiduPair = await loadPair(hre, await uniswapFactory.getPair(baseToken.address, kBiduToken.address), deployer);
 
-        let stakingBalance = await govToken.balanceOf(stakingInstance.address);
+        let kAppleAmount = toUnit("1000");
+        let aliceUbsdAmount = toUnit("1500000");
+        let kBiduAmount = toUnit("2000");
+        let bobUbsdAmount = toUnit("130000");
 
-        //wait 5 seconds;
+        await kAppleToken.mint(alice.address, kAppleAmount.toString());
+        await baseToken.mint(alice.address, aliceUbsdAmount.toString())
+
+        await kBiduToken.mint(bob.address, kBiduAmount.toString());
+        await baseToken.mint(bob.address, bobUbsdAmount.toString())
+
         await new Promise(resolve => setTimeout(resolve, 5000));
-        let schedule = {startTime: 0, endTime: 50, amount: toUnit("300")}
-        await factoryInstance.updateDistributionSchedules([schedule.startTime], [schedule.endTime], [schedule.amount.toString()]);
-        await factoryInstance.distribute();
-        let stakingBalanceAfter = await govToken.balanceOf(stakingInstance.address);
-        assert.bnGt(stakingBalanceAfter, stakingBalance)
+
+        console.log(humanBN(await kAppleToken.balanceOf(alice.address)));
+        console.log(humanBN(await baseToken.balanceOf(alice.address)));
+
+        await addLiquidity(uniswapRouter, alice, kAppleToken, baseToken, kAppleAmount, aliceUbsdAmount);
+        //await addLiquidity(uniswapRouter, bob, kBiduToken, baseToken, kBiduAmount, bobUbsdAmount);
+
+        // let stakingBalance = await govToken.balanceOf(stakingInstance.address);
+        //
+        // //wait 5 seconds;
+        // await new Promise(resolve => setTimeout(resolve, 5000));
+        // let schedule = {startTime: 0, endTime: 50, amount: toUnit("300")}
+        // await factoryInstance.updateDistributionSchedules([schedule.startTime], [schedule.endTime], [schedule.amount.toString()]);
+        // await factoryInstance.distribute();
+        // let stakingBalanceAfter = await govToken.balanceOf(stakingInstance.address);
+        // assert.bnGt(stakingBalanceAfter, stakingBalance)
     });
     describe("migrateAsset", async () => {
         const name = stringToBytes32("newMigrationName");
