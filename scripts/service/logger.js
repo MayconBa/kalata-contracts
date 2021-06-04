@@ -13,7 +13,8 @@ let transport = new (winston.transports.DailyRotateFile)({
     datePattern: 'YYYY-MM-DD',
     zippedArchive: true,
     maxSize: '2G',
-    maxFiles: '30d'
+    maxFiles: '30d',
+    format: winston.format.combine(customFormat)
 });
 
 
@@ -22,11 +23,7 @@ let logger = winston.createLogger({
 });
 
 logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-        //winston.format.colorize(),
-        //winston.format.simple(),
-        customFormat
-    )
+    format: winston.format.combine(customFormat)
 }));
 
 
