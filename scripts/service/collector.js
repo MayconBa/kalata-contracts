@@ -25,10 +25,8 @@ async function collectPrices(hre) {
         let symbol = kala.address.toUpperCase() === address.toUpperCase() ? kala.symbol : addressSymbolMap[address];
         requestBody.push({symbol, price})
     }
-    console.log(requestBody)
     const {body} = await got.post(URL, {json: requestBody,});
-
-    //logger.info(`Collector:${JSON.stringify({url: URL, request: requestBody, response: body})}`,)
+    logger.info(`Collector:${JSON.stringify({url: URL, request: requestBody, response: body})}`,)
 }
 
 module.exports = {

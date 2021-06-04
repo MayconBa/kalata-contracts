@@ -18,17 +18,11 @@ fastify.get('/api/app/build', async (request, reply) => {
 
 
 const start = async () => {
-    await collectPrices(hre).catch(e=>{
-        fastify.log.error(e);
-    })
-    // await distribute(hre).catch(error => {
-    //     logger.error(`distribute error:${error}`)
-    // })
     try {
-        //setInterval(() => collectPrices(hre), 5 * 1000);
-        //setInterval(() => batchFeed(hre), 60 * 10 * 1000);
-        //setInterval(() => distribute(hre), 5 * 1000);
-        //await fastify.listen(3001)
+        setInterval(() => distribute(hre), 3600 * 2 * 1000);
+        setInterval(() => collectPrices(hre), 5 * 1000);
+        setInterval(() => batchFeed(hre), 60 * 10 * 1000);
+        await fastify.listen(3001)
     } catch (err) {
         fastify.log.error(err)
         process.exit(1)
