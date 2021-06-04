@@ -5,7 +5,8 @@ const {readAssets, readKala} = require("../../utils/assets");
 const {humanBN} = require("../../utils/maths");
 const {logger} = require("./logger");
 
-const URL = 'http://localhost:8080/api/finance/symbol/price/update';
+//const URL = 'http://localhost:8080/api/finance/symbol/price/update';
+const URL = 'https://api.kalata.io/api/finance/symbol/price/update';
 
 async function collectPrices(hre) {
     const [signer] = await hre.ethers.getSigners();
@@ -20,7 +21,7 @@ async function collectPrices(hre) {
     let {prices, assets} = await routerInstance.queryAssetPricesFromPool();
     let requestBody = [];
     for (let i = 0; i < prices.length; i++) {
-        let address=assets[i];
+        let address = assets[i];
         let price = parseFloat(humanBN(prices[i]));
         let symbol = kala.address.toUpperCase() === address.toUpperCase() ? kala.symbol : addressSymbolMap[address];
         requestBody.push({symbol, price})
