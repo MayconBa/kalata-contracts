@@ -213,7 +213,7 @@ describe(CONTRACT_NAME, () => {
             //governance should have the right to update weight
             let govAccountInstance = await factoryInstance.connect(mockedGovernance);
             let weight = 12;
-            govAccountInstance.updateWeight(appleToken.address, weight)
+            await govAccountInstance.updateWeight(appleToken.address, weight)
             expect(await govAccountInstance.queryWeight(appleToken.address)).to.equal(weight)
 
             //deployer should have hte right to update weight

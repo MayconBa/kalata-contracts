@@ -18,7 +18,9 @@ fastify.get('/api/app/build', async (request, reply) => {
 
 
 const start = async () => {
-    await distribute(hre)
+    await collectPrices(hre).catch(e=>{
+        fastify.log.error(e);
+    })
     // await distribute(hre).catch(error => {
     //     logger.error(`distribute error:${error}`)
     // })

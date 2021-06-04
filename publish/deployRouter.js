@@ -12,7 +12,8 @@ async function deploy(hre) {
     let deployedContracts = readContracts(hre) || {};
     const {bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
     const {abi} = await hre.artifacts.readArtifact("IRouter");
-    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true, upgrade: false};
+    let deployedContract = deployedContracts[CONTRACT_CLASS] || {
+        upgrade: false, name: CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true};
     if (deployedContract.deploy || deployedContract.upgrade) {
         const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
         if (deployedContract.upgrade) {
@@ -21,14 +22,17 @@ async function deploy(hre) {
             deployedContract.bytecode = bytecode;
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
+            //address uniswapFactory, address factory, address busdAddress, address kalaAddress
+            let uniswapFactory = deployedContracts['UniswapV2Factory'].address;
             let factory = deployedContracts['Factory'].address;
-            let busdToken = readBUSD(hre).address;
-            const instance = await hre.upgrades.deployProxy(ContractClass, [factory, busdToken], {
+            let busdAddress = readBUSD(hre).address;
+            let kalaAddress = readKala(hre).address;
+            const instance = await hre.upgrades.deployProxy(ContractClass, [uniswapFactory, factory, busdAddress, kalaAddress], {
                 initializer: 'initialize',
             });
             await instance.deployed();
             deployedContract.address = instance.address;
-            deployedContract.initialize = {factory, busdToken};
+            deployedContract.initialize = {uniswapFactory, factory, busdAddress, kalaAddress};
             console.log(`${CONTRACT_CLASS} deployed to network ${hre.network.name} with address ${instance.address}`);
         }
         deployedContract.deploy = false;

@@ -18,6 +18,8 @@
     "localhost:test": "hardhat --network localhost test",
     "localhost:node": "rm -Rf publish/deployed/localhost && hardhat node --no-deploy",
     "localhost:service": "hardhat run scripts/service --network localhost",
+    "localhost:partial-test": "hardhat test test/testFactory.js --network localhost",
+
     "hardhat:deploy": "hardhat deploy --network hardhat",
     "hardhat:test": "hardhat test --network hardhat",
     "checkContracts": "hardhat run scripts/checkContracts.js --network testnet",

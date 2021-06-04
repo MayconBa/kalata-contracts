@@ -127,6 +127,7 @@ contract Staking is OwnableUpgradeable, IStaking {
         Used by Factory Contract to deposit newly minted KALA tokens.
     **/
     function depositReward(address assetToken, uint amount) override external {
+        console.log("depositReward",amount);
         require(_config.factory == msg.sender, "unauthorized");
         AssetStake memory stakingPool = _stakes[assetToken];
         if (stakingPool.stakingAmount == 0) {
