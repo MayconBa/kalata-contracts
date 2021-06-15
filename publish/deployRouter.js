@@ -3,7 +3,7 @@ const {readContracts, saveContracts} = require("../utils/resources")
 const {readKala, readBUSD} = require("../utils/assets")
 const {loadContract} = require("../utils/contract")
 const {toUnitString} = require("../utils/maths");
-
+const moment = require("moment");
 const CONTRACT_CLASS = "Router";
 
 async function deploy(hre) {
@@ -20,6 +20,7 @@ async function deploy(hre) {
             const instance = await hre.upgrades.upgradeProxy(deployedContract.address, ContractClass, {});
             deployedContract.abi = abi;
             deployedContract.bytecode = bytecode;
+            deployedContract.upgradeTime = moment().format();
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
             //address uniswapFactory, address factory, address busdAddress, address kalaAddress

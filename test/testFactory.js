@@ -25,14 +25,14 @@ let mockedGovernance;
 
 async function updateConfig(instance, config) {
     await instance.updateConfig(
-        config.governance, config.mint, config.oracle, config.staking,
+        config.mint, config.oracle, config.staking,
         config.uniswapFactory,
         config.baseToken, config.govToken
     )
 }
 
 function assertConfigEqual(config1, config2) {
-    expect(config1.governance).to.equal(config2.governance);
+
     expect(config1.mint).to.equal(config2.mint);
     expect(config1.oracle).to.equal(config2.oracle);
     expect(config1.staking).to.equal(config2.staking);
@@ -94,7 +94,7 @@ describe(CONTRACT_NAME, () => {
         expect(stakingInstance.address).to.properAddress;
 
         defaultConfig = {
-            governance: mockedGovernance.address,
+
             mint: mintInstance.address,
             oracle: oracleInstance.address,
             staking: stakingInstance.address,
@@ -104,7 +104,7 @@ describe(CONTRACT_NAME, () => {
         };
 
         factoryInstance = await deployAndInitializeContract(hre, CONTRACT_NAME, [
-            defaultConfig.governance, defaultConfig.mint, defaultConfig.oracle, defaultConfig.staking, defaultConfig.uniswapFactory,
+            defaultConfig.mint, defaultConfig.oracle, defaultConfig.staking, defaultConfig.uniswapFactory,
             defaultConfig.baseToken, defaultConfig.govToken
         ]);
 
@@ -160,7 +160,7 @@ describe(CONTRACT_NAME, () => {
         });
 
         it("Invalid parameters", async () => {
-            expect(updateConfig(factoryInstance, {...defaultConfig, governance: ZERO_ADDRESS})).to.revertedWith("Invalid governance address");
+
             expect(updateConfig(factoryInstance, {...defaultConfig, mint: ZERO_ADDRESS})).to.revertedWith("Invalid mint address");
             expect(updateConfig(factoryInstance, {...defaultConfig, oracle: ZERO_ADDRESS})).to.revertedWith("Invalid oracle address");
             expect(updateConfig(factoryInstance, {...defaultConfig, staking: ZERO_ADDRESS})).to.revertedWith("Invalid staking address");
@@ -170,7 +170,7 @@ describe(CONTRACT_NAME, () => {
         });
         it("update", async () => {
             let newConfig = {
-                governance: randomAddress(hre),
+
                 mint: randomAddress(hre),
                 oracle: randomAddress(hre),
                 staking: randomAddress(hre),
@@ -210,8 +210,7 @@ describe(CONTRACT_NAME, () => {
         });
 
         it("update", async () => {
-            //governance should have the right to update weight
-            let govAccountInstance = await factoryInstance.connect(mockedGovernance);
+            let govAccountInstance = await factoryInstance.connect(deployer);
             let weight = 12;
             await govAccountInstance.updateWeight(appleToken.address, weight)
             expect(await govAccountInstance.queryWeight(appleToken.address)).to.equal(weight)
@@ -313,8 +312,8 @@ describe(CONTRACT_NAME, () => {
         await stakingInstance.connect(alice).stake(kAppleToken.address, stakingAmount.toString());
         await stakingInstance.connect(bob).stake(kBiduToken.address, stakingAmount.toString());
 
-        console.log(`Alice's kala amount ${humanBN(await govToken.balanceOf(alice.address))}`)
-        console.log(`Bob's kala amount ${humanBN(await govToken.balanceOf(bob.address))}`)
+        //console.log(`Alice's kala amount ${humanBN(await govToken.balanceOf(alice.address))}`)
+        //console.log(`Bob's kala amount ${humanBN(await govToken.balanceOf(bob.address))}`)
 
         // let pairBalanceOf = await kApplePair.balanceOf(alice.address);
         //console.log('pairBalanceOf',humanBN(pairBalanceOf));

@@ -62,8 +62,8 @@ contract Mint is OwnableUpgradeable, IMint {
 
     function _updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate) private {
         config = Config({
-            factory : factory,
-            oracle : oracle,
+        factory : factory,
+        oracle : oracle,
         collector : collector,
         baseToken : baseToken,
         protocolFeeRate : protocolFeeRate
@@ -252,62 +252,20 @@ contract Mint is OwnableUpgradeable, IMint {
         emit MintEvent(positionIndex, assetToken, assetAmount);
     }
 
-    //TODO,add testcase
     function closePosition(uint positionIndex) override external {
+        address positionOwner = _msgSender();
         Position memory position = idxPositionMap[positionIndex];
         require(position.assetAmount > 0 && position.assetToken != address(0) && position.collateralAmount > 0 && position.assetAmount > 0, "Nothing to close");
-        _burn(positionIndex, position.assetToken, position.assetAmount);
-    }
+        require(position.owner == positionOwner, "closePosition: unauthorized");
 
-    function burn(uint positionIndex, address assetToken, uint assetAmount) override external {
-        _burn(positionIndex, assetToken, assetAmount);
-    }
+        require(IERC20(position.assetToken).transferFrom(positionOwner, address(this), position.assetAmount), "transferFrom failed");
+        burnAsset(position.assetToken, address(this), position.assetAmount);
 
-    /**
-        1. User approve assetAmounts to Mint contract.
-        2. Mint Contract burn the contract and refund to user.
-        Burns the sent tokens against a CDP and reduces the C-ratio.
-        If all outstanding minted mAsset tokens are burned, the position is closed and the collateral is returned.
-    */
-    function _burn(uint positionIndex, address assetToken, uint assetAmount) private {
-        address positionOwner = _msgSender();
-
-        require(assetToken != address(0) && positionOwner != address(0), "burn: invalid address");
-
-
-        Position memory position = idxPositionMap[positionIndex];
-
-        require(position.owner == positionOwner, "burn: unauthorized");
-
-        assertAsset(position.assetToken, assetToken, assetAmount);
-
-        AssetConfig memory assetConfig = assetConfigMap[assetToken];
-        require(position.assetAmount >= assetAmount, "Cannot burn asset more than you mint");
-
-        //TODO, commit this for test.
-        //require(assetConfig.endPrice > 0, "Asset is not in deprecated state");
-
-        require(IERC20(assetToken).transferFrom(positionOwner, address(this), assetAmount), "Unable to execute transferFrom, recipient may have reverted");
-
-        Asset memory refundCollateral = Asset({token : position.collateralToken, amount : assetAmount.divideDecimal(assetConfig.endPrice)});
-
-        position.assetAmount = position.assetAmount.sub(assetAmount);
-        position.collateralAmount = position.collateralAmount.sub(refundCollateral.amount);
-
-        if (position.collateralAmount == 0 && position.assetAmount == 0) {
-            removePostiion(positionIndex);
-        } else {
-            savePostiion(positionIndex, position);
-        }
-
-
-        burnAsset(assetConfig.token, address(this), assetAmount);
-
-        emit Burn(positionIndex, assetToken, assetAmount);
-
-        IERC20(refundCollateral.token).transfer(positionOwner, refundCollateral.amount);
-        emit RefundCollateralAmount(refundCollateral.token, refundCollateral.amount);
-
+        IERC20(position.collateralToken).transfer(positionOwner, position.assetAmount);
+        removePostiion(positionIndex);
+        emit Burn(positionIndex, position.assetToken, position.assetAmount);
+        emit RefundCollateralAmount(position.assetToken, position.assetAmount);
+        delete ownerPositionIndex[positionOwner][position.collateralToken][position.assetToken];
     }
 
 

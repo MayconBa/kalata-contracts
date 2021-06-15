@@ -8,9 +8,7 @@ pragma solidity >=0.6.0;
 
 ///After the initial bootstrapping of Kalata Protocol contracts,
 ///the Factory is assigned to be the owner for the Mint, Oracle, Staking,
-///and Collector contracts. The Factory is owned by the Governance Contract.
 interface IFactory {
-
     struct Token {
         bytes32 tokenName;
         bytes32 tokenSymbol;
@@ -25,9 +23,6 @@ interface IFactory {
     }
 
     struct Config {
-        //Governance Contract
-        address governance;
-
         //Contract address of Kalata Mint
         address mint;
 
@@ -39,7 +34,6 @@ interface IFactory {
 
         //Contract address of Uniswap Factory
         address uniswapFactory;
-
 
         address baseToken;
 
@@ -58,7 +52,7 @@ interface IFactory {
 
 
     function updateConfig(
-        address governance, address mint, address oracle, address staking,
+        address mint, address oracle, address staking,
         address uniswapFactory,
         address baseToken, address govToken
     ) external;
@@ -100,7 +94,7 @@ interface IFactory {
     function migrateAsset(bytes32 name, bytes32 symbol, address assetToken, uint endPrice) external;
 
     function queryConfig() external view returns (
-        address governance,
+
         address mint,
         address oracle,
         address staking,
@@ -117,6 +111,8 @@ interface IFactory {
         uint[] memory endTimes,
     //    //distribution amount for the interval
         uint[] memory amounts);
+
+    function queryDistributeAmount() external view returns (uint);
 
     function queryWeight(address token) external view returns (uint);
 
@@ -135,7 +131,7 @@ interface IFactory {
 
     event RevokeAsset(address assetToken, uint endPrice);
     event Distribute(uint distributedAmount);
-    event UpdateConfig(address governance, uint[] scheduleStartTime, uint[] scheduleEndTime, uint[] scheduleAmounts);
+    event UpdateConfig(uint[] scheduleStartTime, uint[] scheduleEndTime, uint[] scheduleAmounts);
     event UpdateWeight(address assetToken, uint weight);
     event TokenCreated(bytes32 name, bytes32 symbol, uint initialSupply, address token);
     event MigrateAsset(uint endPrice, address assetToken);

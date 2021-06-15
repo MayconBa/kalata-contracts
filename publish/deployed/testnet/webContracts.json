@@ -249,7 +249,7 @@
     ]
   },
   "UniswapV2Factory": {
-    "address": "0xF8Ab1507ac0725298276E3Ae7Ff26A3F7F33Ec01",
+    "address": "0xFcBCFcb46aD9868F06c6D8975cEefD8c2268752c",
     "abi": [
       {
         "anonymous": false,
@@ -417,7 +417,7 @@
     ]
   },
   "UniswapV2Router02": {
-    "address": "0xA71D58dd85D21b6e7Ae9840593b93B4C424EcF30",
+    "address": "0xc042af83F7A3c022B98fe6CCe2AEac11319d51FD",
     "abi": [
       {
         "inputs": [],
@@ -1373,7 +1373,7 @@
     ]
   },
   "Oracle": {
-    "address": "0xff6011322a3467Df8896D96527ec642E177EA2a3",
+    "address": "0x92b544297dB8c327D0902FB2E9F6A3d328a7d6Ba",
     "abi": [
       {
         "anonymous": false,
@@ -1697,29 +1697,6 @@
           }
         ],
         "name": "auction",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "positionIndex",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "assetToken",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetAmount",
-            "type": "uint256"
-          }
-        ],
-        "name": "burn",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -2176,7 +2153,7 @@
     ]
   },
   "Staking": {
-    "address": "0x8726dB07dC5e1f1B44d0cc4B3e62F7D8cc1B3ed8",
+    "address": "0xd60C5496652c90647d52eca9A0320Cb417942e19",
     "abi": [
       {
         "anonymous": false,
@@ -2549,737 +2526,8 @@
       }
     ]
   },
-  "Governance": {
-    "address": "0x8AAc9fcd259eC3d033bAd468B74F5E634a28E601",
-    "abi": [
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "distributedAmount",
-            "type": "uint256"
-          }
-        ],
-        "name": "Distribute",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "endPrice",
-            "type": "uint256"
-          },
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "assetToken",
-            "type": "address"
-          }
-        ],
-        "name": "MigrateAsset",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "assetToken",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "endPrice",
-            "type": "uint256"
-          }
-        ],
-        "name": "RevokeAsset",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "bytes32",
-            "name": "name",
-            "type": "bytes32"
-          },
-          {
-            "indexed": false,
-            "internalType": "bytes32",
-            "name": "symbol",
-            "type": "bytes32"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "initialSupply",
-            "type": "uint256"
-          },
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          }
-        ],
-        "name": "TokenCreated",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256[]",
-            "name": "scheduleStartTime",
-            "type": "uint256[]"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256[]",
-            "name": "scheduleEndTime",
-            "type": "uint256[]"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256[]",
-            "name": "scheduleAmounts",
-            "type": "uint256[]"
-          }
-        ],
-        "name": "UpdateConfig",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "assetToken",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "weight",
-            "type": "uint256"
-          }
-        ],
-        "name": "UpdateWeight",
-        "type": "event"
-      },
-      {
-        "inputs": [],
-        "name": "distribute",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "bytes32",
-            "name": "name",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "symbol",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "assetToken",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "endPrice",
-            "type": "uint256"
-          }
-        ],
-        "name": "migrateAsset",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "queryAllAssetWeights",
-        "outputs": [
-          {
-            "internalType": "address[]",
-            "name": "assets",
-            "type": "address[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "weights",
-            "type": "uint256[]"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "queryAssets",
-        "outputs": [
-          {
-            "internalType": "bytes32[]",
-            "name": "names",
-            "type": "bytes32[]"
-          },
-          {
-            "internalType": "bytes32[]",
-            "name": "symbols",
-            "type": "bytes32[]"
-          },
-          {
-            "internalType": "address[]",
-            "name": "addresses",
-            "type": "address[]"
-          },
-          {
-            "internalType": "address[]",
-            "name": "busdPairAddresses",
-            "type": "address[]"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "queryConfig",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "mint",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "oracle",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "staking",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "uniswapFactory",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "baseToken",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "govToken",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "queryDistributionSchedules",
-        "outputs": [
-          {
-            "internalType": "uint256[]",
-            "name": "startTimes",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "endTimes",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "amounts",
-            "type": "uint256[]"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "bytes32",
-            "name": "symbol",
-            "type": "bytes32"
-          }
-        ],
-        "name": "queryToken",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "queryTotalWeight",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-          }
-        ],
-        "name": "queryWeight",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "assetToken",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "endPrice",
-            "type": "uint256"
-          }
-        ],
-        "name": "revokeAsset",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "mint",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "oracle",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "staking",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "uniswapFactory",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "baseToken",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "govToken",
-            "type": "address"
-          }
-        ],
-        "name": "updateConfig",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256[]",
-            "name": "startTimes",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "endTimes",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "amounts",
-            "type": "uint256[]"
-          }
-        ],
-        "name": "updateDistributionSchedules",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "assetToken",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "weight",
-            "type": "uint256"
-          }
-        ],
-        "name": "updateWeight",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "bytes32",
-            "name": "name",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "symbol",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "oracleFeeder",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "auctionDiscount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "minCollateralRatio",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "weight",
-            "type": "uint256"
-          }
-        ],
-        "name": "whitelist",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
-    ]
-  },
-  "Collector": {
-    "address": "0xBFaB92EA9CAe1386A9680B2C5B5a7B09ff494036",
-    "abi": [
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "source",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "target",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amountIn",
-            "type": "uint256"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amountOut",
-            "type": "uint256"
-          }
-        ],
-        "name": "Convert",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "source",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "target",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "Distribute",
-        "type": "event"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_assetToken",
-            "type": "address"
-          }
-        ],
-        "name": "convert",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "distribute",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "queryConfig",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "uniswapFactory",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "uniswapRouter",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "baseToken",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "govToken",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "uniswapFactory",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "uniswapRouter",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "baseToken",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "govToken",
-            "type": "address"
-          }
-        ],
-        "name": "updateConfig",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
-    ]
-  },
-  "Community": {
-    "address": "0x6D47Ea622cA5CCcA0EC3C75Df9e3a65364940071",
-    "abi": [
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "recipient",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "Spend",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "spendLimit",
-            "type": "uint256"
-          }
-        ],
-        "name": "UpdateConfig",
-        "type": "event"
-      },
-      {
-        "inputs": [],
-        "name": "queryConfig",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "govToken",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "spendLimit",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "recipient",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "spend",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "govToken",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "spendLimit",
-            "type": "uint256"
-          }
-        ],
-        "name": "updateConfig",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
-    ]
-  },
   "Mint": {
-    "address": "0xF84ddac8dEA4A10A18436E9E3AE233f6D1230892",
+    "address": "0x70abD667ee8D53BC492579DD20EDbD1c6977caE9",
     "abi": [
       {
         "anonymous": false,
@@ -3603,29 +2851,6 @@
           }
         ],
         "name": "auction",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "positionIndex",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "assetToken",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetAmount",
-            "type": "uint256"
-          }
-        ],
-        "name": "burn",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -4082,7 +3307,7 @@
     ]
   },
   "Factory": {
-    "address": "0xd64239c591f71A02666d754BE204B9E6157AcCDC",
+    "address": "0x4Cf081A3E5488fa16A321986ECf11C822ca69eA0",
     "abi": [
       {
         "anonymous": false,
@@ -4169,12 +3394,6 @@
       {
         "anonymous": false,
         "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
           {
             "indexed": false,
             "internalType": "uint256[]",
@@ -4303,11 +3522,6 @@
         "outputs": [
           {
             "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
             "name": "mint",
             "type": "address"
           },
@@ -4335,6 +3549,19 @@
             "internalType": "address",
             "name": "govToken",
             "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "queryDistributeAmount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
           }
         ],
         "stateMutability": "view",
@@ -4434,11 +3661,6 @@
       },
       {
         "inputs": [
-          {
-            "internalType": "address",
-            "name": "governance",
-            "type": "address"
-          },
           {
             "internalType": "address",
             "name": "mint",
@@ -4557,7 +3779,7 @@
     ]
   },
   "Router": {
-    "address": "0xb5BA76Ab4C7E00c476F4eab3D1ce63362Ca7Dd07",
+    "address": "0xc7f58a019978a1f79F1F925872b54a7E2202Ac4f",
     "abi": [
       {
         "inputs": [],

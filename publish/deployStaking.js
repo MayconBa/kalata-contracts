@@ -1,7 +1,7 @@
 const {updateWebContracts} = require("../utils/resources");
 const {readContracts, saveContracts} = require("../utils/resources")
 const {readKala} = require("../utils/assets")
-
+const moment = require("moment");
 const CONTRACT_CLASS = "Staking";
 
 async function deploy(hre) {
@@ -17,6 +17,7 @@ async function deploy(hre) {
             const instance = await hre.upgrades.upgradeProxy(deployedContract.address, ContractClass, {});
             deployedContract.abi = abi;
             deployedContract.bytecode = bytecode;
+            deployedContract.upgradeTime = moment().format();
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
             //mock factory firstly, Will use the factory address after the factory is deployed.

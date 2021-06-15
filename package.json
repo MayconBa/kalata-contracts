@@ -8,6 +8,8 @@
     "compile": "hardhat compile",
     "testnet:service": "hardhat run scripts/service --network testnet",
     "testnet:deploy": "hardhat deploy --network testnet",
+    "testnet:demo": "hardhat run scripts/demo.js --network testnet",
+
     "hecoMainnet:deploy": "hardhat deploy --network hecoMainnet",
     "mainnet:deploy": "hardhat deploy --network mainnet",
     "ropsten:deploy": "hardhat deploy --network ropsten",
@@ -18,13 +20,10 @@
     "localhost:test": "hardhat --network localhost test",
     "localhost:node": "rm -Rf publish/deployed/localhost && hardhat node --no-deploy",
     "localhost:service": "hardhat run scripts/service --network localhost",
-    "localhost:partial-test": "hardhat test test/testFactory.js --network localhost",
-
     "hardhat:deploy": "hardhat deploy --network hardhat",
     "hardhat:test": "hardhat test --network hardhat",
-    "checkContracts": "hardhat run scripts/checkContracts.js --network testnet",
     "generateAccounts": "hardhat run scripts/generateAccounts.js",
-    "hardhat:partial-test": "hardhat test test/testFactory.js --network hardhat"
+    "hardhat:partial-test": "hardhat test test/testMint.js --network hardhat"
   },
   "author": "",
   "license": "ISC",

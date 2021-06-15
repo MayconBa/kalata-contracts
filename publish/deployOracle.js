@@ -2,7 +2,7 @@ const {updateWebContracts} = require("../utils/resources");
 const {readContracts, saveContracts,} = require("../utils/resources")
 const {readBUSD} = require("../utils/assets")
 const ORACLE_CONTRACT_CLASS = "Oracle";
-
+const moment = require("moment");
 async function deploy(hre) {
     const accounts = await hre.ethers.getSigners();
     let deployer = accounts[0];
@@ -17,6 +17,7 @@ async function deploy(hre) {
             const instance = await hre.upgrades.upgradeProxy(deployedContract.address, ContractClass, {});
             deployedContract.abi = abi;
             deployedContract.bytecode = bytecode;
+            deployedContract.upgradeTime = moment().format();
             console.log(`${ORACLE_CONTRACT_CLASS} upgraded:`, instance.address);
         } else {
             //mock factory firstly, Will use the factory address after the factory is deployed.

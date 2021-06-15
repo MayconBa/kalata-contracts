@@ -12,14 +12,22 @@ let targetAsset, baseToken;
 let protocolFeeRate;
 let defaultConfig;
 
+
+async function waitReceipt(promise) {
+    let receipt = await promise
+    let confirmations = await receipt.wait()
+    return confirmations
+
+}
+
 async function preparePostion(hre, params) {
-    await oracleInstance.registerAsset(params.assetToken, deployer.address);
-    await oracleInstance.feedPrice(params.assetToken, params.assetTokenPrice.toString());
-    await mintInstance.updateAsset(params.assetToken, params.auctionDiscount.toString(), params.minCollateralRatio.toString())
+    await waitReceipt(oracleInstance.registerAsset(params.assetToken, deployer.address));
+    await waitReceipt(oracleInstance.feedPrice(params.assetToken, params.assetTokenPrice.toString()));
+    await waitReceipt(mintInstance.updateAsset(params.assetToken, params.auctionDiscount.toString(), params.minCollateralRatio.toString()))
     const tokenInstance = await loadToken(hre, params.collateralToken);
-    await tokenInstance.approve(mintInstance.address, params.collateralAmount.toString());
-    await mintInstance.openPosition(params.collateralToken, params.collateralAmount.toString(), params.assetToken, params.collateralRatio.toString());
-    return await mintInstance.queryPositionIndex(deployer.address, params.collateralToken, params.assetToken);
+    await waitReceipt(tokenInstance.approve(mintInstance.address, params.collateralAmount.toString()));
+    await waitReceipt(mintInstance.openPosition(params.collateralToken, params.collateralAmount.toString(), params.assetToken, params.collateralRatio.toString()));
+    return await mintInstance.queryPositionIndex(deployer.address, params.collateralToken, params.assetToken)
 }
 
 
@@ -203,49 +211,12 @@ describe(CONTRACT_NAME, () => {
                 toUnit("200"), toUnit("8.0"), toUnit("2"), toUnit("0.8"), toUnit("1.5"), baseToken.address, targetAsset.address
             ];
             let positionIndex = await preparePostion(hre, {collateralAmount, collateralRatio, assetTokenPrice, auctionDiscount, minCollateralRatio, collateralToken, assetToken});
-
             let mintAmount = toUnit("2");
-
             const postionBefore = await mintInstance.queryPosition(positionIndex.toString());
-
             await mintInstance.mint(positionIndex.toString(), assetToken, mintAmount.toString());
-
             const postionAfter = await mintInstance.queryPosition(positionIndex.toString());
-
             const difference = postionAfter.assetAmount - postionBefore.assetAmount;
-
             assert.equal(difference, mintAmount);
         });
     });
-    describe("burn", async () => {
-        it("burn() should work", async () => {
-            let token = await deployToken(hre, "tokenx", "tokenx", toUnitString('1200000000000'));
-            await token.registerMinters([mintInstance.address])
-            let tokenAddress = token.address;
-            let [collateralAmount, collateralRatio, assetTokenPrice, auctionDiscount, minCollateralRatio, collateralToken] = [
-                toUnit("2000"), toUnit("2.0"), toUnit("2"), toUnit("0.8"), toUnit("1.5"), baseToken.address
-            ];
-            let positionIndex = await preparePostion(hre, {collateralAmount, collateralRatio, assetTokenPrice, auctionDiscount, minCollateralRatio, collateralToken, assetToken: tokenAddress});
-
-            const postionBurnBefore = await mintInstance.queryPosition(positionIndex.toString());
-
-            let [relativePrice] = await oracleInstance.queryPriceByDenominate(collateralToken, tokenAddress);
-
-
-            let burnAmount = toUnit("100");
-            await mintInstance.registerMigration(tokenAddress, relativePrice.toString());
-
-            const tokenInstance = await loadToken(hre, tokenAddress);
-
-            await tokenInstance.approve(mintInstance.address, burnAmount.toString());
-
-            await mintInstance.burn(positionIndex, tokenAddress, burnAmount.toString());
-
-            const postionBurnAfter = await mintInstance.queryPosition(positionIndex.toString());
-            assert.bnEqual(postionBurnBefore.assetAmount - postionBurnAfter.assetAmount, burnAmount);
-            assert.bnEqual(postionBurnBefore.collateralAmount - postionBurnAfter.collateralAmount, burnAmount * 2);
-
-        });
-    });
-
 });

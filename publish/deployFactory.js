@@ -3,7 +3,7 @@ const {readContracts, saveContracts} = require("../utils/resources")
 const {readKala, readBUSD} = require("../utils/assets")
 const {loadContract, loadToken} = require("../utils/contract")
 const {toUnitString} = require("../utils/maths");
-
+const moment = require("moment");
 const CONTRACT_CLASS = "Factory";
 
 async function deploy(hre) {
@@ -20,10 +20,10 @@ async function deploy(hre) {
             const instance = await hre.upgrades.upgradeProxy(deployedContract.address, ContractClass, {});
             deployedContract.abi = abi;
             deployedContract.bytecode = bytecode;
+            deployedContract.upgradeTime = moment().format();
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
             let baseToken = readBUSD(hre).address;
-            let governance = deployedContracts['Governance'].address;
             let oracle = deployedContracts['Oracle'].address;
             let uniswapFactory = deployedContracts['UniswapV2Factory'].address;
             let staking = deployedContracts['Staking'].address;
@@ -31,14 +31,14 @@ async function deploy(hre) {
             let scheduleEndTime = [31557600, 63093600, 94629600, 126165600]
             let scheduleAmounts = [toUnitString(549000), toUnitString(274500), toUnitString(137250), toUnitString(68625)]
             const instance = await hre.upgrades.deployProxy(ContractClass, [
-                governance, mintAddress, oracle, staking, uniswapFactory, baseToken, kalaTokenAddress
+                mintAddress, oracle, staking, uniswapFactory, baseToken, kalaTokenAddress
             ], {initializer: 'initialize'});
             await instance.deployed();
 
             await instance.updateDistributionSchedules(scheduleStartTime, scheduleEndTime, scheduleAmounts)
 
             deployedContract.address = instance.address;
-            deployedContract.initialize = {governance, mint: mintAddress, oracle, staking, uniswapFactory, baseToken, govToken: kalaTokenAddress};
+            deployedContract.initialize = {mint: mintAddress, oracle, staking, uniswapFactory, baseToken, govToken: kalaTokenAddress};
             deployedContract.distributionSchedules = {scheduleStartTime, scheduleEndTime, scheduleAmounts};
             console.log(`${CONTRACT_CLASS} deployed to network ${hre.network.name} with address ${instance.address}`);
 

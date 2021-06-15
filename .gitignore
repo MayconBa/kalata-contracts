@@ -14,3 +14,7 @@ publish/deployed/localhost
 doc
 scripts
 docs
+*-bak
+rsync.sh
+rsync-exclude.list
+

@@ -1,10 +1,12 @@
+const moment = require("moment");
 const {updateWebContracts} = require("../utils/resources");
 const {readContracts, saveContracts} = require("../utils/resources")
-const {readKala, readBUSD} = require("../utils/assets")
-const {loadContract} = require("../utils/contract")
+const {readBUSD} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths");
-
 const CONTRACT_CLASS = "Mint";
+
+//test
+const COLLECTOR = '0x5e55Ac8943D7DDb05399568c64C257DbF0c977E4'
 
 async function deploy(hre) {
     const accounts = await hre.ethers.getSigners();
@@ -19,10 +21,11 @@ async function deploy(hre) {
             const instance = await hre.upgrades.upgradeProxy(deployedContract.address, ContractClass, {});
             deployedContract.abi = abi;
             deployedContract.bytecode = bytecode;
+            deployedContract.upgradeTime = moment().format();
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
             let oracle = deployedContracts['Oracle'].address;
-            let collector = deployedContracts['Collector'].address;
+            let collector = COLLECTOR;
             let baseToken = readBUSD(hre).address;
             let protocolFeeRate = toUnitString("0.015");
             //mock factory firstly, Will use the factory address after the factory is deployed.
@@ -40,7 +43,7 @@ async function deploy(hre) {
         deployedContracts[CONTRACT_CLASS] = deployedContract
         saveContracts(hre, deployedContracts);
     }
-    updateWebContracts(hre,CONTRACT_CLASS, {address: deployedContract.address, abi});
+    updateWebContracts(hre, CONTRACT_CLASS, {address: deployedContract.address, abi});
     return deployedContract;
 
 }
