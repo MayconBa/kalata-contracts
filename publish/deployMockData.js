@@ -1,7 +1,7 @@
 const {readContracts} = require("../utils/resources")
 const {readBUSD, readAssets, saveAssets, readWebAssets, saveWebAssets, readKala, saveKala} = require("../utils/assets")
 const {toUnit, humanBN} = require("../utils/maths")
-const {loadToken, loadUniswapV2Factory, loadUniswapV2Router02, ZERO_ADDRESS, estiamteGasAndCallMethod} = require("../utils/contract")
+const {loadToken, loadUniswapV2Factory, loadUniswapV2Router02, ZERO_ADDRESS, waitReceipt} = require("../utils/contract")
 const {stringToBytes32} = require('../utils/bytes')
 const {queryPricesFromSina} = require("../utils/equity")
 
@@ -54,7 +54,7 @@ async function createPairs(hre) {
     for (let symbol of Object.keys(MOCK_ASSETS)) {
         let {name, type, initialSupply, sinaCode, gtimgCode, coingeckoCoinId} = MOCK_ASSETS[symbol];
         let assetInfo = deployedAssets[symbol] || {
-            name, symbol, initialSupply, type, pool: null, address: null, pair: null, deploy: true, sinaCode, gtimgCode, coingeckoCoinId,
+            name, symbol, initialSupply: null, type, pool: null, address: null, pair: null, deploy: true, sinaCode, gtimgCode, coingeckoCoinId,
         }
         let assetAddress = assetInfo.address;
         if (assetInfo.deploy) {
@@ -65,45 +65,45 @@ async function createPairs(hre) {
                 console.error("factory.baseToken != usdToken")
                 process.exit(503);
             }
-            await factoryInstance.whitelist(
-                bytes32Name,
-                bytes32Symbol,
-                oracleFeeder,
-                auctionDiscount.toString(),
-                minCollateralRatio.toString(),
-                weight.toString(),
-                //{gasLimit: 19500000}
-            ).catch(error => {
-                console.error(`whitelist error:${error}`);
-            });
+            if (assetInfo.address && assetInfo.pair) {
+                await waitReceipt(factoryInstance.registerAsset(assetInfo.address, assetInfo.pair, oracleFeeder, bytes32Name, bytes32Symbol,
+                    auctionDiscount.toString(), minCollateralRatio.toString(), weight.toString())
+                )
+            } else {
+                await waitReceipt(factoryInstance.whitelist(bytes32Name, bytes32Symbol, oracleFeeder, auctionDiscount.toString(),
+                    minCollateralRatio.toString(), weight.toString()));
+                assetAddress = await factoryInstance.queryToken(bytes32Symbol);
+            }
 
-            await sleep(hre, 10);
-            assetAddress = await factoryInstance.queryToken(bytes32Symbol);
             if (assetAddress === ZERO_ADDRESS) {
                 console.error(`Asset ${symbol} deployed to network ${hre.network.name} with address ${assetAddress}`)
                 process.exit(502);
             } else {
-                console.log(`Asset ${symbol} deployed to network ${hre.network.name} with address ${assetAddress}`);
-                let assetToken = await loadToken(hre, assetAddress);
-                await assetToken.mint(deployer.address, initialSupply);
-                await sleep(hre, 2);
-                let pair = await uniswapV2Factory.getPair(usdToken.address, assetAddress);
                 assetInfo.address = assetAddress;
-                assetInfo.pair = pair;
+                console.log(`Asset ${symbol} deployed to network ${hre.network.name} with address ${assetAddress}`);
+                if (!assetInfo.initialSupply) {
+                    let assetToken = await loadToken(hre, assetAddress);
+                    await waitReceipt(assetToken.mint(deployer.address, initialSupply));
+                    assetInfo.initialSupply = initialSupply;
+                }
+                if (!assetInfo.pair) {
+                    assetInfo.pair = await uniswapV2Factory.getPair(usdToken.address, assetAddress);
+                    console.log(`Pair ${symbol}/${usdInfo.symbol} deployed to network ${hre.network.name} with address ${assetInfo.pair}`);
+                }
                 assetInfo.deploy = false;
                 deployedAssets[symbol] = assetInfo;
-                console.log(`Pair ${symbol}/${usdInfo.symbol} deployed to network ${hre.network.name} with address ${pair}`);
-            }
-            deployedWebAssets[symbol] = {
-                name, symbol,
-                address: assetInfo.address,
-                pair: assetInfo.pair,
-                png: `https://api.kalata.io/api/deployed/assets/${symbol.substring(1)}.png`,
-                svg: `https://api.kalata.io/api/deployed/assets/${symbol.substring(1)}.svg`,
+
             }
             saveAssets(hre, deployedAssets);
-            saveWebAssets(hre, deployedWebAssets);
         }
+        deployedWebAssets[symbol] = {
+            name, symbol,
+            address: assetInfo.address,
+            pair: assetInfo.pair,
+            png: `https://api.kalata.io/api/deployed/assets/${symbol.substring(1)}.png`,
+            svg: `https://api.kalata.io/api/deployed/assets/${symbol.substring(1)}.svg`,
+        }
+        saveWebAssets(hre, deployedWebAssets);
     }
 }
 
@@ -142,27 +142,23 @@ async function addLiquidityForKala(hre) {
         assetAmount = toUnit(assetAmount);
         busdAmount = toUnit(busdAmount);
         console.log(`addLiquidity for KALA, busdAmount:${humanBN(busdAmount)},assetAmount:${humanBN(assetAmount)}`)
-        await addLiquidity(hre, deployer, kala.address, assetAmount, busdAmount);
-
-        let pair = await uniswapV2Factory.getPair(kala.address, usdToken.address);
-
+        await waitReceipt(addLiquidity(hre, deployer, kala.address, assetAmount, busdAmount));
         kala.pool = {
-            pair,
+            pair: await uniswapV2Factory.getPair(kala.address, usdToken.address),
             busd: busdAmount.toString(),
             asset: assetAmount.toString()
         }
         saveKala(hre, kala);
-        deployedWebAssets[kala.symbol] = {
-            name: kala.name,
-            symbol: kala.symbol,
-            address: kala.address,
-            pair,
-            png: `https://api.kalata.io/api/deployed/assets/KALA.png`,
-            svg: `https://api.kalata.io/api/deployed/assets/KALA.svg`,
-        }
-        saveWebAssets(hre, deployedWebAssets);
     }
-
+    deployedWebAssets[kala.symbol] = {
+        name: kala.name,
+        symbol: kala.symbol,
+        address: kala.address,
+        pair: kala.pool.pair,
+        png: `https://api.kalata.io/api/deployed/assets/KALA.png`,
+        svg: `https://api.kalata.io/api/deployed/assets/KALA.svg`,
+    }
+    saveWebAssets(hre, deployedWebAssets);
 }
 
 //function addLiquidity(address tokenA, address tokenB, uint amountADesired, uint amountBDesired, uint amountAMin, uint amountBMin, address to, uint deadline)

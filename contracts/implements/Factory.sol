@@ -103,10 +103,16 @@ contract Factory is OwnableUpgradeable, IFactory {
     //    4.Instantiate the LP Token contract associated with the pool as a new Uniswap token
     //    5.Register the LP token with the Kalata Staking contract
     function whitelist(bytes32 name, bytes32 symbol, address oracleFeeder, uint auctionDiscount, uint minCollateralRatio, uint weight) override external onlyOwner {
-        addToken(owner(), oracleFeeder, name, symbol, 0, auctionDiscount, minCollateralRatio, weight);
+        addToken(owner(), oracleFeeder, name, symbol, auctionDiscount, minCollateralRatio, weight);
     }
 
-
+    //register exists assets
+    function registerAsset(address tokenAddress, address pairAddress, address oracleFeeder, bytes32 name, bytes32 symbol,
+        uint auctionDiscount, uint minCollateralRatio, uint weight) override external onlyOwner {
+        if (_symbolTokenMap[symbol] == address(0)) {
+            _registerAsset(tokenAddress, pairAddress, oracleFeeder, name, symbol, auctionDiscount, minCollateralRatio, weight);
+        }
+    }
 
 
     //kalata inflation rewards on the staking pool
@@ -183,7 +189,7 @@ contract Factory is OwnableUpgradeable, IFactory {
     function migrateAsset(bytes32 name, bytes32 symbol, address assetToken, uint endPrice) override external {
         (uint auctionDiscount, uint minCollateralRatio,) = IMint(_config.mint).queryAssetConfig(assetToken);
         (uint weight,address feeder) = _revokeAsset(assetToken, endPrice);
-        addToken(owner(), feeder, name, symbol, 0, auctionDiscount, minCollateralRatio, weight);
+        addToken(owner(), feeder, name, symbol, auctionDiscount, minCollateralRatio, weight);
         emit MigrateAsset(endPrice, assetToken);
     }
 
@@ -305,44 +311,43 @@ contract Factory is OwnableUpgradeable, IFactory {
     }
 
 
-    function addToken(address tokenOwner, address oracleFeeder, bytes32 name, bytes32 symbol, uint initialSupply,
+    function addToken(address tokenOwner, address oracleFeeder, bytes32 name, bytes32 symbol,
         uint auctionDiscount, uint minCollateralRatio, uint weight) private {
+        require(_symbolTokenMap[symbol] == address(0), "symbol already exists");
 
-        address tokenAddress = createToken(tokenOwner, name, symbol, initialSupply);
-        require(tokenAddress != address(0), "createToken failed");
-
-        weight = weight == 0 ? NORMAL_TOKEN_WEIGHT : weight;
-
-        saveWeight(tokenAddress, weight);
-        _totalWeight = _totalWeight.add(weight);
-
-        IMint(_config.mint).registerAsset(tokenAddress, auctionDiscount, minCollateralRatio);
-        IOracle(_config.oracle).registerAsset(tokenAddress, oracleFeeder);
-
+        address tokenAddress = createToken(tokenOwner, name, symbol);
         address pairAddress = IUniswapV2Factory(_config.uniswapFactory).createPair(_config.baseToken, tokenAddress);
 
-        _tokens.push(Token(name, symbol, tokenAddress, pairAddress));
+        _registerAsset(tokenAddress, pairAddress, oracleFeeder, name, symbol, auctionDiscount, minCollateralRatio, weight);
+    }
 
-        //address lpToken = IUniswapV2Factory(_config.uniswapFactory).getPair(assetToken, _config.baseToken);
+
+    function _registerAsset(address tokenAddress, address pairAddress, address oracleFeeder, bytes32 name, bytes32 symbol,
+        uint auctionDiscount, uint minCollateralRatio, uint weight) private {
+
+        _symbolTokenMap[symbol] = tokenAddress;
+        _tokens.push(Token(name, symbol, tokenAddress, pairAddress));
+        weight = weight == 0 ? NORMAL_TOKEN_WEIGHT : weight;
+        saveWeight(tokenAddress, weight);
+        _totalWeight = _totalWeight.add(weight);
+        IMint(_config.mint).registerAsset(tokenAddress, auctionDiscount, minCollateralRatio);
+        IOracle(_config.oracle).registerAsset(tokenAddress, oracleFeeder);
         IStaking(_config.staking).registerAsset(tokenAddress, pairAddress);
     }
 
 
-    function createToken(address tokenOwner, bytes32 name, bytes32 symbol, uint initialSupply) private returns (address addr) {
-        require(_symbolTokenMap[symbol] == address(0), "symbol already exists");
-
+    function createToken(address tokenOwner, bytes32 name, bytes32 symbol) private returns (address addr) {
         bytes memory code = type(BEP20Token).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(name, symbol, block.timestamp));
         addr = code.deploy(salt);
-        BEP20Token(addr).initialize(name.convertToString(), symbol.convertToString(), initialSupply);
+        require(addr != address(0), "createToken failed");
+        BEP20Token(addr).initialize(name.convertToString(), symbol.convertToString(), 0);
         address[] memory minters = new address[](2);
         minters[0] = address(this);
         minters[1] = _config.mint;
         BEP20Token(addr).registerMinters(minters);
         BEP20Token(addr).transferOwnership(tokenOwner);
-        _symbolTokenMap[symbol] = addr;
-
-        emit TokenCreated(name, symbol, initialSupply, addr);
+        emit TokenCreated(name, symbol, 0, addr);
     }
 
     function _updateConfig(

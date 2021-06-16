@@ -2,6 +2,12 @@ const {readContracts} = require("./resources")
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
+
+async function waitReceipt(promise) {
+    let receipt = await promise;
+    return await receipt.wait()
+}
+
 async function deploy(hre, name, contractFacotryOptions) {
     const ContractClass = await hre.ethers.getContractFactory(name, contractFacotryOptions || {});
     let instance = await ContractClass.deploy();
@@ -102,7 +108,8 @@ module.exports = {
     deployAndInitializeContract,
     deployUniswapV2Factory,
     deployUniswapV2Router02,
-    randomAddress
+    randomAddress,
+    waitReceipt
 };
 
 

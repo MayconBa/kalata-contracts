@@ -249,7 +249,7 @@
     ]
   },
   "UniswapV2Factory": {
-    "address": "0xFcBCFcb46aD9868F06c6D8975cEefD8c2268752c",
+    "address": "0xF8Ab1507ac0725298276E3Ae7Ff26A3F7F33Ec01",
     "abi": [
       {
         "anonymous": false,
@@ -417,7 +417,7 @@
     ]
   },
   "UniswapV2Router02": {
-    "address": "0xc042af83F7A3c022B98fe6CCe2AEac11319d51FD",
+    "address": "0xA71D58dd85D21b6e7Ae9840593b93B4C424EcF30",
     "abi": [
       {
         "inputs": [],
@@ -1373,7 +1373,7 @@
     ]
   },
   "Oracle": {
-    "address": "0x92b544297dB8c327D0902FB2E9F6A3d328a7d6Ba",
+    "address": "0x7E39128fA41292412c3217Fdad9F2F6126b33Bee",
     "abi": [
       {
         "anonymous": false,
@@ -2153,7 +2153,7 @@
     ]
   },
   "Staking": {
-    "address": "0xd60C5496652c90647d52eca9A0320Cb417942e19",
+    "address": "0xB437716ad1b28701c34dD61AdeeF4a9D2828E3B5",
     "abi": [
       {
         "anonymous": false,
@@ -2527,7 +2527,7 @@
     ]
   },
   "Mint": {
-    "address": "0x70abD667ee8D53BC492579DD20EDbD1c6977caE9",
+    "address": "0x0201ed90D893bA327A147884A362AB01dEf07aA9",
     "abi": [
       {
         "anonymous": false,
@@ -3307,7 +3307,7 @@
     ]
   },
   "Factory": {
-    "address": "0x4Cf081A3E5488fa16A321986ECf11C822ca69eA0",
+    "address": "0x0891930F2f56FF44eE983D1587a4957b2a9F5ca8",
     "abi": [
       {
         "anonymous": false,
@@ -3645,6 +3645,54 @@
         "inputs": [
           {
             "internalType": "address",
+            "name": "tokenAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "pairAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "oracleFeeder",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "name",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "symbol",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "auctionDiscount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minCollateralRatio",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          }
+        ],
+        "name": "registerAsset",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
             "name": "assetToken",
             "type": "address"
           },
@@ -3779,7 +3827,7 @@
     ]
   },
   "Router": {
-    "address": "0xc7f58a019978a1f79F1F925872b54a7E2202Ac4f",
+    "address": "0xf741053fF54047305FD20D926002fBdE3f7FC7C6",
     "abi": [
       {
         "inputs": [],

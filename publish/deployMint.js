@@ -5,8 +5,8 @@ const {readBUSD} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths");
 const CONTRACT_CLASS = "Mint";
 
-//test
-const COLLECTOR = '0x5e55Ac8943D7DDb05399568c64C257DbF0c977E4'
+//cyberpunk
+const COLLECTOR = '0xa1036E4E163c707F49A75af5AcA4F89Ba010DA2B'
 
 async function deploy(hre) {
     const accounts = await hre.ethers.getSigners();

@@ -5,11 +5,11 @@
     "initialSupply": "980000000000000000000000000",
     "type": "stock",
     "pool": {
-      "busd": "1898300000000000200000000",
+      "busd": "1962700000000000000000000",
       "asset": "10000000000000000000000"
     },
-    "address": "0xC435c2934b1962F0825F43a77067216B93dEc3A0",
-    "pair": "0x153D590690B1002901da1212f4ac2a4bD9B6BD1E",
+    "address": "0x54953EeD86c3dfD04eE2d5aa4Da5690D69f48145",
+    "pair": "0x7040d4AC36F83e35425A85c980255D4b90ffb684",
     "deploy": false,
     "sinaCode": "gb_bidu",
     "gtimgCode": "usBIDU"
@@ -20,11 +20,11 @@
     "initialSupply": "980000000000000000000000000",
     "type": "stock",
     "pool": {
-      "busd": "6176900000000001000000000",
+      "busd": "6252200000000000000000000",
       "asset": "10000000000000000000000"
     },
-    "address": "0x6C4a3890Ce36Eedf9288145278600fFbe4e8C96e",
-    "pair": "0x2b8Ebe59F643dCaEFf061987841fB378b3ab200d",
+    "address": "0x198c3dc5031F0997aa38F7cFC9F8C2909cF20b8f",
+    "pair": "0x403A4b30E911810479C6CA3e0ef9F4B80F584907",
     "deploy": false,
     "sinaCode": "gb_tsla",
     "gtimgCode": "usTSLA"
@@ -35,11 +35,11 @@
     "initialSupply": "980000000000000000000000000",
     "type": "stock",
     "pool": {
-      "busd": "1183300000000000000000000",
+      "busd": "1121000000000000000000000",
       "asset": "10000000000000000000000"
     },
-    "address": "0x092fF404810e50D40AffE05bF6378E529d713a2B",
-    "pair": "0x0c39098B4e229396882a369F7C6078B778CA54A3",
+    "address": "0xE3F7d6F269F3ad67F2Cdf889e28D2eE858c6Ec8B",
+    "pair": "0xcd1A0Fd0036ad574825a37D14a87C4b056da4D93",
     "deploy": false,
     "sinaCode": "gb_arkk",
     "gtimgCode": "usARKK"
@@ -50,11 +50,11 @@
     "initialSupply": "980000000000000000000000000",
     "type": "stock",
     "pool": {
-      "busd": "364900000000000000000000",
+      "busd": "312300000000000000000000",
       "asset": "10000000000000000000000"
     },
-    "address": "0x5718782e6977a2BBde72491AB982981a58a62337",
-    "pair": "0xEa826B86f79217F7b0847F364CEe217932619E5C",
+    "address": "0xA8594e586be0789FbF8E8d437fB950cb1710F377",
+    "pair": "0xEF1538E5Fc65b498c6952b914671d043bc089b4d",
     "deploy": false,
     "sinaCode": "gb_spce",
     "gtimgCode": "usSPCE"
@@ -65,11 +65,11 @@
     "initialSupply": "980000000000000000000000000",
     "type": "stock",
     "pool": {
-      "busd": "295100000000000000000000",
+      "busd": "270500000000000000000000",
       "asset": "10000000000000000000000"
     },
-    "address": "0xE04045aBF6518E8753a11b7135e66Be639417b2c",
-    "pair": "0x0ec912E985910deA05d832508AF48f9D699e6Ca2",
+    "address": "0xD159DC32670640BeD2a9e478f7072e7787ba48aE",
+    "pair": "0xc12e405f982d4ef435670a895500be8afeA576dc",
     "deploy": false,
     "sinaCode": "gb_pacb",
     "gtimgCode": "usPACB"

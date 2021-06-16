@@ -1,5 +1,5 @@
 const {updateWebContracts} = require("../utils/resources");
-const {readKala, saveKala} = require("../utils/assets")
+const {readKala, saveKala,readWebAssets,saveWebAssets} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths");
 
 async function deploy(hre) {

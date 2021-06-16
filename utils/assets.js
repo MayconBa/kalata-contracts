@@ -51,7 +51,7 @@ function readAssets(hre) {
     return readJson(getAssetsPath(hre))
 }
 
-function saveAssets(hre,content) {
+function saveAssets(hre, content) {
     saveJson(getAssetsPath(hre), content);
 }
 
@@ -63,16 +63,9 @@ function readWebAssets(hre) {
     return readJson(getWebAssetsPath(hre))
 }
 
-function saveWebAssets(hre,content) {
+function saveWebAssets(hre, content) {
     saveJson(getWebAssetsPath(hre), content);
 }
-
-
-
-
-
-
-
 
 
 module.exports = {

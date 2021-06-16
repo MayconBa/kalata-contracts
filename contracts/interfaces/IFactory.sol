@@ -72,10 +72,26 @@ interface IFactory {
     ///    2-4. Create uniswap pair through uniswap factory
     /// 3. Call `UniswapCreationHook`
     ///    3-1. Register asset to staking contract
-    function whitelist(bytes32 name, bytes32 symbol, address oracleFeeder,
-        uint auctionDiscount, uint minCollateralRatio, uint weight) external;
+    function whitelist(
+        bytes32 name,
+        bytes32 symbol,
+        address oracleFeeder,
+        uint auctionDiscount,
+        uint minCollateralRatio,
+        uint weight
+    ) external;
 
-
+    //register exists asset
+    function registerAsset(
+        address tokenAddress,
+        address pairAddress,
+        address oracleFeeder,
+        bytes32 name,
+        bytes32 symbol,
+        uint auctionDiscount,
+        uint minCollateralRatio,
+        uint weight
+    ) external;
 
     /// Distribute
     /// Anyone can execute distribute operation to distribute
