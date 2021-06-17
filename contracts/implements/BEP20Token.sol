@@ -7,7 +7,7 @@ import "./AbstractBEP20Token.sol";
 
 //BEP20Token is initializable and upgradable
 contract BEP20Token is Initializable, AbstractBEP20Token {
-    function initialize(string memory tokenName, string memory tokenSymbol, uint tokenInitSupply) public virtual initializer {
+    function initialize(string memory tokenName, string memory tokenSymbol, uint tokenInitSupply) public   initializer {
         _initialize(tokenName, tokenSymbol, tokenInitSupply);
     }
 }

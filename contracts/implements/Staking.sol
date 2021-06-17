@@ -31,13 +31,12 @@ contract Staking is OwnableUpgradeable, IStaking {
     mapping(address => address[]) _stakedAssets;
 
 
-
     modifier onlyFactoryOrOwner() {
         require(_config.factory == msg.sender || msg.sender == owner(), "Unauthorized,only Staking's owner/factory can perform");
         _;
     }
 
-    function initialize(address factory, address govToken) override external virtual initializer {
+    function initialize(address factory, address govToken) override external initializer {
         __Ownable_init();
         _config.factory = factory;
         _config.govToken = govToken;
@@ -47,6 +46,7 @@ contract Staking is OwnableUpgradeable, IStaking {
     function setFactory(address factory) override external onlyOwner {
         require(factory != address(0), "Invalid parameter");
         _config.factory = factory;
+        emit SetFactory(factory);
     }
 
     // Registers a new staking pool for an asset token and associates the LP token(Pair) with the staking pool.
@@ -70,8 +70,9 @@ contract Staking is OwnableUpgradeable, IStaking {
 
         Reward memory reward = _rewards[msg.sender][asset];
 
-        reward.index = pool.rewardIndex;
         reward.pendingReward = reward.pendingReward.add(reward.stakingAmount.multiplyDecimal(pool.rewardIndex.sub(reward.index)));
+        reward.index = pool.rewardIndex;
+
 
         require(IBEP20Token(pool.stakingToken).transferFrom(msg.sender, address(this), stakingTokenAmount), "transferFrom fail");
 
@@ -84,7 +85,7 @@ contract Staking is OwnableUpgradeable, IStaking {
 
         saveReward(msg.sender, asset, reward.index, reward.stakingAmount, reward.pendingReward);
 
-        emit Bond(asset, stakingTokenAmount);
+        emit Stake(asset, stakingTokenAmount);
     }
 
 
@@ -104,8 +105,8 @@ contract Staking is OwnableUpgradeable, IStaking {
         require(assetStake.stakingToken != address(0), "unauthorized");
         require(rewardInfo.stakingAmount >= amount, "Cannot unbond more than bond amount");
 
-        rewardInfo.index = assetStake.rewardIndex;
         rewardInfo.pendingReward = rewardInfo.pendingReward.add(rewardInfo.stakingAmount.multiplyDecimal(assetStake.rewardIndex.sub(rewardInfo.index)));
+        rewardInfo.index = assetStake.rewardIndex;
 
         assetStake.stakingAmount = assetStake.stakingAmount.sub(amount);
         rewardInfo.stakingAmount = rewardInfo.stakingAmount.sub(amount);
@@ -117,9 +118,9 @@ contract Staking is OwnableUpgradeable, IStaking {
         }
 
         _stakes[asset] = assetStake;
-        IBEP20Token(assetStake.stakingToken).transfer(msg.sender, amount);
+        require(IBEP20Token(assetStake.stakingToken).transfer(msg.sender, amount), "transfer failed");
 
-        emit UnBond(asset, amount);
+        emit UnStake(asset, amount);
     }
 
 
@@ -127,7 +128,6 @@ contract Staking is OwnableUpgradeable, IStaking {
         Used by Factory Contract to deposit newly minted KALA tokens.
     **/
     function depositReward(address assetToken, uint amount) override external {
-        console.log("depositReward", amount);
         require(_config.factory == msg.sender, "unauthorized");
         AssetStake memory assetStake = _stakes[assetToken];
         if (assetStake.stakingAmount == 0) {
@@ -138,6 +138,7 @@ contract Staking is OwnableUpgradeable, IStaking {
             assetStake.pendingReward = 0;
         }
         _stakes[assetToken] = assetStake;
+        emit DepositReward(asset, amount);
     }
 
 
@@ -151,7 +152,7 @@ contract Staking is OwnableUpgradeable, IStaking {
         address staker = msg.sender;
         uint amount = withdrawReward(staker, _assetToken);
         if (amount > 0) {
-            IBEP20Token(_config.govToken).transfer(staker, amount);
+            require(IBEP20Token(_config.govToken).transfer(staker, amount), "transfer failed");
         }
         emit Withdraw(_assetToken, staker, amount);
     }
@@ -244,11 +245,11 @@ contract Staking is OwnableUpgradeable, IStaking {
         stakingAmounts = new uint[](assets.length);
         rewardIndexs = new uint[](assets.length);
         for (uint i = 0; i < assets.length; i++) {
-            AssetStake memory stake = _stakes[assets[i]];
-            stakingTokens[i] = stake.stakingToken;
-            pendingRewards[i] = stake.pendingReward;
-            stakingAmounts[i] = stake.stakingAmount;
-            rewardIndexs[i] = stake.rewardIndex;
+            AssetStake memory assetStake = _stakes[assets[i]];
+            stakingTokens[i] = assetStake.stakingToken;
+            pendingRewards[i] = assetStake.pendingReward;
+            stakingAmounts[i] = assetStake.stakingAmount;
+            rewardIndexs[i] = assetStake.rewardIndex;
         }
     }
 

@@ -2,6 +2,7 @@
 pragma solidity >=0.6.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "../interfaces/IMint.sol";
 import "../interfaces/IOracle.sol";
 import "../interfaces/IBEP20Token.sol";
@@ -14,11 +15,11 @@ import "../libraries/SafeDecimalMath.sol";
     Current prices of collateral and minted mAssets are read from the Oracle Contract determine the C-ratio of each CDP.
     The Mint Contract also contains the logic for liquidating CDPs with C-ratios below the minimum for their minted mAsset through auction.
 */
-contract Mint is OwnableUpgradeable, IMint {
+contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
-    uint constant PRICE_EXPIRE_TIME = 60;
+    uint constant PRICE_EXPIRE_TIME = 300;
 
     Config config;
 
@@ -41,7 +42,7 @@ contract Mint is OwnableUpgradeable, IMint {
     }
 
 
-    function initialize(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate) external virtual initializer {
+    function initialize(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate) external initializer {
         __Ownable_init();
         currentpositionIndex = 1;
         require(protocolFeeRate <= SafeDecimalMath.unit(), "protocolFeeRate must be less than 100%.");
@@ -83,7 +84,7 @@ contract Mint is OwnableUpgradeable, IMint {
         emit RegisterAsset(assetToken, auctionDiscount, minCollateralRatio);
     }
 
-    function _saveAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio) internal virtual {
+    function _saveAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio) private {
         require(assetToken != address(0), "Invalid assetToken address");
         assertAuctionDiscount(auctionDiscount);
         assertMinCollateralRatio(minCollateralRatio);
@@ -101,6 +102,7 @@ contract Mint is OwnableUpgradeable, IMint {
         assetConfig.endPrice = endPrice;
         assetConfig.minCollateralRatio = SafeDecimalMath.unit();
         saveAssetConfig(assetToken, assetConfig);
+        emit RegisterMigration(assetToken, endPrice);
     }
 
     /**
@@ -112,7 +114,7 @@ contract Mint is OwnableUpgradeable, IMint {
       *  sender is the end user
       *
     */
-    function openPosition(address collateralToken, uint collateralAmount, address assetToken, uint collateralRatio) override external returns (uint){
+    function openPosition(address collateralToken, uint collateralAmount, address assetToken, uint collateralRatio) override external nonReentrant returns (uint){
         address sender = _msgSender();
         require(collateralToken != address(0), "Invalid collateralToken address");
         require(assetToken != address(0), "Invalid assetContract address");
@@ -142,10 +144,11 @@ contract Mint is OwnableUpgradeable, IMint {
         assetAmount : mintAmount
         });
 
-        idxPositionMap[position.idx] = position;
+        savePosition(position.idx, position);
 
         currentpositionIndex += 1;
         IBEP20Token(assetToken).mint(sender, mintAmount);
+
         emit OpenPosition(sender, collateralToken, collateralAmount, assetToken, collateralRatio, position.idx, mintAmount);
 
         ownerPositionIndex[sender][collateralToken][assetToken] = position.idx;
@@ -153,11 +156,9 @@ contract Mint is OwnableUpgradeable, IMint {
     }
 
 
-
-
     //Deposits additional collateral to an existing CDP to raise its C-ratio.
     //After method IERC20.approve()
-    function deposit(uint positionIndex, address collateralToken, uint collateralAmount) override external {
+    function deposit(uint positionIndex, address collateralToken, uint collateralAmount) override external nonReentrant {
         address sender = _msgSender();
         require(collateralToken != address(0), "Invalid collateralToken address");
         require(positionIndex > 0, "Invalid positionIndex");
@@ -177,7 +178,8 @@ contract Mint is OwnableUpgradeable, IMint {
 
 
         position.collateralAmount = position.collateralAmount.add(collateralAmount);
-        savePostiion(positionIndex, position);
+
+        savePosition(positionIndex, position);
 
         emit Deposit(positionIndex, collateralToken, collateralAmount);
     }
@@ -208,18 +210,18 @@ contract Mint is OwnableUpgradeable, IMint {
 
         position.collateralAmount = newCollateralAmount;
         if (position.collateralAmount == 0 && position.assetAmount == 0) {
-            removePostiion(positionIndex);
+            removePosition(positionIndex);
         } else {
-            savePostiion(positionIndex, position);
+            savePosition(positionIndex, position);
         }
-
+        require(config.protocolFeeRate > 0, "config.protocolFeeRate is zero");
         uint protocolFee = withdrawAmount.multiplyDecimal(config.protocolFeeRate);
 
         //to sender
-        IERC20(collateralToken).transfer(_msgSender(), withdrawAmount .sub(protocolFee));
+        require(IERC20(collateralToken).transfer(_msgSender(), withdrawAmount .sub(protocolFee)), "Mint:withdraw,transfer to sender failed");
 
         //to collector
-        IERC20(collateralToken).transfer(config.collector, protocolFee);
+        require(IERC20(collateralToken).transfer(config.collector, protocolFee), "Mint:withdraw,IERC20 transfer to collector failed");
 
         emit Withdraw(positionIndex, collateralToken, withdrawAmount, protocolFee);
     }
@@ -246,7 +248,7 @@ contract Mint is OwnableUpgradeable, IMint {
         require(assetValueInCollateralAsset.multiplyDecimal(assetConfig.minCollateralRatio) <= position.collateralAmount, "Cannot mint asset over than min collateral ratio");
 
         position.assetAmount = position.assetAmount.add(assetAmount);
-        savePostiion(positionIndex, position);
+        savePosition(positionIndex, position);
 
         IBEP20Token(assetConfig.token).mint(_msgSender(), assetAmount);
         emit MintEvent(positionIndex, assetToken, assetAmount);
@@ -261,15 +263,15 @@ contract Mint is OwnableUpgradeable, IMint {
         require(IERC20(position.assetToken).transferFrom(positionOwner, address(this), position.assetAmount), "transferFrom failed");
         burnAsset(position.assetToken, address(this), position.assetAmount);
 
-        IERC20(position.collateralToken).transfer(positionOwner, position.assetAmount);
-        removePostiion(positionIndex);
+        require(IERC20(position.collateralToken).transfer(positionOwner, position.assetAmount), "Mint:closePosition,transfer to postion owner failed");
+        removePosition(positionIndex);
         emit Burn(positionIndex, position.assetToken, position.assetAmount);
         emit RefundCollateralAmount(position.assetToken, position.assetAmount);
         delete ownerPositionIndex[positionOwner][position.collateralToken][position.assetToken];
     }
 
 
-    function loadDiscountedPrice(uint positionIndex, address assetToken) internal virtual returns (uint discountedPrice){
+    function loadDiscountedPrice(uint positionIndex, address assetToken) private view returns (uint discountedPrice){
         Position memory position = idxPositionMap[positionIndex];
         AssetConfig memory assetConfig = assetConfigMap[assetToken];
 
@@ -321,16 +323,16 @@ contract Mint is OwnableUpgradeable, IMint {
 
         if (leftCollateralAmount == 0) {
             // all collaterals are sold out
-            removePostiion(positionIndex);
+            removePosition(positionIndex);
         } else if (leftAssetAmount == 0) {
             // all assets are paid
-            removePostiion(positionIndex);
+            removePosition(positionIndex);
             // refunds left collaterals to position owner
             messages[messages.length] = AssetTransfer(position.collateralToken, address(this), position.owner, leftCollateralAmount);
         } else {
             position.collateralAmount = leftCollateralAmount;
             position.assetAmount = leftAssetAmount;
-            savePostiion(positionIndex, position);
+            savePosition(positionIndex, position);
         }
 
         burnAsset(assetToken, sender, liquidatedAssetAmount);
@@ -455,59 +457,58 @@ contract Mint is OwnableUpgradeable, IMint {
     }
 
 
-    ///// internal methods///////
-    function assertMigratedAsset(uint endPrice) pure internal virtual {
+    ///// private methods///////
+    function assertMigratedAsset(uint endPrice) pure private {
         require(endPrice == 0, "Operation is not allowed for the deprecated asset");
     }
 
-    function assertCollateral(address positionCollateralToken, address collateralToken, uint collateralAmount) pure internal virtual {
+    function assertCollateral(address positionCollateralToken, address collateralToken, uint collateralAmount) pure private {
         require(positionCollateralToken == collateralToken && collateralAmount != 0, " Wrong collateral");
     }
 
     // Check zero balance & same asset with position
-    function assertAsset(address postionAssetToken, address assetToken, uint assetAmount) internal virtual {
+    function assertAsset(address postionAssetToken, address assetToken, uint assetAmount) pure private {
         require(assetToken == postionAssetToken && assetAmount > 0, "Wrong asset");
     }
     //positionOwner=>collateralToken=>assetToken=>positionIndex
     mapping(address => mapping(address => mapping(address => uint))) ownerPositionIndex;
 
-    //Since openPostion function cannot  return value(because it's a transaction,only returns transaction receipt), use this method to get the positionIndex
+    //Since openPosition function cannot  return value(because it's a transaction,only returns transaction receipt), use this method to get the positionIndex
     function queryPositionIndex(address postionOwner, address collateralToken, address assetToken) override external view returns (uint positionIndex){
         positionIndex = ownerPositionIndex[postionOwner][collateralToken][assetToken];
     }
 
-    function queryPrice(address targetAssetToken, address denominateAssetToken, uint blockTime) internal virtual view returns (uint){
+    function queryPrice(address targetAssetToken, address denominateAssetToken, uint blockTime) private view returns (uint){
         (uint relativePrice, uint targetLastUpdatedTime, uint denominateLastUpdatedTime) = IOracle(config.oracle).queryPriceByDenominate(targetAssetToken, denominateAssetToken);
         if (blockTime > 0) {
             uint requiredTime = blockTime.sub(PRICE_EXPIRE_TIME);
-            //TODO,add time check
-            //require(targetLastUpdatedTime >= requiredTime && denominateLastUpdatedTime >= requiredTime, "Price is too old");
+            require(targetLastUpdatedTime >= requiredTime && denominateLastUpdatedTime >= requiredTime, "Price is too old");
         }
         return relativePrice;
 
     }
 
-    function calculateProtocolFee(uint returnCollateralAmount) internal virtual returns (uint protocolFee){
+    function calculateProtocolFee(uint returnCollateralAmount) private view returns (uint protocolFee){
         protocolFee = returnCollateralAmount.multiplyDecimal(config.protocolFeeRate).divideDecimal(SafeDecimalMath.unit());
     }
 
-    function transferAsset(address assetToken, address sender, address recipient, uint amount) internal virtual {
+    function transferAsset(address assetToken, address sender, address recipient, uint amount) private {
         require(IERC20(assetToken).transferFrom(sender, recipient, amount), "Unable to execute transferFrom, recipient may have reverted");
     }
 
-    function burnAsset(address assetToken, address tokenOwner, uint amount) internal virtual {
+    function burnAsset(address assetToken, address tokenOwner, uint amount) private {
         IBEP20Token(assetToken).burn(tokenOwner, amount);
     }
 
-    function assertAuctionDiscount(uint auctionDiscount) internal virtual {
+    function assertAuctionDiscount(uint auctionDiscount) pure private {
         require(auctionDiscount <= SafeDecimalMath.unit(), "auctionDiscount must be less than 100%.");
     }
 
-    function assertMinCollateralRatio(uint minCollateralRatio) internal virtual pure {
+    function assertMinCollateralRatio(uint minCollateralRatio) private pure {
         require(minCollateralRatio >= SafeDecimalMath.unit(), "minCollateralRatio must be bigger than 100%");
     }
 
-    function saveAssetConfig(address assetToken, AssetConfig memory assetConfig) internal virtual {
+    function saveAssetConfig(address assetToken, AssetConfig memory assetConfig) private {
         bool exists = false;
         for (uint i = 0; i < assetTokenArray.length; i++) {
             if (assetTokenArray[i] == assetToken) {
@@ -521,7 +522,7 @@ contract Mint is OwnableUpgradeable, IMint {
         assetConfigMap[assetToken] = assetConfig;
     }
 
-    function savePostiion(uint positionIndex, Position memory position) internal virtual {
+    function savePosition(uint positionIndex, Position memory position) private {
         bool exists = false;
         for (uint i = 0; i < postionIdxArray.length; i++) {
             if (postionIdxArray[i] == positionIndex) {
@@ -535,7 +536,7 @@ contract Mint is OwnableUpgradeable, IMint {
         idxPositionMap[positionIndex] = position;
     }
 
-    function removePostiion(uint positionIndex) internal virtual {
+    function removePosition(uint positionIndex) private {
         delete idxPositionMap[positionIndex];
         uint length = postionIdxArray.length;
         for (uint i = 0; i < length; i++) {

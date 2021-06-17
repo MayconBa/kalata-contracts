@@ -17,7 +17,6 @@
     "goerli:deploy": "hardhat deploy --network goerli",
     "kovan:deploy": "hardhat deploy --network kovan",
     "localhost:deploy": "hardhat deploy --network localhost",
-    "localhost:test": "hardhat --network localhost test",
     "localhost:node": "rm -Rf publish/deployed/localhost && hardhat node --no-deploy",
     "localhost:service": "hardhat run scripts/service --network localhost",
     "hardhat:deploy": "hardhat deploy --network hardhat",

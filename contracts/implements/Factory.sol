@@ -25,7 +25,7 @@ contract Factory is OwnableUpgradeable, IFactory {
     using Bytes32 for bytes32;
     using ContractFactory for bytes;
 
-    uint constant KALATA_TOKEN_WEIGHT = 300;
+    //uint constant KALATA_TOKEN_WEIGHT = 300;
     uint constant NORMAL_TOKEN_WEIGHT = 30;
     uint constant DISTRIBUTION_INTERVAL = 60;
 
@@ -51,7 +51,7 @@ contract Factory is OwnableUpgradeable, IFactory {
         address mint, address oracle, address staking,
         address uniswapFactory,
         address baseToken, address govToken
-    ) external virtual initializer {
+    ) external initializer {
         __Ownable_init();
         _updateConfig(mint, oracle, staking, uniswapFactory, baseToken, govToken);
         _totalWeight = 32;

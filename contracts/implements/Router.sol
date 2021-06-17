@@ -21,7 +21,7 @@ contract Router is OwnableUpgradeable, IRouter {
 
     Config config;
 
-    function initialize(address uniswapFactory, address factory, address busdAddress, address kalaAddress) external virtual initializer {
+    function initialize(address uniswapFactory, address factory, address busdAddress, address kalaAddress) external   initializer {
         __Ownable_init();
         config = Config(uniswapFactory, factory, busdAddress, kalaAddress);
     }

@@ -17,14 +17,20 @@ interface IOracle {
 
 
     function setFactory(address factory) external;
+    event SetFactory(address factory);
 
     function registerAssets(address[] memory assets, address[] memory feeders) external;
+    event RegisterAssets(address[] assets, address[] feeders);
+
 
     function registerAsset(address asset, address feeder) external;
+    event RegisterAsset(address asset, address feeder);
 
     function feedPrice(address asset, uint price) external;
+    event FeedPrice(address asset, uint price);
 
     function feedPrices(address[] calldata adddresses, uint[] calldata prices) external;
+    event FeedPrices(address[] adddresses, uint[] prices);
 
     function queryFeeder(address asset) external view returns (address);
 

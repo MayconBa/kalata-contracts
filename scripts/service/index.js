@@ -22,7 +22,7 @@ const start = async () => {
     try {
         setInterval(() => distribute(hre), 3600 * 2 * 1000);
         setInterval(() => collectPrices(hre), 5 * 1000);
-        setInterval(() => batchFeed(hre), 60 * 10 * 1000);
+        setInterval(() => batchFeed(hre), 55 * 5 * 1000);
         await fastify.listen(3001)
     } catch (err) {
         fastify.log.error(err)

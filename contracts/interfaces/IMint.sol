@@ -104,6 +104,7 @@ interface IMint {
     event UpdateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate);
     event UpdateAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio);
     event RegisterAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio);
+    event RegisterMigration(address assetToken, uint endPrice);
     event Deposit(uint positionIndex, address collateralToken, uint collateralAmount);
     event OpenPosition(address sender, address collateralToken, uint collateralAmount, address assetToken, uint collateralRatio, uint positionIndex, uint mintAmount);
     event Withdraw(uint positionIndex, address collateralToken, uint collateralAmount, uint protocolFee);

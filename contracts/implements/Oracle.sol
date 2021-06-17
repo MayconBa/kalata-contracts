@@ -26,7 +26,7 @@ contract Oracle is OwnableUpgradeable, IOracle {
         _;
     }
 
-    function initialize(address factory, address defaultDenominateToken) external virtual initializer {
+    function initialize(address factory, address defaultDenominateToken) external initializer {
         __Ownable_init();
         require(factory != address(0) && defaultDenominateToken != address(0), "Invalid address");
         config = Config(factory, defaultDenominateToken);
@@ -35,6 +35,7 @@ contract Oracle is OwnableUpgradeable, IOracle {
     function setFactory(address factory) override external onlyOwner {
         require(factory != address(0), "Invalid address");
         config.factory = factory;
+        emit SetFactory(factory);
     }
 
     function registerAssets(address[] memory assets, address[] memory feeders) override external onlyFactoryOrOwner {
@@ -42,18 +43,14 @@ contract Oracle is OwnableUpgradeable, IOracle {
         for (uint i = 0; i < assets.length; i++) {
             _registerAsset(assets[i], feeders[i]);
         }
+        emit RegisterAssets(assets, feeders);
     }
 
     function registerAsset(address asset, address feeder) override external onlyFactoryOrOwner {
         _registerAsset(asset, feeder);
+        emit RegisterAsset(asset, feeder);
     }
 
-    function _registerAsset(address asset, address feeder) internal virtual {
-        require(asset != address(0), "Invalid asset address");
-        require(feeder != address(0), "Invalid feeder address");
-        assetFeederMap[asset] = feeder;
-        assetArray.push(asset);
-    }
 
     function feedPrices(address[] calldata assets, uint[] calldata prices) override external {
         require(assets.length == prices.length, "Invalid parameters");
@@ -61,10 +58,12 @@ contract Oracle is OwnableUpgradeable, IOracle {
         for (uint i; i < assets.length; i++) {
             _feedPrice(feeder, assets[i], prices[i]);
         }
+        emit FeedPrices(assets, prices);
     }
 
     function feedPrice(address asset, uint price) override external {
         _feedPrice(_msgSender(), asset, price);
+        emit FeedPrice(asset, price);
     }
 
     function _feedPrice(address feeder, address asset, uint price) internal {
@@ -73,7 +72,7 @@ contract Oracle is OwnableUpgradeable, IOracle {
         assetPriceMap[asset] = PriceInfo({price : price, lastUpdatedTime : block.timestamp});
     }
 
-    function readPrice(address token) internal virtual view returns (uint price, uint lastUpdatedTime){
+    function readPrice(address token) internal view returns (uint price, uint lastUpdatedTime){
         if (config.defaultDenominateToken == token) {
             price = SafeDecimalMath.unit();
             lastUpdatedTime = 2 ** 256 - 1;
@@ -127,5 +126,14 @@ contract Oracle is OwnableUpgradeable, IOracle {
                 break;
             }
         }
+    }
+
+
+    function _registerAsset(address asset, address feeder) private {
+        require(asset != address(0), "Invalid asset address");
+        require(feeder != address(0), "Invalid feeder address");
+        assetFeederMap[asset] = feeder;
+        assetArray.push(asset);
+
     }
 }

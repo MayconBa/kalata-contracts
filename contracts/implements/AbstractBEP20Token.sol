@@ -23,7 +23,7 @@ abstract contract AbstractBEP20Token is IBEP20Token, OwnableUpgradeable {
     string private _name;
 
 
-    function _initialize(string memory tokenName, string memory tokenSymbol, uint tokenInitSupply) internal virtual {
+    function _initialize(string memory tokenName, string memory tokenSymbol, uint tokenInitSupply) internal   {
         __ERC20_init(tokenName, tokenSymbol);
         _mint(_msgSender(), tokenInitSupply);
         __Ownable_init();
@@ -225,7 +225,7 @@ abstract contract AbstractBEP20Token is IBEP20Token, OwnableUpgradeable {
         _burn(account, amount);
     }
 
-    function _burn(address account, uint256 amount) internal virtual {
+    function _burn(address account, uint256 amount) internal   {
         require(account != address(0), "ERC20: burn from the zero address");
 
         _balances[account] = _balances[account].sub(amount, "ERC20: burn amount exceeds balance");
@@ -247,7 +247,7 @@ abstract contract AbstractBEP20Token is IBEP20Token, OwnableUpgradeable {
      *
      * - `to` cannot be the zero address.
      */
-    function _mint(address account, uint256 amount) internal virtual {
+    function _mint(address account, uint256 amount) internal   {
         require(account != address(0), "ERC20: mint to the zero address");
         _totalSupply = _totalSupply.add(amount);
         _balances[account] = _balances[account].add(amount);
