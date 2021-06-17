@@ -138,7 +138,7 @@ contract Staking is OwnableUpgradeable, IStaking {
             assetStake.pendingReward = 0;
         }
         _stakes[assetToken] = assetStake;
-        emit DepositReward(asset, amount);
+        emit DepositReward(assetToken, amount);
     }
 
 
