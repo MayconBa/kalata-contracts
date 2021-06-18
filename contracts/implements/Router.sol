@@ -21,7 +21,7 @@ contract Router is OwnableUpgradeable, IRouter {
 
     Config config;
 
-    function initialize(address uniswapFactory, address factory, address busdAddress, address kalaAddress) external   initializer {
+    function initialize(address uniswapFactory, address factory, address busdAddress, address kalaAddress) external initializer {
         __Ownable_init();
         config = Config(uniswapFactory, factory, busdAddress, kalaAddress);
     }
@@ -30,7 +30,6 @@ contract Router is OwnableUpgradeable, IRouter {
         address[] memory assets,
         uint[] memory prices
     ){
-
         (,,address[] memory addresses,) = IFactory(config.factory).queryAssets();
         assets = new address[](addresses.length + 1);
         prices = new uint[](addresses.length + 1);
@@ -41,11 +40,12 @@ contract Router is OwnableUpgradeable, IRouter {
         for (uint i = 0; i < assets.length; i++) {
             address assetAddress = assets[i];
             address pairAddress = IUniswapV2Factory(config.uniswapFactory).getPair(assetAddress, config.busdAddress);
-            (uint112 reserve0, uint112 reserve1,) = IUniswapV2Pair(pairAddress).getReserves();
-            uint busdReserve = uint(config.busdAddress < assetAddress ? reserve0 : reserve1);
-            uint assetReserve = uint(config.busdAddress < assetAddress ? reserve1 : reserve0);
-            prices[i] = busdReserve.divideDecimal(assetReserve);
+            if (pairAddress != address(0)) {
+                (uint112 reserve0, uint112 reserve1,) = IUniswapV2Pair(pairAddress).getReserves();
+                uint busdReserve = uint(config.busdAddress < assetAddress ? reserve0 : reserve1);
+                uint assetReserve = uint(config.busdAddress < assetAddress ? reserve1 : reserve0);
+                prices[i] = assetReserve > 0 ? busdReserve.divideDecimal(assetReserve) : 0;
+            }
         }
-
     }
 }

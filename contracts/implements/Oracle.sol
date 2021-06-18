@@ -89,7 +89,7 @@ contract Oracle is OwnableUpgradeable, IOracle {
     }
 
     //asset: Asset for which to get price
-    //denominateToken: (HumanAddr / 'uusd') ,Asset in which price will be denominated
+    //denominateToken: (HumanAddr / 'busd') ,Asset in which price will be denominated
     function queryPriceByDenominate(address asset, address denominateAsset) override external view returns (uint relativePrice, uint lastUpdatedTime, uint denominateLastUpdatedTime){
         require(asset != address(0), "Invalid asset address");
         require(denominateAsset != address(0), "Invalid denominateAsset address");
@@ -97,6 +97,8 @@ contract Oracle is OwnableUpgradeable, IOracle {
         uint denominateTokenPrice;
         (tokenPrice, lastUpdatedTime) = readPrice(asset);
         (denominateTokenPrice, denominateLastUpdatedTime) = readPrice(denominateAsset);
+        require(tokenPrice > 0, "Oracle price is zero");
+        require(denominateTokenPrice > 0, "Oracle price is zero");
         relativePrice = tokenPrice.divideDecimal(denominateTokenPrice);
     }
 

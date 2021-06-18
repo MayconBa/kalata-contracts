@@ -5,7 +5,11 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 async function waitReceipt(promise) {
     let receipt = await promise;
-    return await receipt.wait()
+    if (receipt && receipt.wait) {
+        return await receipt.wait()
+    } else {
+        return receipt
+    }
 }
 
 async function deploy(hre, name, contractFacotryOptions) {

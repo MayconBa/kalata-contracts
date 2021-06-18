@@ -249,7 +249,7 @@
     ]
   },
   "UniswapV2Factory": {
-    "address": "0xF8Ab1507ac0725298276E3Ae7Ff26A3F7F33Ec01",
+    "address": "0x7C806aEa5fD5406180da70edF3DC94bfbdFFBE1b",
     "abi": [
       {
         "anonymous": false,
@@ -417,7 +417,7 @@
     ]
   },
   "UniswapV2Router02": {
-    "address": "0xA71D58dd85D21b6e7Ae9840593b93B4C424EcF30",
+    "address": "0x1784Ea977728b61a4E2A73F8b2a3183D6cBb342c",
     "abi": [
       {
         "inputs": [],
@@ -1373,7 +1373,7 @@
     ]
   },
   "Oracle": {
-    "address": "0x7E39128fA41292412c3217Fdad9F2F6126b33Bee",
+    "address": "0x0d23A8062Ad1fF65F1B8A3C6aCE2c27BABD2949B",
     "abi": [
       {
         "anonymous": false,
@@ -1578,6 +1578,25 @@
           }
         ],
         "name": "RegisterAsset",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "endPrice",
+            "type": "uint256"
+          }
+        ],
+        "name": "RegisterMigration",
         "type": "event"
       },
       {
@@ -2153,13 +2172,13 @@
     ]
   },
   "Staking": {
-    "address": "0xB437716ad1b28701c34dD61AdeeF4a9D2828E3B5",
+    "address": "0x4D3da4A41d8dF7f88893ED0Fc3B32697B3ed5907",
     "abi": [
       {
         "anonymous": false,
         "inputs": [
           {
-            "indexed": true,
+            "indexed": false,
             "internalType": "address",
             "name": "asset",
             "type": "address"
@@ -2171,7 +2190,7 @@
             "type": "uint256"
           }
         ],
-        "name": "Bond",
+        "name": "DepositReward",
         "type": "event"
       },
       {
@@ -2197,6 +2216,38 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": false,
+            "internalType": "address",
+            "name": "factory",
+            "type": "address"
+          }
+        ],
+        "name": "SetFactory",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "stakingTokenAmount",
+            "type": "uint256"
+          }
+        ],
+        "name": "Stake",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
             "indexed": true,
             "internalType": "address",
             "name": "asset",
@@ -2209,7 +2260,7 @@
             "type": "uint256"
           }
         ],
-        "name": "UnBond",
+        "name": "UnStake",
         "type": "event"
       },
       {
@@ -2527,7 +2578,7 @@
     ]
   },
   "Mint": {
-    "address": "0x0201ed90D893bA327A147884A362AB01dEf07aA9",
+    "address": "0x22b7B0E258a6e54565db97044b18b0738f793777",
     "abi": [
       {
         "anonymous": false,
@@ -2732,6 +2783,25 @@
           }
         ],
         "name": "RegisterAsset",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "endPrice",
+            "type": "uint256"
+          }
+        ],
+        "name": "RegisterMigration",
         "type": "event"
       },
       {
@@ -3307,7 +3377,7 @@
     ]
   },
   "Factory": {
-    "address": "0x0891930F2f56FF44eE983D1587a4957b2a9F5ca8",
+    "address": "0x126a404F95f1f36941434F94779C586bDaEb7F99",
     "abi": [
       {
         "anonymous": false,
@@ -3827,7 +3897,7 @@
     ]
   },
   "Router": {
-    "address": "0xf741053fF54047305FD20D926002fBdE3f7FC7C6",
+    "address": "0x0E0Aa875F268030474db68A981F02f81F61509ea",
     "abi": [
       {
         "inputs": [],

@@ -127,6 +127,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
         require(assetConfig.token == assetToken, "Asset not registed");
         require(assetConfig.endPrice == 0, "Operation is not allowed for the deprecated asset");
+        require(assetConfig.minCollateralRatio > 0, "Invalid config.minCollateralRatio");
         require(collateralRatio >= assetConfig.minCollateralRatio, "Can not open a position with low collateral ratio than minimum");
 
         uint relativeCollateralPrice = queryPrice(collateralToken, assetToken, block.timestamp);
@@ -149,9 +150,8 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         currentpositionIndex += 1;
         IBEP20Token(assetToken).mint(sender, mintAmount);
 
-        emit OpenPosition(sender, collateralToken, collateralAmount, assetToken, collateralRatio, position.idx, mintAmount);
-
         ownerPositionIndex[sender][collateralToken][assetToken] = position.idx;
+        emit OpenPosition(sender, collateralToken, collateralAmount, assetToken, collateralRatio, position.idx, mintAmount);
         return position.idx;
     }
 

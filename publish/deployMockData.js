@@ -69,10 +69,12 @@ async function createPairs(hre) {
                 await waitReceipt(factoryInstance.registerAsset(assetInfo.address, assetInfo.pair, oracleFeeder, bytes32Name, bytes32Symbol,
                     auctionDiscount.toString(), minCollateralRatio.toString(), weight.toString())
                 )
+                console.log(`register asset ${symbol},${assetAddress}`);
             } else {
                 await waitReceipt(factoryInstance.whitelist(bytes32Name, bytes32Symbol, oracleFeeder, auctionDiscount.toString(),
                     minCollateralRatio.toString(), weight.toString()));
                 assetAddress = await factoryInstance.queryToken(bytes32Symbol);
+                console.log(`whitelist asset ${symbol},${assetAddress}`);
             }
 
             if (assetAddress === ZERO_ADDRESS) {
@@ -80,7 +82,7 @@ async function createPairs(hre) {
                 process.exit(502);
             } else {
                 assetInfo.address = assetAddress;
-                console.log(`Asset ${symbol} deployed to network ${hre.network.name} with address ${assetAddress}`);
+                //console.log(`Asset ${symbol} deployed to network ${hre.network.name} with address ${assetAddress}`);
                 if (!assetInfo.initialSupply) {
                     let assetToken = await loadToken(hre, assetAddress);
                     await waitReceipt(assetToken.mint(deployer.address, initialSupply));
