@@ -20,8 +20,9 @@ fastify.get('/api/app/build', async (request, reply) => {
 const start = async () => {
     await collectPrices(hre);
     await batchFeed(hre);
+    //await distribute(hre);
     try {
-        setInterval(() => distribute(hre), 3600 * 2 * 1000);
+        //setInterval(() => distribute(hre), 3600 * 2 * 1000);
         setInterval(() => collectPrices(hre), 5 * 1000);
         setInterval(() => batchFeed(hre), 55 * 5 * 1000);
         await fastify.listen(3001)

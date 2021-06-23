@@ -1,7 +1,7 @@
 const {updateWebContracts} = require("../utils/resources");
 const {readContracts, saveContracts} = require("../utils/resources")
 const {readKala, readBUSD} = require("../utils/assets")
-const {loadContract, loadToken} = require("../utils/contract")
+const {loadContract, loadToken,waitReceipt} = require("../utils/contract")
 const {toUnitString} = require("../utils/maths");
 const moment = require("moment");
 const CONTRACT_CLASS = "Factory";
@@ -48,7 +48,7 @@ async function deploy(hre) {
                 console.log(`${name}.initialize.factory is set to ${deployedContract.address}`);
             }
             const kalaToken = await loadToken(hre, kalaTokenAddress, deployer);
-            let receipt = await kalaToken.registerMinters([mintAddress, deployedContract.address]);
+            let receipt = await waitReceipt(kalaToken.registerMinters([mintAddress, deployedContract.address]));
             console.log(`kalaToken.registerMinters:${JSON.stringify(receipt)}`,)
         }
         deployedContract.deploy = false;

@@ -75,7 +75,7 @@ contract Factory is OwnableUpgradeable, IFactory {
         );
 
         delete _distributionSchedules;
-        _lastDistributeIndex = 0;
+
         for (uint i; i < startTimes.length; i++) {
             require(endTimes[i] > startTimes[i], "End time should be greater than start time");
             if (i > 0) {
@@ -131,38 +131,36 @@ contract Factory is OwnableUpgradeable, IFactory {
     //3rd year: genesisTime+(63093600 to 94629600),   distribute 137250 kala tokens
     //4th year: genesisTime+(94629600 to 126165600),  distribute 68625 kala tokens
     function distribute() override external {
-        require(block.timestamp.sub(_lastDistributed) >= DISTRIBUTION_INTERVAL, "Cannot distribute Kalata Token before interval");
-
+        require(block.timestamp.sub(_lastDistributed) >= DISTRIBUTION_INTERVAL, "distribute failed, too frequently");
         uint timeElapsed = block.timestamp.sub(_genesisTime);
-
         uint distributedAmount = 0;
-
-        for (uint i = _lastDistributeIndex; i < _distributionSchedules.length; i++) {
+        for (uint i = 0; i < _distributionSchedules.length; i++) {
             DistributionSchedule memory schedule = _distributionSchedules[i];
-            if (timeElapsed >= schedule.startTime) {
+            if (schedule.startTime <= timeElapsed && timeElapsed < schedule.endTime) {
                 uint timeSlot = schedule.endTime.sub(schedule.startTime);
-                uint timeDuration = Math.min(timeElapsed, schedule.endTime).sub(Math.max(schedule.startTime, _lastDistributed));
+                uint timeDuration = Math.min(timeElapsed, schedule.endTime).sub(
+                    Math.max(schedule.startTime, _lastDistributed > _genesisTime ? _lastDistributed.sub(_genesisTime) : 0)
+                );
                 uint amount = timeDuration.multiplyDecimal(schedule.amount.divideDecimal(timeSlot));
                 distributedAmount = amount;
-                if (_lastDistributeIndex != i) {
-                    _lastDistributeIndex = i;
-                }
                 break;
             }
         }
         if (distributedAmount > 0) {
+            IBEP20Token(_config.govToken).mint(_config.staking, distributedAmount);
+            IStaking staking = IStaking(_config.staking);
             for (uint i = 0; i < _addresses.length; i++) {
                 address token = _addresses[i];
-                uint amount = distributedAmount.multiplyDecimal(_assetWeights[token]).divideDecimal(_totalWeight);
-                if (amount > 0) {
-                    IBEP20Token(_config.govToken).mint(_config.staking, amount);
-                    //IStaking(_config.staking).depositReward(_config.govToken, amount);
-                    IStaking(_config.staking).depositReward(token, amount);
+                if (token != address(0)) {
+                    uint amount = distributedAmount.multiplyDecimal(_assetWeights[token]).divideDecimal(_totalWeight);
+                    if (amount > 0) {
+                        staking.depositReward(token, amount);
+                        emit Distribute(token, amount);
+                    }
                 }
             }
         }
         _lastDistributed = block.timestamp;
-        emit Distribute(distributedAmount);
     }
 
     //uint public interestRate = (5 * SafeDecimalMath.unit()) / 100;

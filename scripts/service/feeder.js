@@ -79,6 +79,7 @@ async function feedPrices(hre, addressPricePairs) {
     // const queryResult = JSON.stringify(queryAssets.map((token, index) => {
     //     return {token, price: queryPrices[index].toString(), lastUpdateTime: queryUpdates[index].toString()}
     // }));
+    await receipt.wait()
     logger.info(`feeder:${JSON.stringify(receipt)}`);
 }
 

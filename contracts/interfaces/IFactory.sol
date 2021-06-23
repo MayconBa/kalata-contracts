@@ -146,7 +146,7 @@ interface IFactory {
     );
 
     event RevokeAsset(address assetToken, uint endPrice);
-    event Distribute(uint distributedAmount);
+    event Distribute(address asset, uint amount);
     event UpdateConfig(uint[] scheduleStartTime, uint[] scheduleEndTime, uint[] scheduleAmounts);
     event UpdateWeight(address assetToken, uint weight);
     event TokenCreated(bytes32 name, bytes32 symbol, uint initialSupply, address token);

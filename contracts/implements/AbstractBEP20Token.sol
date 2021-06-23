@@ -260,8 +260,8 @@ abstract contract AbstractBEP20Token is IBEP20Token, OwnableUpgradeable {
     modifier onlyMinterOrOwner() {
         bool allowed = owner() == _msgSender();
         if (!allowed) {
-            for (uint j = 0; j < minters.length; j++) {
-                if (minters[j] == _msgSender()) {
+            for (uint i = 0; i < minters.length; i++) {
+                if (minters[i] == _msgSender()) {
                     allowed = true;
                     break;
                 }
