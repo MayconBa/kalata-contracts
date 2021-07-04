@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.6.0;
 
-
 import "hardhat/console.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "../interfaces/IStaking.sol";
-import "../libraries/SafeDecimalMath.sol";
-import "../interfaces/IBEP20Token.sol";
+import "./interfaces/IStaking.sol";
+import "./libraries/SafeDecimalMath.sol";
+import "./interfaces/IBEP20Token.sol";
 
 
 // The Staking Contract contains the logic for LP Token staking and reward distribution.
@@ -16,20 +15,19 @@ contract Staking is OwnableUpgradeable, IStaking {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
-    Config _config;
+    Config private _config;
 
     //asset => Stake
-    mapping(address => AssetStake) _stakes;
+    mapping(address => AssetStake) private _stakes;
 
     //used for loop _stakes
-    address[] _assets;
+    address[] private _assets;
 
     //staker=>assetToken=>Reward
-    mapping(address => mapping(address => Reward)) _rewards;
+    mapping(address => mapping(address => Reward)) private _rewards;
 
     //staker=>assetToken[], used for loop _rewards easily
-    mapping(address => address[]) _stakedAssets;
-
+    mapping(address => address[]) private _stakedAssets;
 
     modifier onlyFactoryOrOwner() {
         require(_config.factory == msg.sender || msg.sender == owner(), "Unauthorized,only Staking's owner/factory can perform");
@@ -42,11 +40,10 @@ contract Staking is OwnableUpgradeable, IStaking {
         _config.govToken = govToken;
     }
 
-
     function setFactory(address factory) override external onlyOwner {
         require(factory != address(0), "Invalid parameter");
         _config.factory = factory;
-        emit SetFactory(factory);
+        emit SetFactory(msg.sender, factory);
     }
 
     // Registers a new staking pool for an asset token and associates the LP token(Pair) with the staking pool.
@@ -56,7 +53,7 @@ contract Staking is OwnableUpgradeable, IStaking {
         require(_stakes[asset].stakingToken == address(0), "Asset was already registered");
         _stakes[asset] = AssetStake({stakingToken : pair, pendingReward : 0, stakingAmount : 0, rewardIndex : 0});
         _assets.push(asset);
-        emit RegisterAsset(asset, pair);
+        emit RegisterAsset(msg.sender, asset, pair);
     }
 
     // Can be issued when the user sends LP Tokens to the Staking contract.
@@ -85,9 +82,8 @@ contract Staking is OwnableUpgradeable, IStaking {
 
         saveReward(msg.sender, asset, reward.index, reward.stakingAmount, reward.pendingReward);
 
-        emit Stake(asset, stakingTokenAmount);
+        emit Stake(msg.sender, asset, stakingTokenAmount);
     }
-
 
 
     /**
@@ -120,7 +116,7 @@ contract Staking is OwnableUpgradeable, IStaking {
         _stakes[asset] = assetStake;
         require(IBEP20Token(assetStake.stakingToken).transfer(msg.sender, amount), "transfer failed");
 
-        emit UnStake(asset, amount);
+        emit UnStake(msg.sender, asset, amount);
     }
 
 
@@ -138,7 +134,7 @@ contract Staking is OwnableUpgradeable, IStaking {
             assetStake.pendingReward = 0;
         }
         _stakes[assetToken] = assetStake;
-        emit DepositReward(assetToken, amount);
+        emit DepositReward(msg.sender, assetToken, amount);
     }
 
 
@@ -154,7 +150,7 @@ contract Staking is OwnableUpgradeable, IStaking {
         if (amount > 0) {
             require(IBEP20Token(_config.govToken).transfer(staker, amount), "transfer failed");
         }
-        emit Withdraw(_assetToken, staker, amount);
+        emit Withdraw(msg.sender, _assetToken, amount);
     }
 
     function withdrawReward(address staker, address assetToken) private returns (uint){
@@ -257,8 +253,6 @@ contract Staking is OwnableUpgradeable, IStaking {
     ///// private methods ///
 
 
-
-
     function saveReward(address sender, address assetToken, uint _index, uint _stakingAmount, uint _pendingReward) private {
         uint exists = 0;
         for (uint i = 0; i < _stakedAssets[sender].length; i++) {
@@ -291,6 +285,5 @@ contract Staking is OwnableUpgradeable, IStaking {
         }
         delete _rewards[sender][assetToken];
     }
-
 
 }

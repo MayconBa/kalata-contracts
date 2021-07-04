@@ -1,3 +1,5 @@
+const {saveWBNB} = require("../utils/assets");
+const {readWBNB} = require("../utils/assets");
 const {readContracts} = require("../utils/resources")
 const {readBUSD, readAssets, saveAssets, readWebAssets, saveWebAssets, readKala, saveKala} = require("../utils/assets")
 const {toUnit, humanBN} = require("../utils/maths")
@@ -31,6 +33,7 @@ let deployedAssets, deployedWebAssets;
 let uniswapV2Factory, deployedContracts;
 let usdToken, usdInfo;
 let factoryInstance;
+let routerInstance;
 
 
 async function init(hre) {
@@ -39,15 +42,17 @@ async function init(hre) {
     usdInfo = readBUSD(hre);
     usdToken = await loadToken(hre, usdInfo.address);
     deployedContracts = readContracts(hre) || {};
-    let Artifact = await hre.artifacts.readArtifact("Factory");
+    let FactoryArtifact = await hre.artifacts.readArtifact("Factory");
     let [deployer] = await hre.ethers.getSigners();
-    factoryInstance = new hre.ethers.Contract(deployedContracts["Factory"].address, Artifact.abi, deployer);
+    factoryInstance = new hre.ethers.Contract(deployedContracts["Factory"].address, FactoryArtifact.abi, deployer);
+
+    let RouterArtifact = await hre.artifacts.readArtifact("Router");
+    routerInstance = new hre.ethers.Contract(deployedContracts["Router"].address, RouterArtifact.abi, deployer);
     deployedWebAssets = readWebAssets(hre) || {};
 }
 
 async function createPairs(hre) {
     let [deployer] = await hre.ethers.getSigners();
-    let oracleFeeder = deployer.address;
     let auctionDiscount = toUnit("0.50")
     let minCollateralRatio = toUnit("1.5");
     let weight = toUnit("1");
@@ -66,12 +71,12 @@ async function createPairs(hre) {
                 process.exit(503);
             }
             if (assetInfo.address && assetInfo.pair) {
-                await waitReceipt(factoryInstance.registerAsset(assetInfo.address, assetInfo.pair, oracleFeeder, bytes32Name, bytes32Symbol,
+                await waitReceipt(factoryInstance.registerAsset(assetInfo.address, assetInfo.pair, bytes32Name, bytes32Symbol,
                     auctionDiscount.toString(), minCollateralRatio.toString(), weight.toString())
                 )
                 console.log(`register asset ${symbol},${assetAddress}`);
             } else {
-                await waitReceipt(factoryInstance.whitelist(bytes32Name, bytes32Symbol, oracleFeeder, auctionDiscount.toString(),
+                await waitReceipt(factoryInstance.whitelist(bytes32Name, bytes32Symbol, auctionDiscount.toString(),
                     minCollateralRatio.toString(), weight.toString()));
                 assetAddress = await factoryInstance.queryToken(bytes32Symbol);
                 console.log(`whitelist asset ${symbol},${assetAddress}`);
@@ -130,6 +135,38 @@ async function batchAddLiquidity(hre) {
             new Promise(resolve => setTimeout(resolve, 5000));
         }
 
+    }
+}
+
+async function addLiquidityForWBNB(hre) {
+    deployedWebAssets = readWebAssets(hre) || {};
+    let [deployer] = await hre.ethers.getSigners();
+    let wbnb = readWBNB(hre);
+    if (!wbnb.pool) {
+        let price = 304;
+        let assetAmount = 10000000;
+        let busdAmount = price * assetAmount;
+        assetAmount = toUnit(assetAmount);
+        busdAmount = toUnit(busdAmount);
+        console.log(`addLiquidity for WBNB, busdAmount:${humanBN(busdAmount)},assetAmount:${humanBN(assetAmount)}`)
+        await waitReceipt(addLiquidity(hre, deployer, wbnb.address, assetAmount, busdAmount));
+        wbnb.pool = {
+            pair: await uniswapV2Factory.getPair(wbnb.address, usdToken.address),
+            busd: busdAmount.toString(),
+            asset: assetAmount.toString()
+        }
+        saveWBNB(hre, wbnb);
+
+        deployedWebAssets[wbnb.symbol] = {
+            name: wbnb.name,
+            symbol: wbnb.symbol,
+            address: wbnb.address,
+            pair: wbnb.pool.pair,
+            png: `https://api.kalata.io/api/deployed/assets/WBNB.png`,
+            svg: `https://api.kalata.io/api/deployed/assets/WBNB.svg`,
+        }
+        saveWebAssets(hre, deployedWebAssets);
+        console.log("routerInstance.addExtraAsset(wbnb)", await routerInstance.addExtraAsset(wbnb.address));
     }
 }
 
@@ -204,6 +241,7 @@ module.exports = {
     deploy: async (hre) => {
         await init(hre);
         await addLiquidityForKala(hre);
+        await addLiquidityForWBNB(hre);
         await createPairs(hre);
         await batchAddLiquidity(hre);
 

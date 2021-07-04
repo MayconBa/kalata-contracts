@@ -101,17 +101,16 @@ interface IMint {
         uint[] memory assetAmounts
     );
 
-    event UpdateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate);
-    event UpdateAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio);
-    event RegisterAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio);
-    event RegisterMigration(address assetToken, uint endPrice);
-    event Deposit(uint positionIndex, address collateralToken, uint collateralAmount);
-    event OpenPosition(address sender, address collateralToken, uint collateralAmount, address assetToken, uint collateralRatio, uint positionIndex, uint mintAmount );
-    event Withdraw(uint positionIndex, address collateralToken, uint collateralAmount, uint protocolFee);
-    event MintEvent(uint positionIndex, address assetToken, uint assetAmount);
-    event Burn(uint positionIndex, address assetToken, uint assetAmount);
-    event RefundCollateralAmount(address token, uint amount);
-    event Auction(uint positionIndex, address positionOwner, uint returnCollateralAmount, uint liquidatedAssetAmount, uint protocolFee);
+    event UpdateConfig(address indexed sender, address indexed factory, address indexed oracle, address collector, address baseToken, uint protocolFeeRate);
+    event UpdateAsset(address indexed sender, address indexed assetToken, uint indexed auctionDiscount, uint minCollateralRatio);
+    event RegisterAsset(address indexed sender, address indexed assetToken, uint auctionDiscount, uint minCollateralRatio);
+    event RegisterMigration(address indexed sender, address indexed assetToken, uint endPrice);
+    event Deposit(address indexed sender, uint positionIndex, address indexed collateralToken, uint collateralAmount);
+    event OpenPosition(address indexed sender, address indexed collateralToken, uint collateralAmount, address indexed assetToken, uint collateralRatio, uint positionIndex, uint mintAmount);
+    event Withdraw(address indexed sender, uint positionIndex, address indexed collateralToken, uint collateralAmount, uint protocolFee);
+    event Mint(address indexed sender, uint positionIndex, address indexed assetToken, uint assetAmount);
+    event Burn(address indexed sender, uint positionIndex, address indexed assetToken, uint assetAmount);
+    event Auction(address indexed sender, uint positionIndex, address indexed positionOwner, uint returnCollateralAmount, uint liquidatedAssetAmount, uint protocolFee);
 }
 
 

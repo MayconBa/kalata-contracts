@@ -113,7 +113,8 @@ module.exports = {
     deployUniswapV2Factory,
     deployUniswapV2Router02,
     randomAddress,
-    waitReceipt
+    waitReceipt,
+    loadContractByAbi
 };
 
 

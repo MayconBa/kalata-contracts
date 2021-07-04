@@ -1379,13 +1379,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "positionIndex",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "positionOwner",
             "type": "address"
@@ -1416,13 +1422,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "positionIndex",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -1441,13 +1453,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "positionIndex",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "collateralToken",
             "type": "address"
@@ -1466,13 +1484,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "positionIndex",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -1484,20 +1508,20 @@
             "type": "uint256"
           }
         ],
-        "name": "MintEvent",
+        "name": "Mint",
         "type": "event"
       },
       {
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "sender",
             "type": "address"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "collateralToken",
             "type": "address"
@@ -1509,7 +1533,7 @@
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -1540,26 +1564,13 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
-            "name": "token",
+            "name": "sender",
             "type": "address"
           },
           {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "RefundCollateralAmount",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -1584,7 +1595,13 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -1603,13 +1620,19 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "uint256",
             "name": "auctionDiscount",
             "type": "uint256"
@@ -1628,13 +1651,19 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "factory",
             "type": "address"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "oracle",
             "type": "address"
@@ -1665,13 +1694,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "positionIndex",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "collateralToken",
             "type": "address"
@@ -2178,7 +2213,13 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "asset",
             "type": "address"
@@ -2199,6 +2240,12 @@
           {
             "indexed": true,
             "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
             "name": "asset",
             "type": "address"
           },
@@ -2216,9 +2263,15 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "address",
-            "name": "factory",
+            "name": "indexedfactory",
             "type": "address"
           }
         ],
@@ -2228,6 +2281,12 @@
       {
         "anonymous": false,
         "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
           {
             "indexed": true,
             "internalType": "address",
@@ -2250,6 +2309,12 @@
           {
             "indexed": true,
             "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
             "name": "asset",
             "type": "address"
           },
@@ -2269,13 +2334,13 @@
           {
             "indexed": true,
             "internalType": "address",
-            "name": "asset",
+            "name": "sender",
             "type": "address"
           },
           {
             "indexed": true,
             "internalType": "address",
-            "name": "sender",
+            "name": "asset",
             "type": "address"
           },
           {
@@ -2584,13 +2649,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "positionIndex",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "positionOwner",
             "type": "address"
@@ -2621,13 +2692,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "positionIndex",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -2646,13 +2723,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "positionIndex",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "collateralToken",
             "type": "address"
@@ -2671,13 +2754,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "positionIndex",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -2689,20 +2778,20 @@
             "type": "uint256"
           }
         ],
-        "name": "MintEvent",
+        "name": "Mint",
         "type": "event"
       },
       {
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "sender",
             "type": "address"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "collateralToken",
             "type": "address"
@@ -2714,7 +2803,7 @@
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -2745,26 +2834,13 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
-            "name": "token",
+            "name": "sender",
             "type": "address"
           },
           {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "RefundCollateralAmount",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -2789,7 +2865,13 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -2808,13 +2890,19 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "uint256",
             "name": "auctionDiscount",
             "type": "uint256"
@@ -2833,13 +2921,19 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "factory",
             "type": "address"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "oracle",
             "type": "address"
@@ -2870,13 +2964,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "positionIndex",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "collateralToken",
             "type": "address"
@@ -3383,7 +3483,13 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "asset",
             "type": "address"
@@ -3402,13 +3508,19 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
             "indexed": false,
             "internalType": "uint256",
             "name": "endPrice",
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -3421,7 +3533,13 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -3439,6 +3557,12 @@
       {
         "anonymous": false,
         "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
           {
             "indexed": false,
             "internalType": "bytes32",
@@ -3458,7 +3582,7 @@
             "type": "uint256"
           },
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
             "name": "token",
             "type": "address"
@@ -3470,6 +3594,12 @@
       {
         "anonymous": false,
         "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
           {
             "indexed": false,
             "internalType": "uint256[]",
@@ -3496,7 +3626,13 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "address",
             "name": "assetToken",
             "type": "address"
@@ -3730,11 +3866,6 @@
             "type": "address"
           },
           {
-            "internalType": "address",
-            "name": "oracleFeeder",
-            "type": "address"
-          },
-          {
             "internalType": "bytes32",
             "name": "name",
             "type": "bytes32"
@@ -3875,11 +4006,6 @@
             "type": "bytes32"
           },
           {
-            "internalType": "address",
-            "name": "oracleFeeder",
-            "type": "address"
-          },
-          {
             "internalType": "uint256",
             "name": "auctionDiscount",
             "type": "uint256"
@@ -3906,6 +4032,57 @@
     "address": "0x0E0Aa875F268030474db68A981F02f81F61509ea",
     "abi": [
       {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "name": "AddExtraAsset",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "name": "RemoveExtraAsset",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "name": "addExtraAsset",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
         "inputs": [],
         "name": "queryAssetPricesFromPool",
         "outputs": [
@@ -3921,6 +4098,32 @@
           }
         ],
         "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "queryExtraAssets",
+        "outputs": [
+          {
+            "internalType": "address[]",
+            "name": "",
+            "type": "address[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "name": "removeExtraAsset",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
       }
     ]

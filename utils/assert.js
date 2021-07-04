@@ -193,9 +193,9 @@ module.exports = Object.assign({}, assert, {
      *  @param expectedBN The BN.js amount you expected to receive, allowing a varience of +/- 100 units
      */
     bnClose: (actualBN, expectedBN, varianceParam = '10') => {
-        const actual = BN.isBN(actualBN) ? actualBN : new BN(actualBN);
-        const expected = BN.isBN(expectedBN) ? expectedBN : new BN(expectedBN);
-        const variance = BN.isBN(varianceParam) ? varianceParam : new BN(varianceParam);
+        const actual = BN.isBN(actualBN) ? actualBN : new BN(actualBN.toString());
+        const expected = BN.isBN(expectedBN) ? expectedBN : new BN(expectedBN.toString());
+        const variance = BN.isBN(varianceParam) ? varianceParam : new BN(varianceParam.toString());
         const actualDelta = expected.sub(actual).abs();
 
         assert.ok(

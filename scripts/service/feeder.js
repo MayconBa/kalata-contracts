@@ -75,12 +75,8 @@ async function feedPrices(hre, addressPricePairs) {
     let addresses = addressPricePairs.map(item => item.address);
     let prices = addressPricePairs.map(item => toUnitString(item.price));
     const receipt = await oracleInstance.feedPrices(addresses, prices, {gasLimit: 2500000});
-    // let [queryAssets, queryPrices, queryUpdates] = await oracleInstance.queryAllPrices();
-    // const queryResult = JSON.stringify(queryAssets.map((token, index) => {
-    //     return {token, price: queryPrices[index].toString(), lastUpdateTime: queryUpdates[index].toString()}
-    // }));
     await receipt.wait()
-    logger.info(`feeder:${JSON.stringify(receipt)}`);
+    logger.info(`feeder:${receipt.hash}`);
 }
 
 

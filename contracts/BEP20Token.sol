@@ -2,15 +2,15 @@
 
 pragma solidity >=0.6.0;
 
-
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import "../interfaces/IBEP20Token.sol";
+import "./interfaces/IBEP20Token.sol";
 
 
-abstract contract AbstractBEP20Token is IBEP20Token, OwnableUpgradeable {
+contract BEP20Token is Initializable, IBEP20Token, OwnableUpgradeable {
     using SafeMathUpgradeable for uint256;
 
     mapping(address => uint256) private _balances;
@@ -23,7 +23,7 @@ abstract contract AbstractBEP20Token is IBEP20Token, OwnableUpgradeable {
     string private _name;
 
 
-    function _initialize(string memory tokenName, string memory tokenSymbol, uint tokenInitSupply) internal   {
+    function initialize(string memory tokenName, string memory tokenSymbol, uint tokenInitSupply) public initializer {
         __ERC20_init(tokenName, tokenSymbol);
         _mint(_msgSender(), tokenInitSupply);
         __Ownable_init();

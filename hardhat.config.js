@@ -17,6 +17,43 @@ task("accounts", "Prints the list of accounts", async () => {
     }
 });
 
+task("transfer-test-busd", "Batch transfer Test Kalas").addParam("amount", "The account's address").setAction(async taskArgs => {
+    const hre = require("hardhat");
+    if (hre.network.name !== 'testnet') {
+        return;
+    }
+    let amount = taskArgs.amount;
+    const moment = require("moment");
+    const fs = require('fs');
+    const {readJson, saveJson} = require("./utils/json")
+    const {toUnitString} = require("./utils/maths")
+    const {abi} = await hre.artifacts.readArtifact("IBEP20Token");
+    const {loadContractByAbi} = require("./utils/contract")
+    const {readBUSD} = require("./utils/assets");
+    let busdInfo = readBUSD(hre);
+    let busdToken = await loadContractByAbi(hre, abi, busdInfo.address);
+    const date = moment().format('YYYY-MM-DD');
+    const folder = `${__dirname}/transfer/${hre.network.name}/${date}`
+    //console.log(folder)
+    const logFile = `${folder}/log.json`
+    const transferLogs = readJson(logFile) || {};
+    let transferred = Object.keys(transferLogs).length;
+    await busdToken.mint('0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0', toUnitString("10000000000"));
+    console.log("transferred:", transferred)
+    let index = 0;
+    for (let line of fs.readFileSync(`${folder}/list.txt`, "utf-8").split("\n")) {
+        let account = line.trim();
+        //console.log(line)
+        if (account.startsWith("0x") && account.length === 42 && !transferLogs[account]) {
+            let result = await busdToken.transfer(account, toUnitString(amount));
+            let transferLog = {account, amount: amount, transaction: result.hash, time: moment().format()};
+            console.log(transferred + (++index), JSON.stringify(transferLog))
+            transferLogs[account] = transferLog
+            saveJson(logFile, transferLogs);
+        }
+    }
+});
+
 task("balance", "Prints an account's balance")
     .addParam("account", "The account's address")
     .setAction(async taskArgs => {

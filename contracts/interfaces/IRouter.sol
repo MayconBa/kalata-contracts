@@ -9,6 +9,15 @@ interface IRouter {
         uint[] memory prices //asset price
     );
 
+    function addExtraAsset(address asset) external;
+
+    function removeExtraAsset(address asset) external;
+
+    function queryExtraAssets() external view returns (address[] memory);
+
+    event AddExtraAsset(address indexed sender, address indexed asset);
+    event RemoveExtraAsset(address indexed sender, address indexed asset);
+
 }
 
 

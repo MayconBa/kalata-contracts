@@ -1,7 +1,0 @@
-{
-  "name": "Token Wrapped BNB",
-  "symbol": "BNB",
-  "initialSupply": "10000000000000000000000000000",
-  "address": "0x7aC09BFB6C63DE72243475faAa40c509AfD79230",
-  "deploy": false
-}

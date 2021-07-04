@@ -11,11 +11,11 @@ function getBNBPath(hre) {
     return path.resolve(getResourceFolder(hre), "wbnb.json");
 }
 
-function readBNB(hre) {
+function readWBNB(hre) {
     return readJson(getBNBPath(hre))
 }
 
-function saveBNB(hre, content) {
+function saveWBNB(hre, content) {
     saveJson(getBNBPath(hre), content);
 }
 
@@ -76,8 +76,8 @@ module.exports = {
     getKalaPath,
     readKala,
     saveKala,
-    readBNB,
-    saveBNB,
+    readWBNB,
+    saveWBNB,
     readBUSD,
     saveBUSD,
 }

@@ -3,7 +3,6 @@
     "name": "Kalata",
     "symbol": "Kala",
     "address": "0x32299c93960bb583a43c2220dc89152391a610c5",
-    "pair": "0x1f265319577E24413C665f8fcb08ae4cfFd97Fe9",
     "png": "https://api.kalata.io/api/deployed/assets/KALA.png",
     "svg": "https://api.kalata.io/api/deployed/assets/KALA.svg"
   },
@@ -46,5 +45,13 @@
     "pair": "0x4595AAc2f74cC73A84B8286821a9a0972fDaB145",
     "png": "https://api.kalata.io/api/deployed/assets/PACB.png",
     "svg": "https://api.kalata.io/api/deployed/assets/PACB.svg"
+  },
+  "WBNB": {
+    "name": "Token Wrapped BNB",
+    "symbol": "WBNB",
+    "address": "0xfe33F5cb81A3e1b3Cb425b12c81D004fcF714BCe",
+    "pair": "0xeD183dEAbF22F24108407Bf0dc9400C6E5d746b7",
+    "png": "https://api.kalata.io/api/deployed/assets/WBNB.png",
+    "svg": "https://api.kalata.io/api/deployed/assets/WBNB.svg"
   }
 }

@@ -1,5 +1,5 @@
 const {saveContracts, readContracts,  } = require("../utils/resources")
-const {readBNB} = require("../utils/assets")
+const {readWBNB} = require("../utils/assets")
 const UniswapV2Router02Artifact = require("@uniswap/v2-periphery/build/UniswapV2Router02.json");
 const {updateWebContracts} = require("../utils/resources");
 const CONTRACT_CLASS = "UniswapV2Router02";
@@ -13,7 +13,7 @@ async function deploy(hre) {
     let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true, upgradable: false};
     if (deployedContract.deploy) {
         const factory = deployedContracts['UniswapV2Factory'].address;
-        const WETH = readBNB(hre).address;
+        const WETH = readWBNB(hre).address;
         let UniswapV2Router02 = new hre.web3.eth.Contract(abi, null, {data: bytecode});
         let result = await UniswapV2Router02.deploy({data: bytecode, arguments: [factory, WETH]}).send({
             from: deployer.address,

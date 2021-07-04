@@ -9,7 +9,7 @@ const UNIT = toWei(new BN('1'), 'ether');
  *  @param amount The amount you want to re-base to UNIT
  */
 const toUnit = amount => toBN(toWei(amount.toString(), 'ether'));
-const fromUnit = amount => fromWei(amount, 'ether');
+const fromUnit = amount => fromWei(amount.toString(), 'ether');
 
 const toBNString = amount => (new BN(amount)).toString(10);
 const toUnitString = amount => toUnit(amount).toString(10);
@@ -21,6 +21,8 @@ const humanBN = d => {
 const humanBNNumber = (d) => {
     return parseFloat(humanBN(d));
 }
+
+
 
 /**
  *  Translates an amount to our canonical precise unit. We happen to use 10^27, which means we can

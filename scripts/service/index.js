@@ -4,6 +4,8 @@ const fastify = require('fastify')({logger: true})
 const {collectPrices} = require('./collector')
 const {batchFeed} = require('./feeder')
 const {distribute} = require('./factory')
+const {TransactionLog} = require('./transactionLog')
+const {Timelock} = require('./timelock')
 const {logger} = require('./logger')
 
 //http://127.0.0.1:3001/api/private/build
@@ -18,11 +20,14 @@ fastify.get('/api/app/build', async (request, reply) => {
 
 
 const start = async () => {
-    await collectPrices(hre);
-    await batchFeed(hre);
-    //await distribute(hre);
+    let transactionLog = new TransactionLog(hre);
+    await transactionLog.init();
+    let timelock = new Timelock(hre);
+    await timelock.init();
     try {
-        //setInterval(() => distribute(hre), 3600 * 2 * 1000);
+        setInterval(() => timelock.execute(), 60 * 1000);
+        setInterval(() => distribute(hre), 3600 * 2 * 1000);
+        setInterval(() => transactionLog.collect(), 30 * 1000);
         setInterval(() => collectPrices(hre), 5 * 1000);
         setInterval(() => batchFeed(hre), 55 * 5 * 1000);
         await fastify.listen(3001)

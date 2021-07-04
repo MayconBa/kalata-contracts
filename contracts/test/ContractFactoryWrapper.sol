@@ -4,7 +4,7 @@ pragma solidity >=0.6.0;
 //import "hardhat/console.sol";
 import "../libraries/ContractFactory.sol";
 import "../libraries/Bytes32.sol";
-import "../implements/BEP20Token.sol";
+import "../BEP20Token.sol";
 
 contract ContractFactoryWrapper {
     using ContractFactory for bytes;

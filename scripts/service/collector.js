@@ -1,12 +1,13 @@
 const got = require('got');
+const {fromUnit} = require("../../utils/maths");
 const {readContracts} = require("../../utils/resources");
 const {loadContract} = require("../../utils/contract");
 const {readAssets, readKala} = require("../../utils/assets");
-const {humanBNNumber} = require("../../utils/maths");
 const {logger} = require("./logger");
 
-//const URL = 'http://localhost:8080/api/finance/symbol/price/update';
-const URL = 'https://api.kalata.io/api/finance/symbol/price/update';
+//const URL = 'http://localhost:8089/api/finance/symbol/updatePrices';
+const URL = 'https://api.kalata.io/api/finance/symbol/updatePrices';
+
 
 async function collectPrices(hre) {
     const [signer] = await hre.ethers.getSigners();
@@ -24,10 +25,12 @@ async function collectPrices(hre) {
     let requestBody = [];
     for (let i = 0; i < prices.length; i++) {
         let address = assets[i];
-        let price = parseFloat(humanBNNumber(prices[i]).toFixed(4));
+        let price = parseFloat(fromUnit(prices[i].toString())) ;
+        //let price=1.0000;
         let symbol = kala.address.toUpperCase() === address.toUpperCase() ? kala.symbol : addressSymbolMap[address];
         requestBody.push({symbol, price})
     }
+
     const {body} = await got.post(URL, {json: requestBody,});
     logger.info(`Collector:${JSON.stringify({url: URL, request: requestBody, response: body})}`,)
 }

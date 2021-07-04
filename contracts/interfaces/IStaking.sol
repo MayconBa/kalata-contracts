@@ -27,32 +27,19 @@ interface IStaking {
         uint pendingReward;
     }
 
-
     function initialize(address factory, address _govToken) external;
 
     function setFactory(address factory) external;
 
-    event SetFactory(address factory);
-
     function registerAsset(address asset, address stakingToken) external;
-
-    event RegisterAsset(address indexed asset, address indexed stakingToken);
 
     function stake(address asset, uint stakingTokenAmount) external;
 
-    event Stake(address indexed asset, uint stakingTokenAmount);
-
     function unStake(address asset, uint amount) external;
-
-    event UnStake(address indexed asset, uint amount);
 
     function depositReward(address asset, uint amount) external;
 
-    event DepositReward(address asset, uint amount);
-
     function claim(address asset) external;
-
-    event Withdraw(address indexed asset, address indexed sender, uint amount);
 
     function queryStakes() external view returns (
         address[] memory assets,
@@ -88,10 +75,14 @@ interface IStaking {
         uint[] memory rewardIndexs
     );
 
-
     function queryConfig() external view returns (address configOwner, address govToken);
 
-
+    event SetFactory(address indexed sender, address indexedfactory);
+    event RegisterAsset(address indexed sender, address indexed asset, address indexed stakingToken);
+    event Stake(address indexed sender, address indexed asset, uint stakingTokenAmount);
+    event DepositReward(address indexed sender, address indexed asset, uint amount);
+    event Withdraw(address indexed sender, address indexed asset, uint amount);
+    event UnStake(address indexed sender, address indexed asset, uint amount);
 }
 
 

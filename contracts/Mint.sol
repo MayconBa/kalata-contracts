@@ -3,11 +3,11 @@ pragma solidity >=0.6.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
-import "../interfaces/IMint.sol";
-import "../interfaces/IOracle.sol";
-import "../interfaces/IBEP20Token.sol";
-import "../interfaces/IERC20.sol";
-import "../libraries/SafeDecimalMath.sol";
+import "./interfaces/IMint.sol";
+import "./interfaces/IOracle.sol";
+import "./interfaces/IBEP20Token.sol";
+import "./interfaces/IERC20.sol";
+import "./libraries/SafeDecimalMath.sol";
 
 /**
     The Mint Contract implements the logic for Collateralized Debt Positions (CDPs),
@@ -19,21 +19,21 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
-    uint constant PRICE_EXPIRE_TIME = 300;
+    uint private constant PRICE_EXPIRE_TIME = 300;
 
-    Config config;
+    Config private config;
 
-    mapping(address => AssetConfig) assetConfigMap;
+    mapping(address => AssetConfig) private assetConfigMap;
 
     //for looping assetConfigMap;
-    address [] assetTokenArray;
+    address [] private assetTokenArray;
 
-    mapping(uint => Position) idxPositionMap;
+    mapping(uint => Position) private idxPositionMap;
 
     //for looping idxPositionMap
-    uint[] postionIdxArray;
+    uint[] private postionIdxArray;
 
-    uint currentpositionIndex;
+    uint private currentpositionIndex;
 
 
     modifier onlyFactoryOrOwner() {
@@ -57,7 +57,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
     function updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate) override external onlyOwner {
         _updateConfig(factory, oracle, collector, baseToken, protocolFeeRate);
-        emit UpdateConfig(factory, oracle, collector, baseToken, protocolFeeRate);
+        emit UpdateConfig(msg.sender, factory, oracle, collector, baseToken, protocolFeeRate);
     }
 
 
@@ -74,14 +74,14 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
     function updateAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio) override external onlyFactoryOrOwner {
         _saveAsset(assetToken, auctionDiscount, minCollateralRatio);
-        emit UpdateAsset(assetToken, auctionDiscount, minCollateralRatio);
+        emit UpdateAsset(msg.sender, assetToken, auctionDiscount, minCollateralRatio);
 
     }
 
     function registerAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio) override external onlyFactoryOrOwner {
         require(assetConfigMap[assetToken].token == address(0), "Asset was already registered");
         _saveAsset(assetToken, auctionDiscount, minCollateralRatio);
-        emit RegisterAsset(assetToken, auctionDiscount, minCollateralRatio);
+        emit RegisterAsset(msg.sender, assetToken, auctionDiscount, minCollateralRatio);
     }
 
     function _saveAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio) private {
@@ -102,7 +102,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         assetConfig.endPrice = endPrice;
         assetConfig.minCollateralRatio = SafeDecimalMath.unit();
         saveAssetConfig(assetToken, assetConfig);
-        emit RegisterMigration(assetToken, endPrice);
+        emit RegisterMigration(msg.sender, assetToken, endPrice);
     }
 
     /**
@@ -130,7 +130,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         require(assetConfig.minCollateralRatio > 0, "Invalid config.minCollateralRatio");
         require(collateralRatio >= assetConfig.minCollateralRatio, "Can not open a position with low collateral ratio than minimum");
 
-        uint relativeCollateralPrice = queryPrice(collateralToken, assetToken, block.timestamp);
+        uint relativeCollateralPrice = queryPrice(collateralToken, assetToken);
 
         uint mintAmount = collateralAmount.multiplyDecimal(relativeCollateralPrice).divideDecimal(collateralRatio);
 
@@ -181,7 +181,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
         savePosition(positionIndex, position);
 
-        emit Deposit(positionIndex, collateralToken, collateralAmount);
+        emit Deposit(msg.sender, positionIndex, collateralToken, collateralAmount);
     }
 
 
@@ -198,7 +198,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         AssetConfig memory assetConfig = assetConfigMap[assetToken];
 
 
-        uint relativeCollateralPrice = queryPrice(position.collateralToken, position.assetToken, block.timestamp);
+        uint relativeCollateralPrice = queryPrice(position.collateralToken, position.assetToken);
 
         // Compute new collateral amount
         uint newCollateralAmount = position.collateralAmount.sub(withdrawAmount);
@@ -223,7 +223,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         //to collector
         require(IERC20(collateralToken).transfer(config.collector, protocolFee), "Mint:withdraw,IERC20 transfer to collector failed");
 
-        emit Withdraw(positionIndex, collateralToken, withdrawAmount, protocolFee);
+        emit Withdraw(msg.sender, positionIndex, collateralToken, withdrawAmount, protocolFee);
     }
 
     //In case the collateralRatio is too large, user can mint more mAssets to reduce the collateralRatio;
@@ -237,7 +237,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         AssetConfig memory assetConfig = assetConfigMap[position.assetToken];
         assertMigratedAsset(assetConfig.endPrice);
 
-        uint relativeCollateralPrice = queryPrice(position.collateralToken, position.assetToken, block.timestamp);
+        uint relativeCollateralPrice = queryPrice(position.collateralToken, position.assetToken);
 
         // Compute new asset amount
         uint newAssetAmount = assetAmount.add(position.assetAmount);
@@ -251,7 +251,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         savePosition(positionIndex, position);
 
         IBEP20Token(assetConfig.token).mint(_msgSender(), assetAmount);
-        emit MintEvent(positionIndex, assetToken, assetAmount);
+        emit Mint(msg.sender, positionIndex, assetToken, assetAmount);
     }
 
     function closePosition(uint positionIndex) override external {
@@ -265,8 +265,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
         require(IERC20(position.collateralToken).transfer(positionOwner, position.assetAmount), "Mint:closePosition,transfer to postion owner failed");
         removePosition(positionIndex);
-        emit Burn(positionIndex, position.assetToken, position.assetAmount);
-        emit RefundCollateralAmount(position.assetToken, position.assetAmount);
+        emit Burn(msg.sender, positionIndex, position.assetToken, position.assetAmount);
         delete ownerPositionIndex[positionOwner][position.collateralToken][position.assetToken];
     }
 
@@ -275,12 +274,12 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         Position memory position = idxPositionMap[positionIndex];
         AssetConfig memory assetConfig = assetConfigMap[assetToken];
 
-        uint price = queryPrice(position.assetToken, position.collateralToken, block.timestamp);
+        uint price = queryPrice(position.assetToken, position.collateralToken);
 
         // Check the position is in auction state
         // asset_amount * price_to_collateral * auction_threshold > collateral_amount
 
-        require(position.assetAmount.multiplyDecimal(price) .multiplyDecimal(assetConfig.minCollateralRatio) >= position.collateralAmount, "Cannot liquidate a safely collateralized position");
+        require(position.assetAmount.multiplyDecimal(price).multiplyDecimal(assetConfig.minCollateralRatio) >= position.collateralAmount, "Cannot liquidate a safely collateralized position");
 
         // Compute discounted price
         discountedPrice = price.multiplyDecimal(assetConfig.auctionDiscount).divideDecimal(SafeDecimalMath.unit());
@@ -355,10 +354,8 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
             if (messages[i].token != address(0)) {
                 transferAsset(messages[i].token, messages[i].sender, messages[i].recipient, messages[i].amount);
             }
-
         }
-
-        emit Auction(positionIndex, position.owner, returnCollateralAmount, liquidatedAssetAmount, protocolFee);
+        emit Auction(msg.sender, positionIndex, position.owner, returnCollateralAmount, liquidatedAssetAmount, protocolFee);
 
     }
 
@@ -478,15 +475,27 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         positionIndex = ownerPositionIndex[postionOwner][collateralToken][assetToken];
     }
 
-    function queryPrice(address targetAssetToken, address denominateAssetToken, uint blockTime) private view returns (uint){
-        (uint relativePrice, uint targetLastUpdatedTime, uint denominateLastUpdatedTime) = IOracle(config.oracle).queryPriceByDenominate(targetAssetToken, denominateAssetToken);
-        if (blockTime > 0) {
-            uint requiredTime = blockTime.sub(PRICE_EXPIRE_TIME);
-            require(targetLastUpdatedTime >= requiredTime && denominateLastUpdatedTime >= requiredTime, "Price is too old");
-        }
+    function queryPrice(address targetAssetToken, address denominateAssetToken) private view returns (uint){
+        (uint tokenPrice, uint lastUpdatedTime) = readPrice(targetAssetToken);
+        (uint denominateTokenPrice, uint denominateLastUpdatedTime) = readPrice(denominateAssetToken);
+        require(tokenPrice > 0, "Oracle price is zero");
+        require(denominateTokenPrice > 0, "Oracle price is zero");
+        uint relativePrice = tokenPrice.divideDecimal(denominateTokenPrice);
+        uint requiredTime = block.timestamp.sub(PRICE_EXPIRE_TIME);
+        // TODO
+        // require(lastUpdatedTime >= requiredTime && denominateLastUpdatedTime >= requiredTime, "Price is too old");
         return relativePrice;
 
     }
+
+    function readPrice(address token) private view returns (uint price, uint lastUpdatedTime){
+        if (config.baseToken == token) {
+            (price,lastUpdatedTime) = (SafeDecimalMath.unit(), 2 ** 256 - 1);
+        } else {
+            (price, lastUpdatedTime) = IOracle(config.oracle).queryPrice(token);
+        }
+    }
+
 
     function calculateProtocolFee(uint returnCollateralAmount) private view returns (uint protocolFee){
         protocolFee = returnCollateralAmount.multiplyDecimal(config.protocolFeeRate).divideDecimal(SafeDecimalMath.unit());
@@ -548,4 +557,6 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
             }
         }
     }
+
+
 }

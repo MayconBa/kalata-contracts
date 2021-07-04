@@ -75,7 +75,6 @@ interface IFactory {
     function whitelist(
         bytes32 name,
         bytes32 symbol,
-        address oracleFeeder,
         uint auctionDiscount,
         uint minCollateralRatio,
         uint weight
@@ -85,7 +84,6 @@ interface IFactory {
     function registerAsset(
         address tokenAddress,
         address pairAddress,
-        address oracleFeeder,
         bytes32 name,
         bytes32 symbol,
         uint auctionDiscount,
@@ -145,12 +143,12 @@ interface IFactory {
         address[] memory busdPairAddresses
     );
 
-    event RevokeAsset(address assetToken, uint endPrice);
-    event Distribute(address asset, uint amount);
-    event UpdateConfig(uint[] scheduleStartTime, uint[] scheduleEndTime, uint[] scheduleAmounts);
-    event UpdateWeight(address assetToken, uint weight);
-    event TokenCreated(bytes32 name, bytes32 symbol, uint initialSupply, address token);
-    event MigrateAsset(uint endPrice, address assetToken);
+    event RevokeAsset(address indexed sender, address indexed assetToken, uint endPrice);
+    event Distribute(address indexed sender, address  indexed asset, uint amount);
+    event UpdateConfig(address indexed sender, uint[] scheduleStartTime, uint[] scheduleEndTime, uint[] scheduleAmounts);
+    event UpdateWeight(address indexed sender, address  indexed assetToken, uint weight);
+    event TokenCreated(address indexed sender, bytes32 name, bytes32 symbol, uint initialSupply, address  indexed token);
+    event MigrateAsset(address indexed sender, uint endPrice, address  indexed assetToken);
 }
 
 
