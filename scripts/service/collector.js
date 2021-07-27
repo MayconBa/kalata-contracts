@@ -1,4 +1,6 @@
 const got = require('got');
+const {loadPair} = require("../../utils/contract");
+const {humanBN} = require("../../utils/maths");
 const {fromUnit} = require("../../utils/maths");
 const {readContracts} = require("../../utils/resources");
 const {loadContract} = require("../../utils/contract");
@@ -18,19 +20,18 @@ async function collectPrices(hre) {
     for (const asset of Object.values(readAssets(hre))) {
         addressSymbolMap[asset.address] = asset.symbol;
     }
-    //console.log(routerInstance)
-    let {prices, assets} = await routerInstance.queryAssetPricesFromPool().catch(e => {
-        console.error("myerror:", e)
+
+    let {assets, prices} = await routerInstance.queryAssetPricesFromPool().catch(e => {
+        logger.error("routerInstance.queryAssetPricesFromPool() :${e}")
     });
     let requestBody = [];
     for (let i = 0; i < prices.length; i++) {
         let address = assets[i];
-        let price = parseFloat(fromUnit(prices[i].toString())) ;
+        let price = parseFloat(fromUnit(prices[i].toString()));
         //let price=1.0000;
         let symbol = kala.address.toUpperCase() === address.toUpperCase() ? kala.symbol : addressSymbolMap[address];
         requestBody.push({symbol, price})
     }
-
     const {body} = await got.post(URL, {json: requestBody,});
     logger.info(`Collector:${JSON.stringify({url: URL, request: requestBody, response: body})}`,)
 }

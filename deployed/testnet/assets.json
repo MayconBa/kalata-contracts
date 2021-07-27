@@ -1,0 +1,87 @@
+{
+  "kBIDU": {
+    "name": "Wrapped Kalata BIDU Token",
+    "symbol": "kBIDU",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "busd": "172660000000000000000",
+      "asset": "1000000000000000000"
+    },
+    "address": "0xA44591aebaCe7dE0d945c72631DF54C7C5974455",
+    "pair": "0x7d53A6217833976dB9A4B4c0448e4E65c8c6AF62",
+    "deploy": false,
+    "sinaCode": "gb_bidu",
+    "gtimgCode": "usBIDU"
+  },
+  "kTSLA": {
+    "name": "Wrapped Kalata TSLA Token",
+    "symbol": "kTSLA",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "busd": "643380000000000000000",
+      "asset": "1000000000000000000"
+    },
+    "address": "0x22259ebfD2Ad3051664786b6AB8eCA260867f611",
+    "pair": "0xEDb9502C8653A21520F5E75d39E91E4C95699Fc2",
+    "deploy": false,
+    "sinaCode": "gb_tsla",
+    "gtimgCode": "usTSLA"
+  },
+  "kARKK": {
+    "name": "Wrapped Kalata ARKK Token",
+    "symbol": "kARKK",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "busd": "122430000000000000000",
+      "asset": "1000000000000000000"
+    },
+    "address": "0xd053Cf7B52Bf2cB61Dc305E0067119c54ee3dEa9",
+    "pair": "0xBae9C3C20ACe61e4B5c4aD7e8a0046B39Bbb2703",
+    "deploy": false,
+    "sinaCode": "gb_arkk",
+    "gtimgCode": "usARKK"
+  },
+  "kSPCE": {
+    "name": "Wrapped Kalata SPCE Token",
+    "symbol": "kSPCE",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "address": "0x6c28d3C18a752A57Ade9492BeAfFF0e018241C0E",
+    "pair": "0x1bdd76C4Ba996dfcbdb6453422A9d938B9342A41",
+    "deploy": false,
+    "sinaCode": "gb_spce",
+    "gtimgCode": "usSPCE",
+    "pool": {
+      "busd": "29580000000000000000",
+      "asset": "1000000000000000000"
+    }
+  },
+  "kPACB": {
+    "name": "Wrapped Kalata PACB Token",
+    "symbol": "kPACB",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "address": "0x288B20DE8b74b52072aF5E4E4B8177dECa08d9C6",
+    "pair": "0x30916d93cab3Cd19109AB79FA3d863FCe4d822d2",
+    "deploy": false,
+    "sinaCode": "gb_pacb",
+    "gtimgCode": "usPACB",
+    "pool": {
+      "busd": "30350000000000000000",
+      "asset": "1000000000000000000"
+    }
+  },
+  "WBNB": {
+    "name": "WBNB",
+    "symbol": "WBNB",
+    "initialSupply": "980000000000000000000000000",
+    "type": "crptoCurrency",
+    "address": "0xfe33F5cb81A3e1b3Cb425b12c81D004fcF714BCe",
+    "pair": "0xc10fE7c8E0aC6a8B4E56F16dD29498a069b65306",
+    "deploy": false,
+    "coingeckoCoinId": "binancecoin"
+  }
+}

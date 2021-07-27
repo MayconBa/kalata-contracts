@@ -1,0 +1,9 @@
+{
+  "name": "Token Wrapped BNB",
+  "symbol": "WBNB",
+  "initialSupply": "10000000000000000000000000000",
+  "deployer": "0xFE1F3ec239F6733d84f54dEa1FB911a38Fe67102",
+  "address": "0x0042F1ccA90e2dfC929e64e1d2E8794b1b71B897",
+  "deploy": false,
+  "pair": "0x0eD18fB3bD621403475607659a8f71711db895c3"
+}

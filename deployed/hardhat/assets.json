@@ -1,0 +1,62 @@
+{
+  "kBIDU": {
+    "name": "Wrapped Kalata BIDU Token",
+    "symbol": "kBIDU",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": null,
+    "address": "0x4107d032da5094FFFAB9aECb9779a536fA14B6Ff",
+    "pair": "0xED9cca33119F551b3084696cB622B31e4162363f",
+    "deploy": false,
+    "sinaCode": "gb_bidu",
+    "gtimgCode": "usBIDU"
+  },
+  "kTSLA": {
+    "name": "Wrapped Kalata TSLA Token",
+    "symbol": "kTSLA",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": null,
+    "address": "0xFE942eE5c5e2aFd366c0BA5098182602e25eD949",
+    "pair": "0xAb32f3Bce1976b1637F94Dae37acD495f0E20941",
+    "deploy": false,
+    "sinaCode": "gb_tsla",
+    "gtimgCode": "usTSLA"
+  },
+  "kARKK": {
+    "name": "Wrapped Kalata ARKK Token",
+    "symbol": "kARKK",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": null,
+    "address": "0x93f187A1b8C0045CbA1264e889Cc748f86e55F7d",
+    "pair": "0x1a922c036A6f749Cb566D0A5Dc9a3B5e3dc466C6",
+    "deploy": false,
+    "sinaCode": "gb_arkk",
+    "gtimgCode": "usARKK"
+  },
+  "kSPCE": {
+    "name": "Wrapped Kalata SPCE Token",
+    "symbol": "kSPCE",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": null,
+    "address": "0xd62d11A9E107Ad0b21dF211ab1D3175177976173",
+    "pair": "0x5052E72c6d5152CA43f7059C4fE8e6eCaa034FD9",
+    "deploy": false,
+    "sinaCode": "gb_spce",
+    "gtimgCode": "usSPCE"
+  },
+  "kPACB": {
+    "name": "Wrapped Kalata PACB Token",
+    "symbol": "kPACB",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": null,
+    "address": "0xc33c43527B7F0b80A45531a33039653DAAb786aF",
+    "pair": "0x1A6F99C755B8d5C32a6BD8081C2a9EEE818737C4",
+    "deploy": false,
+    "sinaCode": "gb_pacb",
+    "gtimgCode": "usPACB"
+  }
+}

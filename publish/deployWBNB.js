@@ -1,5 +1,4 @@
 const {readWebAssets} = require("../utils/assets");
-const {updateWebContracts} = require("../utils/resources");
 const {readWBNB, saveWBNB} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths");
 const {deployToken} = require("../utils/contract")
@@ -24,7 +23,14 @@ async function deploy(hre) {
         saveWBNB(hre, {name, symbol, address})
         return;
     }
-    let config = readWBNB(hre) || {name, symbol, initialSupply, deployer: deployer.address, address: null, deploy: true,};
+    let config = readWBNB(hre) || {
+        name,
+        symbol,
+        initialSupply,
+        deployer: deployer.address,
+        address: null,
+        deploy: true,
+    };
     if (config.deploy) {
         let token = await deployToken(hre, name, symbol, initialSupply);
         config.address = token.address;

@@ -8,7 +8,6 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "./interfaces/IFactory.sol";
 import "./interfaces/IMint.sol";
-import "./interfaces/IOracle.sol";
 import "./interfaces/IStaking.sol";
 import "./libraries/SafeDecimalMath.sol";
 import "./libraries/ContractFactory.sol";
@@ -16,21 +15,43 @@ import "./libraries/Bytes32.sol";
 import "./BEP20Token.sol";
 
 
-//The Factory contract is Kalata Protocol's central directory and organizes information related to mAssets and the Kalata Token (KALA).
-//It is also responsible for minting new KALA tokens each block and distributing them to the Staking Contract for rewarding LP Token stakers.
-//After the initial bootstrapping of Kalata Protocol contracts, the Factory is assigned to be the owner for the Mint, Oracle, Staking
 contract Factory is OwnableUpgradeable, IFactory {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using Bytes32 for bytes32;
     using ContractFactory for bytes;
 
-    //uint constant KALATA_TOKEN_WEIGHT = 300;
+    event RevokeAsset(address indexed sender, address indexed assetToken, uint endPrice);
+    event Distribute(address indexed sender, address  indexed asset, uint amount);
+    event UpdateConfig(address indexed sender, uint[] scheduleStartTime, uint[] scheduleEndTime, uint[] scheduleAmounts);
+    event UpdateWeight(address indexed sender, address  indexed assetToken, uint weight);
+    event TokenCreated(address indexed sender, bytes32 name, bytes32 symbol, uint initialSupply, address  indexed token);
+    event MigrateAsset(address indexed sender, uint endPrice, address  indexed assetToken);
+
+    struct Token {
+        bytes32 tokenName;
+        bytes32 tokenSymbol;
+        address tokenAddress;
+        address busdPairAddress;
+    }
+
+    struct DistributionSchedule {
+        uint startTime;
+        uint endTime;
+        uint amount;
+    }
+
+
+    struct Params {
+        uint auctionDiscount;
+        // Minium collateral ratio applied to asset mint
+        uint minCollateralRatio;
+        // Distribution weight (default is 30, which is 1/10 of KALA distribution weight)
+        uint weight;
+    }
+
     uint private constant NORMAL_TOKEN_WEIGHT = 30;
     uint private constant DISTRIBUTION_INTERVAL = 60;
-
-    Config private _config;
-    uint private _genesisTime;
 
     //Distribution schedule for the minting of new KALA tokens.
     //Determines the total amount of new KALA tokens minted as rewards for LP stakers over the interval [start time, end time].
@@ -46,24 +67,31 @@ contract Factory is OwnableUpgradeable, IFactory {
     mapping(bytes32 => address) private _symbolTokenMap;
     Token[] private _tokens;
 
+    //Contract address of Kalata Mint
+    address private _mint;
+    //Contract address of Kalata Staking
+    address private _staking;
+    //Contract address of Uniswap Factory
+    address private _uniswapFactory;
+    address private _baseToken;
+    //Contract address of Kalata Token (KALA)
+    address private _govToken;
 
-    function initialize(
-        address mint, address oracle, address staking,
-        address uniswapFactory,
-        address baseToken, address govToken
-    ) external initializer {
+    uint private _genesisTime;
+
+    function initialize(address mint, address staking, address uniswapFactory, address baseToken, address govToken) external initializer {
         __Ownable_init();
-        _updateConfig(mint, oracle, staking, uniswapFactory, baseToken, govToken);
+        _updateConfig(mint, staking, uniswapFactory, baseToken, govToken);
         _totalWeight = 32;
         _genesisTime = block.timestamp;
     }
 
     function updateConfig(
-        address mint, address oracle, address staking,
+        address mint, address staking,
         address uniswapFactory,
         address baseToken, address govToken
     ) override external onlyOwner {
-        _updateConfig(mint, oracle, staking, uniswapFactory, baseToken, govToken);
+        _updateConfig(mint, staking, uniswapFactory, baseToken, govToken);
     }
 
     //time schedule should be ordered by time
@@ -88,17 +116,14 @@ contract Factory is OwnableUpgradeable, IFactory {
 
     function updateWeight(address assetToken, uint weight) override external onlyOwner {
         uint originWeight = _assetWeights[assetToken];
-
         saveWeight(assetToken, weight);
-
         _totalWeight = _totalWeight.add(weight).sub(originWeight);
-
         emit UpdateWeight(msg.sender, assetToken, weight);
     }
 
     //Introduces a new mAsset to the protocol and creates markets on Uniswap. This process will:
     //    1.Instantiate the mAsset contract as a new Uniswap CW20 token
-    //    2.Register the mAsset with Kalata Oracle and Kalata Mint
+    //    2.Register the mAsset with  Kalata Mint
     //    3.Create a new Uniswap Pair for the new mAsset against USD
     //    4.Instantiate the LP Token contract associated with the pool as a new Uniswap token
     //    5.Register the LP token with the Kalata Staking contract
@@ -131,7 +156,9 @@ contract Factory is OwnableUpgradeable, IFactory {
     //3rd year: genesisTime+(63093600 to 94629600),   distribute 137250 kala tokens
     //4th year: genesisTime+(94629600 to 126165600),  distribute 68625 kala tokens
     function distribute() override external {
-        require(block.timestamp.sub(_lastDistributed) >= DISTRIBUTION_INTERVAL, "distribute failed, too frequently");
+        // TODO
+        //require(block.timestamp.sub(_lastDistributed) >= DISTRIBUTION_INTERVAL, "Factory: DISTRIBUTE_NOT_TIME");
+
         uint timeElapsed = block.timestamp.sub(_genesisTime);
         uint distributedAmount = 0;
         for (uint i = 0; i < _distributionSchedules.length; i++) {
@@ -147,8 +174,8 @@ contract Factory is OwnableUpgradeable, IFactory {
             }
         }
         if (distributedAmount > 0) {
-            IBEP20Token(_config.govToken).mint(_config.staking, distributedAmount);
-            IStaking staking = IStaking(_config.staking);
+            IBEP20Token(_govToken).mint(_staking, distributedAmount);
+            IStaking staking = IStaking(_staking);
             for (uint i = 0; i < _addresses.length; i++) {
                 address token = _addresses[i];
                 if (token != address(0)) {
@@ -164,18 +191,12 @@ contract Factory is OwnableUpgradeable, IFactory {
     }
 
     //uint public interestRate = (5 * SafeDecimalMath.unit()) / 100;
-    function revokeAsset(address assetToken, uint endPrice) override external {
+    function revokeAsset(address assetToken, uint endPrice) override external onlyOwner {
         _revokeAsset(assetToken, endPrice);
         emit RevokeAsset(msg.sender, assetToken, endPrice);
     }
 
-
-
-
-    // Can be issued by the oracle feeder of an mAsset to trigger the mAsset migration procedure.
-    // In situations where the tracked asset undergoes a corporate event such as a stock split, merger, bankruptcy, etc. and becomes difficult to reflect properly due to inconsistencies, an mAsset can be deprecated, or discontinued, with the following migration procedure initiated by the oracle feeder:
     // New replacement mAsset token, Uniswap pair, and LP tokens contracts are created, and the present values of properties of mAsset will be transferred over
-    // The oracle feeder sets the "end price" for the mAsset to the latest valid price
     // The mAsset's min. collateral ratio is set to 100%
     // At this stage:
     //    CDPs may no longer mint new tokens of the mAsset
@@ -183,9 +204,9 @@ contract Factory is OwnableUpgradeable, IFactory {
     //    Burns will take effect at the fixed "end price" for withdrawing collateral deposits
     //    LP tokens for the mAsset will stop counting for staking rewards
     //    Deprecation will not directly affect the functionality of the mAsset's Uniswap pool and users will still be able to make trades against it, although price is likely to be very unstable. Users are urged to burn the mAsset to recover their collateral if they have an open position, and are free to open a new CDP / engage in liquidity provision for the new, replacement mAsset. The old mAsset will be retired and marked as "deprecated" on front-end interfaces.
-    // Oracle Feeder of the assetToken execute this method
-    function migrateAsset(bytes32 name, bytes32 symbol, address assetToken, uint endPrice) override external {
-        (uint auctionDiscount, uint minCollateralRatio,) = IMint(_config.mint).queryAssetConfig(assetToken);
+
+    function migrateAsset(bytes32 name, bytes32 symbol, address assetToken, uint endPrice) override external onlyOwner {
+        (uint auctionDiscount, uint minCollateralRatio,) = IMint(_mint).queryAssetConfig(assetToken);
         uint weight = _revokeAsset(assetToken, endPrice);
         addToken(owner(), name, symbol, auctionDiscount, minCollateralRatio, weight);
         emit MigrateAsset(msg.sender, endPrice, assetToken);
@@ -193,19 +214,18 @@ contract Factory is OwnableUpgradeable, IFactory {
 
     function queryConfig() override external view returns (
         address mint,
-        address oracle,
+
         address staking,
         address uniswapFactory,
         address baseToken,
         address govToken
     ){
-        Config memory m = _config;
-        govToken = m.govToken;
-        mint = m.mint;
-        oracle = m.oracle;
-        uniswapFactory = m.uniswapFactory;
-        staking = m.staking;
-        baseToken = m.baseToken;
+
+        govToken = _govToken;
+        mint = _mint;
+        uniswapFactory = _uniswapFactory;
+        staking = _staking;
+        baseToken = _baseToken;
     }
 
     //Add this method beside queryConfig, because too many variables are not allowed in solidity
@@ -241,7 +261,6 @@ contract Factory is OwnableUpgradeable, IFactory {
         return _assetWeights[token];
     }
 
-    //TODO, add testcase
     function queryAllAssetWeights() override external view returns (address[] memory assets, uint[] memory weights){
         assets = _addresses;
         weights = new uint[](assets.length);
@@ -311,7 +330,7 @@ contract Factory is OwnableUpgradeable, IFactory {
         require(_symbolTokenMap[symbol] == address(0), "symbol already exists");
 
         address tokenAddress = createToken(tokenOwner, name, symbol);
-        address pairAddress = IUniswapV2Factory(_config.uniswapFactory).createPair(_config.baseToken, tokenAddress);
+        address pairAddress = IUniswapV2Factory(_uniswapFactory).createPair(_baseToken, tokenAddress);
 
         _registerAsset(tokenAddress, pairAddress, name, symbol, auctionDiscount, minCollateralRatio, weight);
     }
@@ -325,8 +344,8 @@ contract Factory is OwnableUpgradeable, IFactory {
         weight = weight == 0 ? NORMAL_TOKEN_WEIGHT : weight;
         saveWeight(tokenAddress, weight);
         _totalWeight = _totalWeight.add(weight);
-        IMint(_config.mint).registerAsset(tokenAddress, auctionDiscount, minCollateralRatio);
-        IStaking(_config.staking).registerAsset(tokenAddress, pairAddress);
+        IMint(_mint).registerAsset(tokenAddress, auctionDiscount, minCollateralRatio);
+        IStaking(_staking).registerAsset(tokenAddress, pairAddress);
     }
 
 
@@ -338,24 +357,22 @@ contract Factory is OwnableUpgradeable, IFactory {
         BEP20Token(addr).initialize(name.convertToString(), symbol.convertToString(), 0);
         address[] memory minters = new address[](2);
         minters[0] = address(this);
-        minters[1] = _config.mint;
+        minters[1] = _mint;
         BEP20Token(addr).registerMinters(minters);
         BEP20Token(addr).transferOwnership(tokenOwner);
         emit TokenCreated(msg.sender, name, symbol, 0, addr);
     }
 
-    function _updateConfig(
-        address mint, address oracle, address staking, address uniswapFactory,
-        address baseToken, address govToken
-    ) private {
-
-        require(mint != address(0), "Invalid mint address");
-        require(oracle != address(0), "Invalid oracle address");
-        require(staking != address(0), "Invalid staking address");
-        require(uniswapFactory != address(0), "Invalid uniswapFactory address");
-        require(baseToken != address(0), "Invalid baseToken address");
-        require(govToken != address(0), "Invalid govToken address");
-        _config = Config(mint, oracle, staking, uniswapFactory, baseToken, govToken);
+    function _updateConfig(address mint, address staking, address uniswapFactory, address baseToken, address govToken) private {
+        require(
+            mint != address(0) && staking != address(0) && uniswapFactory != address(0) && baseToken != address(0) && govToken != address(0),
+            "Invalid address"
+        );
+        _mint = mint;
+        _staking = staking;
+        _uniswapFactory = uniswapFactory;
+        _baseToken = baseToken;
+        _govToken = govToken;
     }
 
     function _revokeAsset(address assetToken, uint endPrice) private returns (uint weight){
@@ -364,7 +381,7 @@ contract Factory is OwnableUpgradeable, IFactory {
         weight = _assetWeights[assetToken];
         removeWeight(assetToken);
         _totalWeight = _totalWeight.sub(weight);
-        IMint(_config.mint).registerMigration(assetToken, endPrice);
+        IMint(_mint).registerMigration(assetToken, endPrice);
     }
 
 }

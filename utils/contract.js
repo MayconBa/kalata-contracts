@@ -11,7 +11,10 @@ async function waitReceipt(promise) {
         return receipt
     }
 }
-
+async function getUniswapPairinitCodeHash(hre) {
+    const {bytecode} = await hre.artifacts.readArtifact('UniswapV2Pair');
+    return hre.web3.utils.keccak256(bytecode).substring(2)
+}
 async function deploy(hre, name, contractFacotryOptions) {
     const ContractClass = await hre.ethers.getContractFactory(name, contractFacotryOptions || {});
     let instance = await ContractClass.deploy();
@@ -105,6 +108,7 @@ module.exports = {
     loadContract,
     loadToken,
     estiamteGasAndCallMethod,
+    getUniswapPairinitCodeHash,
     deployToken,
     loadPair,
     loadUniswapV2Factory,

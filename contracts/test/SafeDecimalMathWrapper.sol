@@ -4,6 +4,7 @@ pragma solidity >=0.6.0;
 import "../libraries/SafeDecimalMath.sol";
 
 contract SafeDecimalMathWrapper {
+    using SafeMath for uint;
     using SafeDecimalMath for uint;
 
     function unit() public pure returns (uint) {
@@ -16,6 +17,18 @@ contract SafeDecimalMathWrapper {
 
     function multiplyDecimal(uint x, uint y) public pure returns (uint) {
         return x.multiplyDecimal(y);
+    }
+
+    function mod(uint x, uint y) public pure returns (uint) {
+        return x.mod(y);
+    }
+
+    function f1(uint x) public pure returns (uint) {
+        return x.div(unit());
+    }
+
+    function div(uint x, uint y) public pure returns (uint) {
+        return x.div(y);
     }
 
     function multiplyDecimalRound(uint x, uint y) public pure returns (uint) {

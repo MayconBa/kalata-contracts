@@ -1,10 +1,8 @@
 const {readContracts, saveContracts} = require("../utils/resources")
-
 const UniswapV2FactoryArtifact = require("@uniswap/v2-core/build/UniswapV2Factory.json");
 const {updateWebContracts} = require("../utils/resources");
 
 const CONTRACT_CLASS = "UniswapV2Factory";
-
 
 async function deploy(hre) {
 

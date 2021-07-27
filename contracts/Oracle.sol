@@ -8,21 +8,24 @@ import "./libraries/String.sol";
 import "./libraries/SafeDecimalMath.sol";
 import "./interfaces/IPriceConsumer.sol";
 
-////https://api.coingecko.com/api/v3/coins/list?include_platform=false
-////https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,01coin&vs_currencies=usd
 contract Oracle is OwnableUpgradeable, IOracle {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     EnumerableSet.AddressSet private _priceConsumers;
     EnumerableSet.AddressSet private _assets;
 
-    function initialize() external initializer {
+    function initialize(address[] memory consumers) external initializer {
         __Ownable_init();
+        _registerPriceConsumers(consumers);
     }
 
-    function registerPriceConsumers(address[] memory priceConsumers) public onlyOwner {
-        for (uint i = 0; i < priceConsumers.length; i++) {
-            _priceConsumers.add(priceConsumers[i]);
+    function registerPriceConsumers(address[] memory consumers) public onlyOwner {
+        _registerPriceConsumers(consumers);
+    }
+
+    function _registerPriceConsumers(address[] memory consumers) private   {
+        for (uint i = 0; i < consumers.length; i++) {
+            _priceConsumers.add(consumers[i]);
         }
     }
 

@@ -15,7 +15,7 @@ const toBNString = amount => (new BN(amount)).toString(10);
 const toUnitString = amount => toUnit(amount).toString(10);
 
 const humanBN = d => {
-    return parseFloat(fromUnit(d.toString())).toFixed(2);
+    return parseFloat(fromUnit(d.toString())).toFixed(4);
 }
 
 const humanBNNumber = (d) => {

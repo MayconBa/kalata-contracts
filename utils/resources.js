@@ -4,7 +4,7 @@ const {readJson, saveJson} = require("./json")
 
 function getResourceFolder(hre) {
     //console.log('hre.config', hre.config)
-    return path.resolve(hre.config.paths.root, "publish", "deployed", hre.network.name);
+    return path.resolve(hre.config.paths.root,   "deployed", hre.network.name);
 }
 
 function deleteResource(hre) {

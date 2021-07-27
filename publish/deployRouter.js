@@ -1,8 +1,6 @@
 const {updateWebContracts} = require("../utils/resources");
 const {readContracts, saveContracts} = require("../utils/resources")
 const {readKala, readBUSD} = require("../utils/assets")
-const {loadContract} = require("../utils/contract")
-const {toUnitString} = require("../utils/maths");
 const moment = require("moment");
 const CONTRACT_CLASS = "Router";
 
@@ -13,7 +11,15 @@ async function deploy(hre) {
     const {bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
     const {abi} = await hre.artifacts.readArtifact("IRouter");
     let deployedContract = deployedContracts[CONTRACT_CLASS] || {
-        upgrade: false, name: CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true};
+        upgrade: false,
+        name: CONTRACT_CLASS,
+        address: null,
+        initialize: null,
+        deployer: deployer.address,
+        abi,
+        bytecode,
+        deploy: true
+    };
     if (deployedContract.deploy || deployedContract.upgrade) {
         const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
         if (deployedContract.upgrade) {

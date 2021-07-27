@@ -6,9 +6,10 @@ const got = require('got');
 
 
 async function batchFeed(hre) {
-    const allAssets = Object.values(require(`../../publish/deployed/${hre.network.name}/assets.json`))
+    const allAssets = Object.values(require(`../../deployed/${hre.network.name}/assets.json`))
     let stockPrices = await loadStockPrices(allAssets.filter(item => item.type === "stock"));
     let crptoCurrencyPrices = await loadCrptoCurrency(allAssets.filter(item => item.type === "crptoCurrency"));
+
     await feedPrices(hre, [...stockPrices, ...crptoCurrencyPrices]);
 }
 
@@ -59,24 +60,44 @@ async function requestGtimgStockPrices(assets) {
 }
 
 
+async function checkFeeders(kalataOracleInstance, addresses, feeder) {
+    let {assets, feeders} = await kalataOracleInstance.queryFeeders();
+    let map = {}
+    for (let i = 0; i < assets.length; i++) {
+        map[assets[i]] = feeders[i];
+    }
+    for (let asset of addresses) {
+        if (!map[asset]) {
+            let receipt = await kalataOracleInstance.registerAsset(asset, feeder).catch(e => {
+                logger.error(`kalataOracleInstance.registerAsset:${e}`,)
+            });
+            await receipt.wait()
+            logger.info(`kalataOracleInstance.registerAsset:${receipt.hash}`,)
+        }
+    }
+}
+
 async function feedPrices(hre, addressPricePairs) {
+    logger.info(`feed prices:${JSON.stringify(addressPricePairs)}`,);
     if (addressPricePairs.length === 0) {
         logger.error("nothing to feed,please check");
     }
-
-    const accounts = await hre.ethers.getSigners();
-    const signer = accounts[0];
+    const [signer] = await hre.ethers.getSigners();
     const deployedContracts = readContracts(hre);
-    const oracleAddress = deployedContracts['Oracle'].address;
+    const kalataOracle = deployedContracts['KalataOracle'].address;
 
-    const Artifact = await hre.artifacts.readArtifact("Oracle");
-    const oracleInstance = new hre.ethers.Contract(oracleAddress, Artifact.abi, signer);
+    const Artifact = await hre.artifacts.readArtifact("KalataOracle");
+    const kalataOracleInstance = new hre.ethers.Contract(kalataOracle, Artifact.abi, signer);
 
     let addresses = addressPricePairs.map(item => item.address);
+    await checkFeeders(kalataOracleInstance, addresses, signer.address)
+
     let prices = addressPricePairs.map(item => toUnitString(item.price));
-    const receipt = await oracleInstance.feedPrices(addresses, prices, {gasLimit: 2500000});
-    await receipt.wait()
-    logger.info(`feeder:${receipt.hash}`);
+    await kalataOracleInstance.feedPrices(addresses, prices, {gasLimit: 2500000}).then(receipt => {
+        logger.info(`kalataOracleInstance.feedPrices:${receipt.hash}`);
+    }).catch(e => {
+        logger.error(`kalataOracleInstance.feedPrices:${e}`);
+    })
 }
 
 
@@ -92,7 +113,6 @@ async function loadStockPrices(assets) {
     }
     return []
 }
-
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {

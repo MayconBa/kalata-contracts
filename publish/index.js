@@ -9,7 +9,11 @@ const {deploy: deployRouter} = require("./deployRouter")
 const {deploy: deployKala} = require("./deployKala")
 const {deploy: deployBUSD} = require("./deployBUSD")
 const {deploy: deployWBNB} = require("./deployWBNB")
-const {deploy: deployMockData} = require("./deployMockData")
+const {deploy: deployAssets} = require("./deployAssets")
+const {deploy: deployChainlinkOracle} = require("./deployChainlinkOracle")
+const {deploy: deployKalataOracle} = require("./deployKalataOracle")
+const {deploy: deployCollateral} = require("./deployCollateral")
+const {addLiquidityForAll} = require("./addLiquidity")
 
 async function deployAll(hre) {
     await deployBUSD(hre);
@@ -18,7 +22,10 @@ async function deployAll(hre) {
     await deployTimelock(hre);
     await deployUniswapV2Factory(hre);
     await deployUniswapV2Router02(hre);
+    await deployChainlinkOracle(hre);
+    await deployKalataOracle(hre);
     await deployOracle(hre);
+    await deployCollateral(hre);
     await deployStaking(hre);
     await deployMint(hre);
     await deployFactory(hre);
@@ -36,7 +43,10 @@ module.exports = {
     deployKala,
     deployAll,
     deployBUSD,
+    deployChainlinkOracle,
+    deployCollateral,
     //deployWBNB,
     deployTimelock,
-    deployMockData,
+    deployAssets,
+    addLiquidityForAll
 }

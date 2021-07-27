@@ -19,57 +19,92 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
-    uint private constant PRICE_EXPIRE_TIME = 300;
+    event UpdateConfig(address indexed sender, address indexed factory, address indexed oracle, address collector, address baseToken, uint protocolFeeRate);
+    event UpdateAsset(address indexed sender, address indexed assetToken, uint indexed auctionDiscount, uint minCollateralRatio);
+    event RegisterAsset(address indexed sender, address indexed assetToken, uint auctionDiscount, uint minCollateralRatio);
+    event RegisterMigration(address indexed sender, address indexed assetToken, uint endPrice);
+    event Deposit(address indexed sender, uint positionIndex, address indexed collateralToken, uint collateralAmount);
+    event OpenPosition(address indexed sender, address indexed collateralToken, uint collateralAmount, address indexed assetToken, uint collateralRatio, uint positionIndex, uint mintAmount);
+    event Withdraw(address indexed sender, uint positionIndex, address indexed collateralToken, uint collateralAmount, uint protocolFee);
+    event Mint(address indexed sender, uint positionIndex, address indexed assetToken, uint assetAmount);
+    event Burn(address indexed sender, uint positionIndex, address indexed assetToken, uint assetAmount);
 
-    Config private config;
+
+    struct AssetConfig {
+        address token;
+        uint auctionDiscount;
+        uint minCollateralRatio;
+        uint endPrice;
+    }
+
+    struct Position {
+        uint idx;
+        address owner;
+        address collateralToken; //busd
+        uint collateralAmount;
+        address assetToken;
+        uint assetAmount;
+    }
+
+    struct Asset {
+        address token;
+        uint amount;
+    }
+
+    struct AssetTransfer {
+        address token;
+        address sender;
+        address recipient;
+        uint amount;
+    }
+
+    address private _factory;
+    address private _oracle;
+    address private _collector;
+    address private _baseToken;
+    uint private _protocolFeeRate;//0.015
+    uint private _priceExpireTime;
 
     mapping(address => AssetConfig) private assetConfigMap;
 
     //for looping assetConfigMap;
     address [] private assetTokenArray;
-
     mapping(uint => Position) private idxPositionMap;
 
     //for looping idxPositionMap
     uint[] private postionIdxArray;
-
     uint private currentpositionIndex;
 
-
     modifier onlyFactoryOrOwner() {
-        require(config.factory == _msgSender() || owner() == _msgSender(), "Unauthorized, only factory/owner can perform");
+        require(_factory == _msgSender() || owner() == _msgSender(), "Unauthorized, only factory/owner can perform");
         _;
     }
 
-
-    function initialize(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate) external initializer {
+    function initialize(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime) external initializer {
         __Ownable_init();
         currentpositionIndex = 1;
         require(protocolFeeRate <= SafeDecimalMath.unit(), "protocolFeeRate must be less than 100%.");
-        _updateConfig(factory, oracle, collector, baseToken, protocolFeeRate);
+        _updateConfig(factory, oracle, collector, baseToken, protocolFeeRate, priceExpireTime);
     }
-
 
     function setFactory(address factory) override external onlyOwner {
         require(factory != address(0), "Invalid parameter");
-        config.factory = factory;
+        _factory = factory;
     }
 
-    function updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate) override external onlyOwner {
-        _updateConfig(factory, oracle, collector, baseToken, protocolFeeRate);
+    function updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime) override external onlyOwner {
+        _updateConfig(factory, oracle, collector, baseToken, protocolFeeRate, priceExpireTime);
         emit UpdateConfig(msg.sender, factory, oracle, collector, baseToken, protocolFeeRate);
     }
 
 
-    function _updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate) private {
-        config = Config({
-        factory : factory,
-        oracle : oracle,
-        collector : collector,
-        baseToken : baseToken,
-        protocolFeeRate : protocolFeeRate
-        });
-
+    function _updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime) private {
+        _factory = factory;
+        _oracle = oracle;
+        _collector = collector;
+        _baseToken = baseToken;
+        _protocolFeeRate = protocolFeeRate;
+        _priceExpireTime = priceExpireTime;
     }
 
     function updateAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio) override external onlyFactoryOrOwner {
@@ -127,7 +162,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
         require(assetConfig.token == assetToken, "Asset not registed");
         require(assetConfig.endPrice == 0, "Operation is not allowed for the deprecated asset");
-        require(assetConfig.minCollateralRatio > 0, "Invalid config.minCollateralRatio");
+        require(assetConfig.minCollateralRatio > 0, "Invalid _minCollateralRatio");
         require(collateralRatio >= assetConfig.minCollateralRatio, "Can not open a position with low collateral ratio than minimum");
 
         uint relativeCollateralPrice = queryPrice(collateralToken, assetToken);
@@ -172,11 +207,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         AssetConfig memory assetConfig = assetConfigMap[assetToken];
         assertMigratedAsset(assetConfig.endPrice);
 
-        //IERC20(collateralToken).allowance(sender, address(this));
-
         require(IERC20(collateralToken).transferFrom(sender, address(this), collateralAmount), "Unable to execute transferFrom, recipient may have reverted");
-
-
         position.collateralAmount = position.collateralAmount.add(collateralAmount);
 
         savePosition(positionIndex, position);
@@ -214,14 +245,14 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         } else {
             savePosition(positionIndex, position);
         }
-        require(config.protocolFeeRate > 0, "config.protocolFeeRate is zero");
-        uint protocolFee = withdrawAmount.multiplyDecimal(config.protocolFeeRate);
+        require(_protocolFeeRate > 0, "_protocolFeeRate is zero");
+        uint protocolFee = withdrawAmount.multiplyDecimal(_protocolFeeRate);
 
         //to sender
         require(IERC20(collateralToken).transfer(_msgSender(), withdrawAmount .sub(protocolFee)), "Mint:withdraw,transfer to sender failed");
 
         //to collector
-        require(IERC20(collateralToken).transfer(config.collector, protocolFee), "Mint:withdraw,IERC20 transfer to collector failed");
+        require(IERC20(collateralToken).transfer(_collector, protocolFee), "Mint:withdraw,IERC20 transfer to collector failed");
 
         emit Withdraw(msg.sender, positionIndex, collateralToken, withdrawAmount, protocolFee);
     }
@@ -261,111 +292,120 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         require(position.owner == positionOwner, "closePosition: unauthorized");
 
         require(IERC20(position.assetToken).transferFrom(positionOwner, address(this), position.assetAmount), "transferFrom failed");
-        burnAsset(position.assetToken, address(this), position.assetAmount);
+        IBEP20Token(position.assetToken).burn(address(this), position.assetAmount);
 
-        require(IERC20(position.collateralToken).transfer(positionOwner, position.assetAmount), "Mint:closePosition,transfer to postion owner failed");
+        uint withdrawAmount = position.collateralAmount;
+
+        uint protocolFee = withdrawAmount.multiplyDecimal(_protocolFeeRate);
+
+        //to sender
+        require(IERC20(position.collateralToken).transfer(positionOwner, withdrawAmount.sub(protocolFee)), "Mint:withdraw,transfer to sender failed");
+
+        //to collector
+        require(IERC20(position.collateralToken).transfer(_collector, protocolFee), "Mint:withdraw,IERC20 transfer to collector failed");
+
+        //require(IERC20(position.collateralToken).transfer(positionOwner, position.collateralAmount), "Mint:closePosition,transfer to postion owner failed");
+
         removePosition(positionIndex);
         emit Burn(msg.sender, positionIndex, position.assetToken, position.assetAmount);
         delete ownerPositionIndex[positionOwner][position.collateralToken][position.assetToken];
     }
 
-
-    function loadDiscountedPrice(uint positionIndex, address assetToken) private view returns (uint discountedPrice){
-        Position memory position = idxPositionMap[positionIndex];
-        AssetConfig memory assetConfig = assetConfigMap[assetToken];
-
-        uint price = queryPrice(position.assetToken, position.collateralToken);
-
-        // Check the position is in auction state
-        // asset_amount * price_to_collateral * auction_threshold > collateral_amount
-
-        require(position.assetAmount.multiplyDecimal(price).multiplyDecimal(assetConfig.minCollateralRatio) >= position.collateralAmount, "Cannot liquidate a safely collateralized position");
-
-        // Compute discounted price
-        discountedPrice = price.multiplyDecimal(assetConfig.auctionDiscount).divideDecimal(SafeDecimalMath.unit());
-    }
-
-    function auction(address sender, uint positionIndex, address assetToken, uint assetAmount) override external {
-        require(assetToken != address(0) && sender != address(0), "invalid address");
-        Position memory position = idxPositionMap[positionIndex];
-
-        assertMigratedAsset(assetConfigMap[assetToken].endPrice);
-
-        require(assetAmount <= position.assetAmount, "Cannot liquidate more than the position amount");
-
-        // Compute discounted price
-        uint discountedPrice = loadDiscountedPrice(positionIndex, assetToken);
-
-        // Convert asset value in discounted colalteral unit
-        uint assetValueInCollateralAsset = assetAmount.multiplyDecimal(discountedPrice).divideDecimal(SafeDecimalMath.unit());
-
-
-        AssetTransfer[] memory messages = new AssetTransfer[](4);
-
-        uint returnCollateralAmount;
-        uint refundAssetAmount;
-
-        if (assetValueInCollateralAsset > position.collateralAmount) {
-            // refunds left asset to position liquidator
-            refundAssetAmount = assetValueInCollateralAsset.sub(position.collateralAmount).multiplyDecimal(discountedPrice).divideDecimal(SafeDecimalMath.unit());
-            messages[messages.length] = AssetTransfer(assetToken, address(this), sender, refundAssetAmount);
-            returnCollateralAmount = position.collateralAmount;
-        } else {
-            returnCollateralAmount = assetValueInCollateralAsset;
-            refundAssetAmount = 0;
-        }
-
-        uint liquidatedAssetAmount = assetAmount.sub(refundAssetAmount);
-        uint leftAssetAmount = position.assetAmount.sub(liquidatedAssetAmount);
-        uint leftCollateralAmount = position.collateralAmount.sub(returnCollateralAmount);
-
-
-        if (leftCollateralAmount == 0) {
-            // all collaterals are sold out
-            removePosition(positionIndex);
-        } else if (leftAssetAmount == 0) {
-            // all assets are paid
-            removePosition(positionIndex);
-            // refunds left collaterals to position owner
-            messages[messages.length] = AssetTransfer(position.collateralToken, address(this), position.owner, leftCollateralAmount);
-        } else {
-            position.collateralAmount = leftCollateralAmount;
-            position.assetAmount = leftAssetAmount;
-            savePosition(positionIndex, position);
-        }
-
-        burnAsset(assetToken, sender, liquidatedAssetAmount);
-
-        uint protocolFee = calculateProtocolFee(returnCollateralAmount);
-
-        returnCollateralAmount = returnCollateralAmount.sub(protocolFee);
-
-        //Asset memory returnCollateralAsset = Asset({token : position.collateralToken, amount : returnCollateralAmount});
-        // messages.push(return_collateral_asset.into_msg(&deps, env.contract.address.clone(), sender)?);
-
-        messages[messages.length] = AssetTransfer(position.collateralToken, address(this), sender, returnCollateralAmount);
-
-        //Asset memory protocol_fee_asset = Asset({token : position.collateralToken, amount : protocolFee});
-        //  messages.push(protocol_fee_asset.into_msg(&deps, env.contract.address, deps.api.human_address(&config.collector)?)?);
-
-        messages[messages.length] = AssetTransfer(position.collateralToken, address(this), config.collector, protocolFee);
-
-        for (uint i = 0; i < messages.length; i++) {
-            if (messages[i].token != address(0)) {
-                transferAsset(messages[i].token, messages[i].sender, messages[i].recipient, messages[i].amount);
+    function queryInvalidPositioins(address asset) override external view returns (
+        uint[] memory positionIdxes,
+        address[] memory positionOwners,
+        address[] memory positionCollaterals,
+        uint[] memory positionCollateralAmounts,
+        address[] memory positionAssets,
+        uint[] memory positionAssetAmounts
+    ){
+        positionIdxes = new uint[](0);
+        positionOwners = new address[](0);
+        positionCollaterals = new address[](0);
+        positionCollateralAmounts = new uint[](0);
+        positionAssets = new address[](0);
+        positionAssetAmounts = new uint[](0);
+        (uint assetPrice,) = IOracle(_oracle).queryPrice(asset);
+        if (assetPrice > 0) {
+            uint index = 0;
+            for (uint i = 0; i < postionIdxArray.length; i++) {
+                Position memory position = idxPositionMap[postionIdxArray[i]];
+                if (position.assetToken == asset && !isValidPostion(position, assetPrice)) {
+                    positionIdxes[index] = position.idx;
+                    positionOwners[index] = position.owner;
+                    positionCollaterals[index] = position.collateralToken;
+                    positionCollateralAmounts[index] = position.collateralAmount;
+                    positionAssets[index] = position.assetToken;
+                    positionAssetAmounts[index] = position.assetAmount;
+                    index = index + 1;
+                }
             }
         }
-        emit Auction(msg.sender, positionIndex, position.owner, returnCollateralAmount, liquidatedAssetAmount, protocolFee);
+    }
+
+    function isValidPostion(Position memory position, uint assetPrice) private view returns (bool){
+        uint currentCollateralRatio = position.collateralAmount.divideDecimal(position.assetAmount.multiplyDecimal(assetPrice));
+        return currentCollateralRatio >= assetConfigMap[position.assetToken].minCollateralRatio;
+    }
+
+    function auction(uint positionIndex, uint liquidateAssetAmount) override external {
+        address sender = msg.sender;
+        Position memory position = idxPositionMap[positionIndex];
+        AssetConfig memory assetConfig = assetConfigMap[position.assetToken];
+        (uint assetPrice,) = IOracle(_oracle).queryPrice(position.assetToken);
+        require(!isValidPostion(position, assetPrice), "Mint: AUCTION_CANNOT_LIQUIDATE_SAFELY_POSITION");
+
+        // discountedPrice = assetPrice / (1 - discount)
+        uint discountedPrice = assetPrice.divideDecimal(SafeDecimalMath.unit().sub(assetConfig.auctionDiscount));
+
+        //  maxLiquidateAssetAmount = position.collateralAmount / discountedPrice
+        uint maxLiquidateAssetAmount = position.collateralAmount.divideDecimal(discountedPrice);
+
+        if (liquidateAssetAmount > maxLiquidateAssetAmount) {
+            liquidateAssetAmount = maxLiquidateAssetAmount;
+        }
+        if (liquidateAssetAmount > position.assetAmount) {
+            liquidateAssetAmount = position.assetAmount;
+        }
+
+        require(IBEP20Token(position.assetToken).transferFrom(sender, address(this), liquidateAssetAmount), "Mint: AUCTION_TRANSFER_FROM_FAIL");
+
+        //returnCollateralAmount = liquidateAssetAmount * discountedPrice
+        uint returnCollateralAmount = liquidateAssetAmount.multiplyDecimal(discountedPrice);
+
+        position.collateralAmount = position.collateralAmount.sub(returnCollateralAmount);
+        position.assetAmount = position.assetAmount.sub(liquidateAssetAmount);
+
+        if (position.collateralAmount == 0) {
+            // all collaterals are sold out
+            removePosition(positionIndex);
+        } else if (position.assetAmount == 0) {
+            //transfer left collateralToken to owner
+            IERC20(position.collateralToken).transfer(position.owner, position.collateralAmount);
+            removePosition(positionIndex);
+        } else {
+            idxPositionMap[positionIndex] = position;
+        }
+
+        uint protocolFee = returnCollateralAmount.multiplyDecimal(_protocolFeeRate);
+        returnCollateralAmount = returnCollateralAmount.sub(protocolFee);
+
+        require(IBEP20Token(position.collateralToken).transfer(_collector, protocolFee), "Mint: AUCTION_TRANSFER_FAIL");
+        require(IBEP20Token(position.collateralToken).transfer(sender, returnCollateralAmount), "Mint: AUCTION_TRANSFER_FAIL");
+        emit Auction(sender, position.owner, positionIndex, liquidateAssetAmount, returnCollateralAmount, protocolFee);
 
     }
 
-    function queryConfig() override external view returns (address factory, address oracle, address collector, address baseToken, uint protocolFeeRate){
-        Config memory c = config;
-        factory = c.factory;
-        oracle = c.oracle;
-        collector = c.collector;
-        baseToken = c.baseToken;
-        protocolFeeRate = c.protocolFeeRate;
+    event Auction(address indexed sender, address indexed positionOwner, uint positionIndex, uint liquidateAssetAmount, uint returnCollateralAmount, uint protocolFee);
+
+
+    function queryConfig() override external view returns (address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime){
+        factory = _factory;
+        oracle = _oracle;
+        collector = _collector;
+        baseToken = _baseToken;
+        protocolFeeRate = _protocolFeeRate;
+        priceExpireTime = _priceExpireTime;
     }
 
 
@@ -454,7 +494,6 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
     }
 
 
-    ///// private methods///////
     function assertMigratedAsset(uint endPrice) pure private {
         require(endPrice == 0, "Operation is not allowed for the deprecated asset");
     }
@@ -481,33 +520,29 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         require(tokenPrice > 0, "Oracle price is zero");
         require(denominateTokenPrice > 0, "Oracle price is zero");
         uint relativePrice = tokenPrice.divideDecimal(denominateTokenPrice);
-        uint requiredTime = block.timestamp.sub(PRICE_EXPIRE_TIME);
-        // TODO
-        // require(lastUpdatedTime >= requiredTime && denominateLastUpdatedTime >= requiredTime, "Price is too old");
+        uint requiredTime = block.timestamp.sub(_priceExpireTime);
+        require(lastUpdatedTime >= requiredTime && denominateLastUpdatedTime >= requiredTime, "Price is too old");
         return relativePrice;
 
     }
 
     function readPrice(address token) private view returns (uint price, uint lastUpdatedTime){
-        if (config.baseToken == token) {
+        if (_baseToken == token) {
             (price,lastUpdatedTime) = (SafeDecimalMath.unit(), 2 ** 256 - 1);
         } else {
-            (price, lastUpdatedTime) = IOracle(config.oracle).queryPrice(token);
+            (price, lastUpdatedTime) = IOracle(_oracle).queryPrice(token);
         }
     }
 
 
     function calculateProtocolFee(uint returnCollateralAmount) private view returns (uint protocolFee){
-        protocolFee = returnCollateralAmount.multiplyDecimal(config.protocolFeeRate).divideDecimal(SafeDecimalMath.unit());
+        protocolFee = returnCollateralAmount.multiplyDecimal(_protocolFeeRate);
     }
 
     function transferAsset(address assetToken, address sender, address recipient, uint amount) private {
         require(IERC20(assetToken).transferFrom(sender, recipient, amount), "Unable to execute transferFrom, recipient may have reverted");
     }
 
-    function burnAsset(address assetToken, address tokenOwner, uint amount) private {
-        IBEP20Token(assetToken).burn(tokenOwner, amount);
-    }
 
     function assertAuctionDiscount(uint auctionDiscount) pure private {
         require(auctionDiscount <= SafeDecimalMath.unit(), "auctionDiscount must be less than 100%.");

@@ -24,7 +24,14 @@ async function deploy(hre) {
         saveBUSD(hre, {name, symbol, address})
         return;
     }
-    let config = readBUSD(hre) || {name, symbol, initialSupply, deployer: deployer.address, address: null, deploy: true};
+    let config = readBUSD(hre) || {
+        name,
+        symbol,
+        initialSupply,
+        deployer: deployer.address,
+        address: null,
+        deploy: true
+    };
     if (config.deploy) {
         let token = await deployToken(hre, name, symbol, initialSupply);
         config.address = token.address;
@@ -32,10 +39,10 @@ async function deploy(hre) {
         saveBUSD(hre, config)
         console.log(`MockUSD deployed to network ${hre.network.name} with address ${token.address}`);
     }
-    updateWebContracts(hre,symbol, {
+    updateWebContracts(hre, symbol, {
         address: config.address,
-        png: `https://api.kalata.io/api/deployed/assets/USD.png`,
-        svg: `https://api.kalata.io/api/deployed/assets/USD.svg`,
+        png: `https://app.kalata.io/media/assets/USD.png`,
+        svg: `https://app.kalata.io/media/assets/USD.svg`,
     });
 }
 

@@ -1,0 +1,15 @@
+{
+  "deploy": false,
+  "upgrade": false,
+  "name": "Kalata",
+  "symbol": "Kala",
+  "deployer": "0xFE1F3ec239F6733d84f54dEa1FB911a38Fe67102",
+  "initialSupply": "120000000000000000000000000",
+  "address": "0xd132f81EB3eb50991FE2B5f0873Ae9A4dbfb316e",
+  "pair": "0x1e3Facc4121C0a11511DD9F820E5Fa459002492f",
+  "pairStakingRegistered": true,
+  "pool": {
+    "busd": "150000000000000000",
+    "asset": "1000000000000000000"
+  }
+}

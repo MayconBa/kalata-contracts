@@ -11,7 +11,8 @@ module.exports = async (hre) => {
         return;
     }
     await publish.deployAll(hre);
-    await publish.deployMockData(hre);
+    await publish.deployAssets(hre);
+    await publish.addLiquidityForAll(hre)
 };
 
 

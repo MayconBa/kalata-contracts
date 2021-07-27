@@ -3,7 +3,7 @@ const fs = require('fs');
 const {readJson, saveJson} = require("./json")
 
 function getResourceFolder(hre) {
-    return path.resolve(hre.config.paths.root, "publish", "deployed", hre.network.name);
+    return path.resolve(hre.config.paths.root,   "deployed", hre.network.name);
 }
 
 

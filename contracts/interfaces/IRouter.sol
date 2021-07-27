@@ -4,10 +4,7 @@ pragma solidity >=0.6.0;
 // Helper contract
 interface IRouter {
 
-    function queryAssetPricesFromPool() external view returns (
-        address[] memory assets, //asset address
-        uint[] memory prices //asset price
-    );
+    function queryAssetPricesFromPool() external view returns (address[] memory assets, uint[] memory prices);
 
     function addExtraAsset(address asset) external;
 
@@ -15,8 +12,9 @@ interface IRouter {
 
     function queryExtraAssets() external view returns (address[] memory);
 
-    event AddExtraAsset(address indexed sender, address indexed asset);
-    event RemoveExtraAsset(address indexed sender, address indexed asset);
+    function updateConfig(address uniswapFactory, address factory, address busdAddress, address kalaAddress) external;
+
+    function queryConfig() external returns (address uniswapFactory, address factory, address busdAddress, address kalaAddress);
 
 }
 

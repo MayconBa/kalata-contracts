@@ -7,16 +7,7 @@ const {distribute} = require('./factory')
 const {TransactionLog} = require('./transactionLog')
 const {Timelock} = require('./timelock')
 const {logger} = require('./logger')
-
-//http://127.0.0.1:3001/api/private/build
-fastify.get('/api/app/build', async (request, reply) => {
-    exec('sh /home/xuxf/app.kalata.io/deploy.sh > /var/www/app.kalata.io/deploy.txt', (err, stdout, stderr) => {
-        if (err) {
-            logger.error(err);
-        }
-    });
-    return `${new Date()}, Building, check url https://app.kalata.io/deploy.txt for building log`
-})
+const {Mint} = require('./mint')
 
 
 const start = async () => {
@@ -24,17 +15,24 @@ const start = async () => {
     await transactionLog.init();
     let timelock = new Timelock(hre);
     await timelock.init();
-    try {
-        setInterval(() => timelock.execute(), 60 * 1000);
-        setInterval(() => distribute(hre), 3600 * 2 * 1000);
-        setInterval(() => transactionLog.collect(), 30 * 1000);
-        setInterval(() => collectPrices(hre), 5 * 1000);
-        setInterval(() => batchFeed(hre), 55 * 5 * 1000);
-        await fastify.listen(3001)
-    } catch (err) {
-        fastify.log.error(err)
-        process.exit(1)
+    let mint = new Mint(hre);
+    await mint.init();
+
+    if (true) {
+        try {
+            setInterval(() => mint.doAuction(), 60 * 1000);
+            setInterval(() => timelock.execute(), 60 * 1000);
+            setInterval(() => distribute(hre), 3600 * 2 * 1000);
+            setInterval(() => transactionLog.collect(), 30 * 1000);
+            setInterval(() => collectPrices(hre), 5 * 1000);
+            setInterval(() => batchFeed(hre), 55 * 5 * 1000);
+            await fastify.listen(3001)
+        } catch (err) {
+            fastify.log.error(err)
+            process.exit(1)
+        }
     }
+
 }
 
 start().then(r => {

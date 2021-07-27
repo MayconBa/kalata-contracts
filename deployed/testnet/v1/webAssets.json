@@ -1,0 +1,57 @@
+{
+  "Kala": {
+    "name": "Kalata",
+    "symbol": "Kala",
+    "address": "0x32299c93960bb583a43c2220dc89152391a610c5",
+    "png": "https://app.kalata.io/media/assets/KALA.png",
+    "svg": "https://app.kalata.io/media/assets/KALA.svg"
+  },
+  "kBIDU": {
+    "name": "Wrapped Kalata BIDU Token",
+    "symbol": "kBIDU",
+    "address": "0x09ab7C2867cdcc163feC2C8a9BDE1584a5eD178F",
+    "pair": "0xC32f5e3D4bA915B6968D203A6B14Fc8ec1594f91",
+    "png": "https://app.kalata.io/media/assets/BIDU.png",
+    "svg": "https://app.kalata.io/media/assets/BIDU.svg"
+  },
+  "kTSLA": {
+    "name": "Wrapped Kalata TSLA Token",
+    "symbol": "kTSLA",
+    "address": "0x3f2526d5A2917fe46F3C010548B91E99dAEDba04",
+    "pair": "0xFf44679911238aCcfeBED71eDB9e57bAa57665ba",
+    "png": "https://app.kalata.io/media/assets/TSLA.png",
+    "svg": "https://app.kalata.io/media/assets/TSLA.svg"
+  },
+  "kARKK": {
+    "name": "Wrapped Kalata ARKK Token",
+    "symbol": "kARKK",
+    "address": "0xBf0A56CF834941453167Cfa678dF92c9eB6b9c6a",
+    "pair": "0xD02b3237A0608A8D083Db311A31496eBFB3441De",
+    "png": "https://app.kalata.io/media/assets/ARKK.png",
+    "svg": "https://app.kalata.io/media/assets/ARKK.svg"
+  },
+  "kSPCE": {
+    "name": "Wrapped Kalata SPCE Token",
+    "symbol": "kSPCE",
+    "address": "0x0B887B77029F9f64a78f9b7155abd10BBaA0989b",
+    "pair": "0xfFBf9a8b662Ea6de3bfF5c6746EF82dD1f292E62",
+    "png": "https://app.kalata.io/media/assets/SPCE.png",
+    "svg": "https://app.kalata.io/media/assets/SPCE.svg"
+  },
+  "kPACB": {
+    "name": "Wrapped Kalata PACB Token",
+    "symbol": "kPACB",
+    "address": "0xa7E248a673Fc22abf49fED4F699D2e1f85cEB437",
+    "pair": "0x4595AAc2f74cC73A84B8286821a9a0972fDaB145",
+    "png": "https://app.kalata.io/media/assets/PACB.png",
+    "svg": "https://app.kalata.io/media/assets/PACB.svg"
+  },
+  "WBNB": {
+    "name": "Token Wrapped BNB",
+    "symbol": "WBNB",
+    "address": "0xfe33F5cb81A3e1b3Cb425b12c81D004fcF714BCe",
+    "pair": "0xeD183dEAbF22F24108407Bf0dc9400C6E5d746b7",
+    "png": "https://app.kalata.io/media/assets/WBNB.png",
+    "svg": "https://app.kalata.io/media/assets/WBNB.svg"
+  }
+}

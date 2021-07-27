@@ -10,7 +10,16 @@ async function deploy(hre) {
     const {bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
     const {abi} = await hre.artifacts.readArtifact("IStaking");
     let deployedContracts = readContracts(hre) || {};
-    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, address: null, initialize: null, deployer: deployer.address, abi, bytecode, deploy: true, upgrade: false};
+    let deployedContract = deployedContracts[CONTRACT_CLASS] || {
+        name: CONTRACT_CLASS,
+        address: null,
+        initialize: null,
+        deployer: deployer.address,
+        abi,
+        bytecode,
+        deploy: true,
+        upgrade: false
+    };
     if (deployedContract.deploy || deployedContract.upgrade) {
         const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
         if (deployedContract.upgrade) {
@@ -20,15 +29,13 @@ async function deploy(hre) {
             deployedContract.upgradeTime = moment().format();
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
-            //mock factory firstly, Will use the factory address after the factory is deployed.
             let factory = deployer.address;
             let govToken = readKala(hre).address;
-            const instance = await hre.upgrades.deployProxy(ContractClass, [factory, govToken], {initializer: 'initialize'});
+            let collateralContract = deployedContracts['Collateral'].address
+            const instance = await hre.upgrades.deployProxy(ContractClass, [factory, govToken, collateralContract], {initializer: 'initialize'});
             await instance.deployed();
             deployedContract.address = instance.address;
-            deployedContract.initialize = {factory, govToken};
-
-
+            deployedContract.initialize = {factory, govToken, collateralContract};
             console.log(`${CONTRACT_CLASS} deployed to network ${hre.network.name} with address ${instance.address}`);
         }
         deployedContract.deploy = false;

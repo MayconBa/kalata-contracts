@@ -1,0 +1,77 @@
+{
+  "kBIDU": {
+    "name": "Wrapped Kalata BIDU Token",
+    "symbol": "kBIDU",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "busd": "172660000000000000000",
+      "asset": "1000000000000000000"
+    },
+    "address": "0x86eCAe1AAc5fD5384280D85613e490896888ca9d",
+    "pair": "0x5f47495e4b06A7A6Dd2e0c79435852b97B3A9Cf5",
+    "deploy": false,
+    "sinaCode": "gb_bidu",
+    "gtimgCode": "usBIDU"
+  },
+  "kTSLA": {
+    "name": "Wrapped Kalata TSLA Token",
+    "symbol": "kTSLA",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "busd": "643380000000000000000",
+      "asset": "1000000000000000000"
+    },
+    "address": "0xcaA5CfA7C94B61Fb11C63Ea7e9D3c68F17b2336c",
+    "pair": "0x50a707073A4649f23D76f0912D5acd69ac6C8054",
+    "deploy": false,
+    "sinaCode": "gb_tsla",
+    "gtimgCode": "usTSLA"
+  },
+  "kARKK": {
+    "name": "Wrapped Kalata ARKK Token",
+    "symbol": "kARKK",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "busd": "122430000000000000000",
+      "asset": "1000000000000000000"
+    },
+    "address": "0xeFDCD50954C0961C5D83c8D0d969117d81f02826",
+    "pair": "0x07C267d2285AD420535A18a5f701f74696434d37",
+    "deploy": false,
+    "sinaCode": "gb_arkk",
+    "gtimgCode": "usARKK"
+  },
+  "kSPCE": {
+    "name": "Wrapped Kalata SPCE Token",
+    "symbol": "kSPCE",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "busd": "29580000000000000000",
+      "asset": "1000000000000000000"
+    },
+    "address": "0x7f762b76fE8e0Ed1F0ebd61245BB90A1d2fC05fC",
+    "pair": "0x380230F9c517785ba97398f5C5Eb4d771823ecF0",
+    "deploy": false,
+    "sinaCode": "gb_spce",
+    "gtimgCode": "usSPCE"
+  },
+  "kPACB": {
+    "name": "Wrapped Kalata PACB Token",
+    "symbol": "kPACB",
+    "initialSupply": "980000000000000000000000000",
+    "type": "stock",
+    "pool": {
+      "busd": "30350000000000000000",
+      "asset": "1000000000000000000"
+    },
+    "address": "0x855C44F0Aa9A6eFfBdd762eb66cECa73effEB08F",
+    "pair": "0x96791E1C70A81EB50D5b9d01bb423228C566FFEb",
+    "deploy": false,
+    "sinaCode": "gb_pacb",
+    "gtimgCode": "usPACB"
+  }
+}
