@@ -11,7 +11,7 @@ let usdToken, usdInfo;
 let auctionDiscount = toUnit("0.80")
 let minCollateralRatio = toUnit("1.5");
 const defaultWeight = toUnitString("1");
-const unlockSpeed = toUnitString("0.01");
+const unlockSpeed = toUnitString("0.0001");
 const MOCK_ASSETS = {
     "kBIDU": {
         name: "Wrapped Kalata BIDU Token",
@@ -83,6 +83,7 @@ async function init(hre) {
     collateralInstance = loadContract("Collateral");
 }
 
+
 async function addKalaPair(hre) {
     deployedWebAssets = readWebAssets(hre) || {};
     let kala = readKala(hre);
@@ -110,6 +111,8 @@ async function addKalaPair(hre) {
         }
         saveWebAssets(hre, deployedWebAssets);
         console.log('addKalaPair', kala.pair);
+        let receipt = await factoryInstance.updateWeight(kala.address, defaultWeight);
+        console.log("factoryInstance.updateWeight for Kala", receipt.hash)
     }
 }
 
@@ -223,26 +226,38 @@ async function registerKalataOracle(hre) {
     saveContracts(hre, deployedContracts)
 }
 
+
 // KALA-BUSD LP, 随存随取, 收益每隔72小时领取一次, 领取或者存入LP,时间重置
-async function registerKalaBUSDStaking(hre) {
+async function registerKalaBUSDStaking(hre, forceRegister = false) {
     const kala = readKala(hre);
-    if (kala.pairStakingRegistered) {
+    if (kala.pairStakingRegistered && !forceRegister) {
         return;
     }
-    let interval = 3600 * 72
+    //TODO
+    //let interval = 3600 * 72
+
+    let interval = 600
 
     //function registerAsset(address asset, address pair) override external onlyFactoryOrOwner {
     let params = [kala.address, kala.pair]
-    let receipt = await stakingInstance.registerAsset(...params);
+    let receipt = await stakingInstance.registerAsset(...params,{gasLimit: 2500000});
     console.log("stakingInstance.registerAsset for KALA-BUSD pair", JSON.stringify(params), receipt.hash)
 
     //function updateClaimIntervals(address[] memory assets, uint[] memory intervals) external onlyOwner {
     params = [[kala.address], [interval]]
-    receipt = await stakingInstance.updateClaimIntervals([kala.address], [interval]);
+    receipt = await stakingInstance.updateClaimIntervals([kala.address], [interval],{gasLimit: 2500000});
 
     console.log("stakingInstance.updateClaimIntervals for KALA-BUSD pair", JSON.stringify(params), receipt.hash)
     kala.pairStakingRegistered = true;
     saveKala(hre, kala)
+}
+
+async function updateUnlockSpeed(hre) {
+    //function updateConfig(address stakingContract, address[] memory assets, uint[] memory unlockSpeeds)
+    const kala = readKala(hre);
+    let params = [stakingInstance.address, [kala.pair], [unlockSpeed]];
+    let receipt = await collateralInstance.updateConfig(...params);
+    console.log("collateralInstance.updateConfig for BUSD-KALA pair", receipt.hash)
 }
 
 // 增减BUSD挖矿KALA单币池, 随存随取. 收益锁定.  锁定的奖励,通过质押KALA-BUSD来解锁.
@@ -256,10 +271,8 @@ async function registerBUSDStaking(hre) {
         receipt = await stakingInstance.registerAsset(usdInfo.address, ZERO_ADDRESS);
         console.log("stakingInstance.registerAsset for BUSD", receipt.hash)
 
-        //function updateConfig(address stakingContract, address[] memory assets, uint[] memory unlockSpeeds)
-        let params = [stakingInstance.address, [kala.pair], [unlockSpeed]];
-        receipt = await collateralInstance.updateConfig(...params);
-        console.log("collateralInstance.updateConfig for BUSD-KALA pair", receipt.hash)
+
+        await updateUnlockSpeed(hre);
 
         //function updateCollateralAssetMapping(address[] memory assets, address[] memory collateralAssets)
         receipt = await stakingInstance.updateCollateralAssetMapping([usdInfo.address], [kala.pair]);
@@ -285,6 +298,14 @@ async function registerBUSDStaking(hre) {
 
 }
 
+async function updateDistributionSchedules() {
+    let scheduleStartTime = [21600, 31557600, 63093600, 94629600]
+    let scheduleEndTime = [31557600, 63093600, 94629600, 126165600]
+    let scheduleAmounts = [toUnitString(549000), toUnitString(274500), toUnitString(137250), toUnitString(68625)]
+    let receipt = await factoryInstance.updateDistributionSchedules(scheduleStartTime, scheduleEndTime, scheduleAmounts)
+    await receipt.wait()
+    console.log(`Factory.updateDistributionSchedules,${receipt.hash}`)
+}
 
 module.exports = {
     deploy: async (hre) => {
@@ -297,5 +318,9 @@ module.exports = {
         await registerKalataOracle(hre);
         await registerBUSDStaking(hre);
         await registerKalaBUSDStaking(hre);
+
+        //await updateDistributionSchedules()
+        //await updateUnlockSpeed(hre)
+        //await registerKalaBUSDStaking(hre,true)
     }
 }

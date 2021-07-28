@@ -3,7 +3,7 @@ const fs = require('fs');
 const {readJson, saveJson} = require("./json")
 
 function getResourceFolder(hre) {
-    return path.resolve(hre.config.paths.root,   "deployed", hre.network.name);
+    return path.resolve(hre.config.paths.root, "deployed", hre.network.name);
 }
 
 
@@ -67,6 +67,24 @@ function saveWebAssets(hre, content) {
     saveJson(getWebAssetsPath(hre), content);
 }
 
+function getAddressSymbolMapping(hre) {
+    let mapping = {};
+    Object.values(readAssets(hre)).forEach(asset => {
+        mapping[asset.address.toUpperCase()] = asset.symbol;
+    })
+    let kala = readKala(hre);
+    mapping[kala.address.toUpperCase()] = kala.symbol;
+
+    let busd = readBUSD(hre);
+    mapping[busd.address.toUpperCase()] = busd.symbol;
+
+    let wbnb = readWBNB(hre);
+    mapping[wbnb.address.toUpperCase()] = wbnb.symbol;
+
+    return mapping;
+
+}
+
 
 module.exports = {
     readWebAssets,
@@ -80,4 +98,5 @@ module.exports = {
     saveWBNB,
     readBUSD,
     saveBUSD,
+    getAddressSymbolMapping
 }

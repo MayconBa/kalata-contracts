@@ -17,7 +17,8 @@ contract Staking is OwnableUpgradeable, IStaking {
     event UpdateConfig(address indexed sender, address factory, address govToken, address collateralContract);
     event RegisterAsset(address indexed sender, address indexed asset, address indexed stakingToken);
     event Stake(address indexed sender, address indexed asset, uint stakingTokenAmount);
-    event DepositReward(address indexed sender, address indexed asset, uint amount, uint rewardIndex, uint pendingReward);
+    event DepositReward(address indexed sender, address indexed asset, uint amounts);
+    event DepositRewards(address indexed sender, address[] assets, uint[] amounts);
     event Withdraw(address indexed sender, address indexed asset, uint amount);
     event UnStake(address indexed sender, address indexed asset, uint amount);
     event UpdateClaimIntervals(address indexed sender, address[] assets, uint[] intervals);
@@ -210,8 +211,14 @@ contract Staking is OwnableUpgradeable, IStaking {
         }
     }
 
+
     //Used by Factory Contract to deposit newly minted KALA tokens.
     function depositReward(address asset, uint amount) override external onlyFactoryOrOwner {
+        _depositReward(asset, amount);
+        emit DepositReward(msg.sender, asset, amount);
+    }
+
+    function _depositReward(address asset, uint amount) private {
         require(asset != address(0) && amount > 0, "Staking: DEPOSIT_REWARD_INVALID_PARAMETERS");
         StakingItem memory item = _stakingItems[asset];
         require(item.registerTimestamp > 0, "Staking: DEPOSIT_REWARD_ASSET_NOT_REGISTERED");
@@ -222,9 +229,16 @@ contract Staking is OwnableUpgradeable, IStaking {
             item.rewardIndex = rewardPerBond.add(item.rewardIndex);
             item.pendingReward = 0;
         }
-        console.log(asset, item.pendingReward, item.rewardIndex);
         _stakingItems[asset] = item;
-        emit DepositReward(msg.sender, asset, amount, item.rewardIndex, item.pendingReward);
+    }
+
+
+    function depositRewards(address[] memory assets, uint[] memory amounts) override external onlyFactoryOrOwner {
+        require(assets.length == amounts.length, "Staking: DEPOSIT_REWARDS_INVALID_PARAMETERS");
+        for (uint i = 0; i < assets.length; i++) {
+            _depositReward(assets[i], amounts[i]);
+        }
+        emit DepositRewards(msg.sender, assets, amounts);
     }
 
 

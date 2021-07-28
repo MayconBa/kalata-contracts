@@ -17,7 +17,6 @@ const start = async () => {
     await timelock.init();
     let mint = new Mint(hre);
     await mint.init();
-
     if (true) {
         try {
             setInterval(() => mint.doAuction(), 60 * 1000);

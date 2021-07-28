@@ -156,9 +156,7 @@ contract Factory is OwnableUpgradeable, IFactory {
     //3rd year: genesisTime+(63093600 to 94629600),   distribute 137250 kala tokens
     //4th year: genesisTime+(94629600 to 126165600),  distribute 68625 kala tokens
     function distribute() override external {
-        // TODO
-        //require(block.timestamp.sub(_lastDistributed) >= DISTRIBUTION_INTERVAL, "Factory: DISTRIBUTE_NOT_TIME");
-
+        require(block.timestamp.sub(_lastDistributed) >= DISTRIBUTION_INTERVAL, "Factory: DISTRIBUTE_NOT_TIME");
         uint timeElapsed = block.timestamp.sub(_genesisTime);
         uint distributedAmount = 0;
         for (uint i = 0; i < _distributionSchedules.length; i++) {
@@ -173,21 +171,23 @@ contract Factory is OwnableUpgradeable, IFactory {
                 break;
             }
         }
+        _lastDistributed = block.timestamp;
         if (distributedAmount > 0) {
             IBEP20Token(_govToken).mint(_staking, distributedAmount);
-            IStaking staking = IStaking(_staking);
-            for (uint i = 0; i < _addresses.length; i++) {
-                address token = _addresses[i];
-                if (token != address(0)) {
-                    uint amount = distributedAmount.multiplyDecimal(_assetWeights[token]).divideDecimal(_totalWeight);
-                    if (amount > 0) {
-                        staking.depositReward(token, amount);
-                        emit Distribute(msg.sender, token, amount);
-                    }
-                }
+            address[] memory assets = _addresses;
+            uint[] memory amounts = new uint[](assets.length);
+            for (uint i = 0; i < assets.length; i++) {
+                amounts[i] = distributedAmount.multiplyDecimal(_assetWeights[assets[i]].divideDecimal(_totalWeight));
             }
+            IStaking(_staking).depositRewards(assets, amounts);
         }
-        _lastDistributed = block.timestamp;
+    }
+
+    function distributeAsset(address asset, uint amount) private {
+        if (asset != address(0) && amount > 0) {
+            IStaking(_staking).depositReward(asset, amount);
+            emit Distribute(msg.sender, asset, amount);
+        }
     }
 
     //uint public interestRate = (5 * SafeDecimalMath.unit()) / 100;

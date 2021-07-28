@@ -13,6 +13,8 @@ interface IStaking {
 
     function unStake(address asset, uint amount) external;
 
+    function depositRewards(address[] memory assets, uint[] memory amounts) external;
+
     function depositReward(address asset, uint amount) external;
 
     function claim(address asset) external;

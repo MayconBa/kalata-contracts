@@ -1,27 +1,30 @@
+const {toUnitString} = require("../../utils/maths");
+const {divideDecimal} = require("../../utils/maths");
+const {toUnit} = require("../../utils/maths");
+const {ZERO_ADDRESS} = require("../../utils/contract");
+const {getAddressSymbolMapping} = require("../../utils/assets");
 const {humanBN} = require("../../utils/maths");
 const {logger} = require('./logger')
 const {readContracts} = require("../../utils/resources");
 const {loadContract} = require("../../utils/contract");
 
 async function distribute(hre) {
-    const [signer] = await hre.ethers.getSigners();
+    const [signer, collector] = await hre.ethers.getSigners();
     const {address} = readContracts(hre)['Factory'];
     const instance = await loadContract(hre, 'Factory', address, signer)
+    await wait(instance.distribute({gasLimit: 250000}), `Factory.distribute()`);
+}
 
 
-    const {assets, weights} = await instance.queryAllAssetWeights();
-    for (let i = 0; i < assets.length; i++) {
-        console.log(i, assets[i], humanBN(weights[i]));
-    }
-
-    await instance.distribute({gasLimit: 250000}).catch(e => {
-        logger.error(`Factory.distribute: ${e}`,)
+async function wait(promise, action) {
+    await promise.catch(e => {
+        logger.error(`${action}: ${e}`,)
     }).then(async receipt => {
         if (receipt) {
             await receipt.wait().catch(e => {
-                logger.error(`Factory.distribute,wait: ${e}`,)
+                logger.error(`${action}: ${e}`,)
             });
-            logger.info(`factory.distribute:  ${receipt.hash}`,)
+            logger.info(`${action}:  ${receipt.hash}`,)
         }
     });
 }

@@ -21,6 +21,16 @@ async function deploy(hre) {
         upgrade: false
     };
 
+    async function updateDistributionSchedules(instance) {
+        let scheduleStartTime = [21600, 31557600, 63093600, 94629600]
+        let scheduleEndTime = [31557600, 63093600, 94629600, 126165600]
+        let scheduleAmounts = [toUnitString(549000), toUnitString(274500), toUnitString(137250), toUnitString(68625)]
+        let receipt = await instance.updateDistributionSchedules(scheduleStartTime, scheduleEndTime, scheduleAmounts)
+        await receipt.wait()
+        console.log(`Factory.updateDistributionSchedules,${receipt.hash}`)
+        return {scheduleStartTime, scheduleEndTime, scheduleAmounts}
+    }
+
     if (deployedContract.deploy || deployedContract.upgrade) {
         const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
         if (deployedContract.upgrade) {
@@ -36,11 +46,9 @@ async function deploy(hre) {
             let oracle = deployedContracts['Oracle'].address;
             let uniswapFactory = deployedContracts['UniswapV2Factory'].address;
             let staking = deployedContracts['Staking'].address;
-            let scheduleStartTime = [21600, 31557600, 63093600, 94629600]
-            let scheduleEndTime = [31557600, 63093600, 94629600, 126165600]
-            let scheduleAmounts = [toUnitString(549000), toUnitString(274500), toUnitString(137250), toUnitString(68625)]
             const instance = await hre.upgrades.deployProxy(ContractClass, [mint, staking, uniswapFactory, baseToken, govToken], {initializer: 'initialize'});
             await instance.deployed();
+            let {scheduleStartTime, scheduleEndTime, scheduleAmounts} = await updateDistributionSchedules(instance);
             await instance.updateDistributionSchedules(scheduleStartTime, scheduleEndTime, scheduleAmounts)
             deployedContract.address = instance.address;
             deployedContract.initialize = {mint, oracle, staking, uniswapFactory, baseToken, govToken};
