@@ -8,6 +8,8 @@ import "./libraries/SafeDecimalMath.sol";
 
 contract ChainlinkOracle is OwnableUpgradeable, IPriceConsumer {
     using SafeMath for uint;
+    uint private constant DECIMALS18 = 18;
+
     event RegisterFeeders(address[] assets, address[] feeders);
 
     mapping(address => address) _assetFeederMap;
@@ -26,23 +28,23 @@ contract ChainlinkOracle is OwnableUpgradeable, IPriceConsumer {
     }
 
     function toDecimals18(uint value, uint decimals) private pure returns (uint){
-        if (decimals == 18) {
+        if (decimals == DECIMALS18) {
             return value;
-        } else if (decimals < 18) {
-            return value.mul(10 ** uint(18).sub(decimals));
+        } else if (decimals < DECIMALS18) {
+            return value.mul(10 ** DECIMALS18.sub(decimals));
         } else {
-            return value.div(10 ** decimals.sub(18));
+            return value.div(10 ** decimals.sub(DECIMALS18));
         }
     }
 
-    function queryPrice(address asset) override external view returns (uint price, uint lastUpdated) {
+    function queryPrice(address asset) override external view returns (uint price, uint lastUpdatedTime) {
         price = 0;
-        lastUpdated = 0;
+        lastUpdatedTime = 0;
         if (_assetFeederMap[asset] != address(0)) {
             AggregatorV3Interface aggregator = AggregatorV3Interface(_assetFeederMap[asset]);
             (,int answer,,uint updatedAt,) = aggregator.latestRoundData();
             price = toDecimals18(uint(answer < 0 ? 0 : answer), uint(aggregator.decimals()));
-            lastUpdated = updatedAt;
+            lastUpdatedTime = updatedAt;
         }
     }
 }

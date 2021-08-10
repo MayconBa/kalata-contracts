@@ -1,12 +1,15 @@
 const {readContracts, saveContracts} = require("../utils/resources")
 const {readBUSD, saveBUSD, readAssets, saveAssets, readWebAssets, saveWebAssets, readKala, saveKala, readWBNB, saveWBNB} = require("../utils/assets")
 const {toUnit, toUnitString} = require("../utils/maths")
-const {loadToken, loadUniswapV2Factory, ZERO_ADDRESS, waitReceipt} = require("../utils/contract")
+const {loadToken, loadUniswapV2Factory, ZERO_ADDRESS, waitReceipt, waitPromise} = require("../utils/contract")
 const {stringToBytes32} = require('../utils/bytes')
 
 let initialSupply = toUnit("980000000").toString();
 let deployedAssets, deployedWebAssets;
-let uniswapV2Factory, deployedContracts, kalataOracleInstance, factoryInstance, routerInstance, stakingInstance, collateralInstance, oracleInstance;
+let uniswapV2Factory, deployedContracts, kalataOracleInstance,
+    factoryInstance, routerInstance, stakingInstance,
+    mintInstance,
+    collateralInstance, oracleInstance;
 let usdToken, usdInfo;
 let auctionDiscount = toUnit("0.80")
 let minCollateralRatio = toUnit("1.5");
@@ -20,44 +23,44 @@ const MOCK_ASSETS = {
         sinaCode: "gb_bidu",
         gtimgCode: "usBIDU",
         weight: defaultWeight,
-        initialSupply
+        //initialSupply
     },
-    "kTSLA": {
-        name: "Wrapped Kalata TSLA Token",
-        symbol: "kTSLA",
-        type: "stock",
-        sinaCode: "gb_tsla",
-        gtimgCode: "usTSLA",
-        weight: defaultWeight,
-        initialSupply
-    },
-    "kARKK": {
-        name: "Wrapped Kalata ARKK Token",
-        symbol: "kARKK",
-        type: "stock",
-        sinaCode: "gb_arkk",
-        gtimgCode: "usARKK",
-        weight: defaultWeight,
-        initialSupply
-    },
-    "kSPCE": {
-        name: "Wrapped Kalata SPCE Token",
-        symbol: "kSPCE",
-        type: "stock",
-        sinaCode: "gb_spce",
-        gtimgCode: "usSPCE",
-        weight: defaultWeight,
-        initialSupply
-    },
-    "kPACB": {
-        name: "Wrapped Kalata PACB Token",
-        symbol: "kPACB",
-        type: "stock",
-        sinaCode: "gb_pacb",
-        gtimgCode: "usPACB",
-        weight: defaultWeight,
-        initialSupply
-    },
+    // "kTSLA": {
+    //     name: "Wrapped Kalata TSLA Token",
+    //     symbol: "kTSLA",
+    //     type: "stock",
+    //     sinaCode: "gb_tsla",
+    //     gtimgCode: "usTSLA",
+    //     weight: defaultWeight,
+    //     //initialSupply
+    // },
+    // "kARKK": {
+    //     name: "Wrapped Kalata ARKK Token",
+    //     symbol: "kARKK",
+    //     type: "stock",
+    //     sinaCode: "gb_arkk",
+    //     gtimgCode: "usARKK",
+    //     weight: defaultWeight,
+    //     //initialSupply
+    // },
+    // "kSPCE": {
+    //     name: "Wrapped Kalata SPCE Token",
+    //     symbol: "kSPCE",
+    //     type: "stock",
+    //     sinaCode: "gb_spce",
+    //     gtimgCode: "usSPCE",
+    //     weight: defaultWeight,
+    //     //initialSupply
+    // },
+    // "kPACB": {
+    //     name: "Wrapped Kalata PACB Token",
+    //     symbol: "kPACB",
+    //     type: "stock",
+    //     sinaCode: "gb_pacb",
+    //     gtimgCode: "usPACB",
+    //     weight: defaultWeight,
+    //     //initialSupply
+    // },
 }
 
 
@@ -81,13 +84,15 @@ async function init(hre) {
     oracleInstance = loadContract("Oracle");
     stakingInstance = loadContract("Staking");
     collateralInstance = loadContract("Collateral");
+    mintInstance = loadContract("Mint");
 }
 
 
-async function addKalaPair(hre) {
+async function addKalaPair(hre, force = false) {
+    const weight = toUnitString("3.2");
     deployedWebAssets = readWebAssets(hre) || {};
     let kala = readKala(hre);
-    if (!kala.pair) {
+    if (!kala.pair || force) {
         let pair = await uniswapV2Factory.getPair(kala.address, usdToken.address);
         if (pair === ZERO_ADDRESS) {
             await waitReceipt(uniswapV2Factory.createPair(kala.address, usdToken.address));
@@ -105,14 +110,13 @@ async function addKalaPair(hre) {
             stakable: true,
             tradable: true,
             minable: false,
-            /// 收益每隔72小时领取一次
             claimTimeLimit: true,
             rewardLockable: false,
+            isPair: true,
         }
         saveWebAssets(hre, deployedWebAssets);
         console.log('addKalaPair', kala.pair);
-        let receipt = await factoryInstance.updateWeight(kala.address, defaultWeight);
-        console.log("factoryInstance.updateWeight for Kala", receipt.hash)
+        await waitPromise(factoryInstance.updateWeight(kala.address, weight), 'factoryInstance.updateWeight for kala')
     }
 }
 
@@ -140,6 +144,7 @@ async function addWBNBPair(hre) {
             minable: false,
             claimTimeLimit: false,
             rewardLockable: false,
+            isPair: true,
         }
         saveWebAssets(hre, deployedWebAssets);
         console.log('addWBNBPair', wbnb.pair);
@@ -153,7 +158,7 @@ async function addWBNBPair(hre) {
 
 async function deployPair(hre, {name, symbol, type, initialSupply, sinaCode, gtimgCode, coingeckoCoinId, weight}) {
     let [deployer] = await hre.ethers.getSigners();
-    let assetInfo = deployedAssets[symbol] || {name, symbol, initialSupply: null, type, pool: null, address: null, pair: null, deploy: true, sinaCode, gtimgCode, coingeckoCoinId}
+    let assetInfo = deployedAssets[symbol] || {name, symbol, type, deploy: true, sinaCode, gtimgCode, coingeckoCoinId}
     let assetAddress = assetInfo.address;
     if (assetInfo.deploy) {
         let bytes32Name = stringToBytes32(name);
@@ -164,12 +169,12 @@ async function deployPair(hre, {name, symbol, type, initialSupply, sinaCode, gti
             process.exit(503);
         }
         if (assetInfo.address && assetInfo.pair) {
-            await waitReceipt(factoryInstance.registerAsset(assetInfo.address, assetInfo.pair, bytes32Name, bytes32Symbol,
-                auctionDiscount.toString(), minCollateralRatio.toString(), weight.toString())
+            await waitReceipt(
+                factoryInstance.registerAsset(assetInfo.address, assetInfo.pair, bytes32Name, bytes32Symbol, auctionDiscount.toString(), minCollateralRatio.toString(), weight.toString(), {gasLimit: 2500000})
             )
             console.log(`register asset ${symbol},${assetAddress}`);
         } else {
-            await waitReceipt(factoryInstance.whitelist(bytes32Name, bytes32Symbol, auctionDiscount.toString(), minCollateralRatio.toString(), weight.toString()));
+            await waitReceipt(factoryInstance.whitelist(bytes32Name, bytes32Symbol, auctionDiscount.toString(), minCollateralRatio.toString(), weight.toString()), {gasLimit: 2500000});
             assetAddress = await factoryInstance.queryToken(bytes32Symbol);
             console.log(`whitelist asset ${symbol},${assetAddress}`);
         }
@@ -179,8 +184,7 @@ async function deployPair(hre, {name, symbol, type, initialSupply, sinaCode, gti
             process.exit(502);
         } else {
             assetInfo.address = assetAddress;
-            //console.log(`Asset ${symbol} deployed to network ${hre.network.name} with address ${assetAddress}`);
-            if (!assetInfo.initialSupply) {
+            if (!assetInfo.initialSupply && initialSupply) {
                 let assetToken = await loadToken(hre, assetAddress);
                 await waitReceipt(assetToken.mint(deployer.address, initialSupply));
                 assetInfo.initialSupply = initialSupply;
@@ -194,7 +198,7 @@ async function deployPair(hre, {name, symbol, type, initialSupply, sinaCode, gti
 
         }
         saveAssets(hre, deployedAssets);
-        let receipt = await oracleInstance.registerAssets([assetInfo.address]);
+        let receipt = await oracleInstance.registerAssets([assetInfo.address], {gasLimit: 2500000});
         console.log(`oracleInstance.registerAssets for ${symbol}`, receipt.hash);
     }
     deployedWebAssets[symbol] = {
@@ -208,6 +212,7 @@ async function deployPair(hre, {name, symbol, type, initialSupply, sinaCode, gti
         minable: true,
         claimTimeLimit: false,
         rewardLockable: false,
+        isPair: true
     }
     saveWebAssets(hre, deployedWebAssets);
 
@@ -220,60 +225,47 @@ async function registerKalataOracle(hre) {
     let [deployer] = await hre.ethers.getSigners();
     let assets = Object.values(deployedAssets).map(asset => asset.address);
     let feeders = assets.map(() => deployer.address);
-    let receipt = await kalataOracleInstance.registerAssets(assets, feeders);
+    let receipt = await kalataOracleInstance.registerAssets(assets, feeders, {gasLimit: 2500000});
     console.log("kalataOracleInstance.registerAssets,", receipt.hash)
     deployedContracts['KalataOracle'].assetRegistered = true
     saveContracts(hre, deployedContracts)
 }
 
-
 // KALA-BUSD LP, 随存随取, 收益每隔72小时领取一次, 领取或者存入LP,时间重置
-async function registerKalaBUSDStaking(hre, forceRegister = false) {
+async function registerKalaBUSDStaking(hre, force = false) {
     const kala = readKala(hre);
-    if (kala.pairStakingRegistered && !forceRegister) {
-        return;
+    if (!kala.pairStakingRegistered || force) {
+        let interval = 3600 * 3
+        let params = [kala.address, kala.pair]
+        await waitPromise(stakingInstance.registerAsset(...params, {gasLimit: 2500000}), "stakingInstance.registerAsset for KALA-BUSD pair")
+        await waitPromise(stakingInstance.updateClaimIntervals([kala.address], [interval], {gasLimit: 2500000}), "stakingInstance.updateClaimIntervals for KALA-BUSD pair")
+        kala.pairStakingRegistered = true;
+        saveKala(hre, kala)
     }
-    //TODO
-    //let interval = 3600 * 72
-
-    let interval = 600
-
-    //function registerAsset(address asset, address pair) override external onlyFactoryOrOwner {
-    let params = [kala.address, kala.pair]
-    let receipt = await stakingInstance.registerAsset(...params,{gasLimit: 2500000});
-    console.log("stakingInstance.registerAsset for KALA-BUSD pair", JSON.stringify(params), receipt.hash)
-
-    //function updateClaimIntervals(address[] memory assets, uint[] memory intervals) external onlyOwner {
-    params = [[kala.address], [interval]]
-    receipt = await stakingInstance.updateClaimIntervals([kala.address], [interval],{gasLimit: 2500000});
-
-    console.log("stakingInstance.updateClaimIntervals for KALA-BUSD pair", JSON.stringify(params), receipt.hash)
-    kala.pairStakingRegistered = true;
-    saveKala(hre, kala)
 }
 
-async function updateUnlockSpeed(hre) {
-    //function updateConfig(address stakingContract, address[] memory assets, uint[] memory unlockSpeeds)
+async function updateUnlockSpeed(hre, force = false) {
     const kala = readKala(hre);
-    let params = [stakingInstance.address, [kala.pair], [unlockSpeed]];
-    let receipt = await collateralInstance.updateConfig(...params);
-    console.log("collateralInstance.updateConfig for BUSD-KALA pair", receipt.hash)
+    if (!kala.unlockSpeedRegistered || force) {
+        let params = [stakingInstance.address, [kala.pair], [unlockSpeed]];
+        await waitPromise(collateralInstance.updateConfig(...params, {gasLimit: 2500000}), "collateralInstance.updateConfig for BUSD-KALA pair")
+        kala.unlockSpeedRegistered = true;
+        saveKala(hre, kala);
+    }
 }
 
 // 增减BUSD挖矿KALA单币池, 随存随取. 收益锁定.  锁定的奖励,通过质押KALA-BUSD来解锁.
-async function registerBUSDStaking(hre) {
+async function registerBUSDStaking(hre, force = false) {
+    const weight = toUnitString("3.9");
     const usdInfo = readBUSD(hre);
-    if (!usdInfo.stakingRegistered) {
+    if (!usdInfo.stakingRegistered || force) {
         const kala = readKala(hre);
-        let receipt = await factoryInstance.updateWeight(usdInfo.address, defaultWeight);
+        let receipt = await factoryInstance.updateWeight(usdInfo.address, weight, {gasLimit: 2500000});
         console.log("factoryInstance.updateWeight for BUSD", receipt.hash)
 
         receipt = await stakingInstance.registerAsset(usdInfo.address, ZERO_ADDRESS);
         console.log("stakingInstance.registerAsset for BUSD", receipt.hash)
-
-
         await updateUnlockSpeed(hre);
-
         //function updateCollateralAssetMapping(address[] memory assets, address[] memory collateralAssets)
         receipt = await stakingInstance.updateCollateralAssetMapping([usdInfo.address], [kala.pair]);
         console.log("stakingInstance.updateCollateralAssetMapping for BUSD -> BUSD-KALA", receipt.hash)
@@ -290,6 +282,7 @@ async function registerBUSDStaking(hre) {
             stakable: true,
             claimTimeLimit: false,
             rewardLockable: true,
+            isPair: false
         }
         saveWebAssets(hre, deployedWebAssets);
         usdInfo.stakingRegistered = true;
@@ -298,29 +291,56 @@ async function registerBUSDStaking(hre) {
 
 }
 
-async function updateDistributionSchedules() {
-    let scheduleStartTime = [21600, 31557600, 63093600, 94629600]
-    let scheduleEndTime = [31557600, 63093600, 94629600, 126165600]
-    let scheduleAmounts = [toUnitString(549000), toUnitString(274500), toUnitString(137250), toUnitString(68625)]
-    let receipt = await factoryInstance.updateDistributionSchedules(scheduleStartTime, scheduleEndTime, scheduleAmounts)
-    await receipt.wait()
-    console.log(`Factory.updateDistributionSchedules,${receipt.hash}`)
+async function updateDistributionSchedules(hre, force) {
+    let factoryInfo = deployedContracts['Factory'];
+    if (!factoryInfo.scheduleUpdated || force) {
+        let scheduleStartTime = [21600, 31557600, 63093600, 94629600]
+        let scheduleEndTime = [31557600, 63093600, 94629600, 126165600]
+        //let scheduleAmounts = [toUnitString(549000), toUnitString(274500), toUnitString(137250), toUnitString(68625)]
+        let scheduleAmounts = [toUnitString(5490000), toUnitString(2745000), toUnitString(1372500), toUnitString(686250)]
+        let receipt = await factoryInstance.updateDistributionSchedules(scheduleStartTime, scheduleEndTime, scheduleAmounts)
+        await receipt.wait()
+        console.log(`Factory.updateDistributionSchedules,${receipt.hash}`)
+        factoryInfo.scheduleUpdated = true;
+        saveContracts(hre, deployedContracts);
+    }
 }
+
+async function registerMintAssets(hre) {
+    let assets = await readAssets(hre);
+    for (let asset of Object.values(assets).filter(item => item.minable)) {
+        if (!asset.mintRegistered) {
+            await waitPromise(
+                mintInstance.registerAsset(asset.address, toUnitString("0.2"), toUnitString("1.5"), {gasLimit: 2500000}),
+                `mintInstance.registerAsset for ${asset.symbol}`
+            )
+            asset.mintRegistered = true;
+            saveAssets(hre, assets);
+        }
+        if (!asset.minterRegistered) {
+            let token = await loadToken(hre, asset.address);
+            await waitPromise(token.registerMinters([mintInstance.address]), `token.registerMinters for ${asset.symbol}`)
+            asset.minterRegistered = true;
+            saveAssets(hre, assets);
+        }
+    }
+}
+
 
 module.exports = {
     deploy: async (hre) => {
         await init(hre);
-        await addKalaPair(hre);
+        await addKalaPair(hre, false);
         await addWBNBPair(hre);
         for (let asset of Object.values(MOCK_ASSETS)) {
             await deployPair(hre, {...asset});
         }
         await registerKalataOracle(hre);
-        await registerBUSDStaking(hre);
-        await registerKalaBUSDStaking(hre);
+        await registerBUSDStaking(hre, false);
+        await registerKalaBUSDStaking(hre, false);
+        await registerMintAssets(hre);
+        await updateDistributionSchedules(hre, false)
+        await updateUnlockSpeed(hre, false)
 
-        //await updateDistributionSchedules()
-        //await updateUnlockSpeed(hre)
-        //await registerKalaBUSDStaking(hre,true)
     }
 }

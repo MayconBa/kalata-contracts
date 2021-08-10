@@ -2,7 +2,7 @@ const {saveWBNB} = require("../utils/assets");
 const {readWBNB} = require("../utils/assets");
 const {readAssets, saveAssets, readWebAssets, saveWebAssets, readKala, saveKala, readBUSD} = require("../utils/assets")
 const {toUnit, humanBN} = require("../utils/maths")
-const {loadToken, loadUniswapV2Router02, waitReceipt} = require("../utils/contract")
+const {loadToken, loadUniswapV2Router02, waitReceipt, waitPromise} = require("../utils/contract")
 const {queryPricesFromSina} = require("../utils/equity")
 
 
@@ -17,15 +17,13 @@ async function addLiquidityForKAssets(hre) {
             let busdAmount = price * assetAmount;
             assetAmount = toUnit(assetAmount);
             busdAmount = toUnit(busdAmount);
-            let receipt = await addLiquidity(hre, deployer, address, assetAmount, busdAmount)
-
+            let receipt = await addLiquidity(hre, deployer, address, assetAmount, busdAmount, true)
             console.log(`addLiquidity for ${asset['symbol']}, busdAmount:${humanBN(busdAmount)},assetAmount:${humanBN(assetAmount)},hash:${receipt.hash}`)
             asset.pool = {
                 busd: busdAmount.toString(),
                 asset: assetAmount.toString()
             }
             saveAssets(hre, deployedAssets);
-
         }
     }
 }
@@ -34,7 +32,7 @@ async function addLiquidityForWBNB(hre) {
     let [deployer] = await hre.ethers.getSigners();
     let wbnb = readWBNB(hre);
     if (!wbnb.pool) {
-        let price = 304;
+        let price = 352;
         let assetAmount = 1;
         let busdAmount = price * assetAmount;
         assetAmount = toUnit(assetAmount);
@@ -50,7 +48,7 @@ async function addLiquidityForKala(hre) {
     let [deployer] = await hre.ethers.getSigners();
     let kala = readKala(hre);
     if (!kala.pool) {
-        let price = 0.15;
+        let price = 0.27;
         let assetAmount = 1;
         let busdAmount = price * assetAmount;
         assetAmount = toUnit(assetAmount);
@@ -62,13 +60,17 @@ async function addLiquidityForKala(hre) {
     }
 }
 
-async function addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount) {
+async function addLiquidity(hre, lpOwner, assetAddress, assetAmount, usdAmount, mintAsset = false) {
     if (!assetAddress) {
         return;
     }
     let usdToken = await loadToken(hre, readBUSD(hre).address);
     let assetToken = await loadToken(hre, assetAddress);
-    await waitReceipt(assetToken.transfer(lpOwner.address, assetAmount.toString()));
+    if (mintAsset) {
+        await waitPromise(assetToken.mint(lpOwner.address, assetAmount.toString()), `${assetToken.address} mint ${assetAmount.toString()} for ${lpOwner.address}`);
+    } else {
+        await waitReceipt(assetToken.transfer(lpOwner.address, assetAmount.toString()));
+    }
     await waitReceipt(usdToken.transfer(lpOwner.address, usdAmount.toString()));
     let [to, deadline] = [lpOwner.address, (await hre.web3.eth.getBlock("latest")).timestamp + 160];
 

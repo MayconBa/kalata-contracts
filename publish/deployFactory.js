@@ -11,15 +11,7 @@ async function deploy(hre) {
     const {bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
     const {abi} = await hre.artifacts.readArtifact("IFactory");
     let deployedContracts = readContracts(hre) || {};
-    let deployedContract = deployedContracts[CONTRACT_CLASS] || {
-        name: CONTRACT_CLASS,
-        address: null,
-        initialize: null,
-        abi,
-        bytecode,
-        deploy: true,
-        upgrade: false
-    };
+    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, abi, bytecode, deploy: true,};
 
     async function updateDistributionSchedules(instance) {
         let scheduleStartTime = [21600, 31557600, 63093600, 94629600]
@@ -54,10 +46,19 @@ async function deploy(hre) {
             deployedContract.initialize = {mint, oracle, staking, uniswapFactory, baseToken, govToken};
             deployedContract.distributionSchedules = {scheduleStartTime, scheduleEndTime, scheduleAmounts};
             console.log(`${CONTRACT_CLASS} deployed to network ${hre.network.name} with address ${instance.address}`);
-            for (let name of ["Staking", "Mint"]) {
-                await (await loadContract(hre, name)).setFactory(deployedContract.address);
-                deployedContracts[name].initialize.factory = deployedContract.address;
-                console.log(`${name}.initialize.factory is set to ${deployedContract.address}`);
+            {
+                let stakingInstance = await loadContract(hre, "Staking");
+                let {govToken, collateralContract} = await stakingInstance.queryConfig();
+                let receipt = await stakingInstance.updateConfig(deployedContract.address, govToken, collateralContract)
+                deployedContracts["Staking"].initialize.factory = deployedContract.address;
+                console.log(`Staking.initialize.factory is set to ${deployedContract.address},${receipt.hash}`);
+            }
+            {
+                let mintInstance = await loadContract(hre, "Mint");
+                let {oracle, collector, baseToken, protocolFeeRate, priceExpireTime} = await mintInstance.queryConfig();
+                let receipt = await mintInstance.updateConfig(deployedContract.address, oracle, collector, baseToken, protocolFeeRate, priceExpireTime)
+                deployedContracts["Mint"].initialize.factory = deployedContract.address;
+                console.log(`Staking.initialize.factory is set to ${deployedContract.address}, ${receipt.hash}`);
             }
             const kalaToken = await loadToken(hre, govToken, deployer);
             await waitReceipt(kalaToken.registerMinters([mint, deployedContract.address]));

@@ -7,15 +7,11 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
 import "./interfaces/ICollateral.sol";
 import "./libraries/SafeDecimalMath.sol";
 import "./interfaces/IBEP20Token.sol";
+import "./SafeAccess.sol";
 
-contract Collateral is OwnableUpgradeable, ReentrancyGuardUpgradeable, ICollateral {
+contract Collateral is OwnableUpgradeable, ReentrancyGuardUpgradeable, ICollateral, SafeAccess {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
-
-    event Deposit(address sender, address asset, uint amount);
-    event Withdraw(address sender, address asset, uint amount);
-    event UpdateConfig(address indexed sender, address indexed stakingContract, address[] assets, uint[] unlockSpeeds);
-    event ReduceUnlockedAmount(address depositor, address asset, uint unlockedAmount);
 
     struct DepositItem {
         uint amount;
@@ -57,7 +53,7 @@ contract Collateral is OwnableUpgradeable, ReentrancyGuardUpgradeable, ICollater
 
 
     function _updateConfig(address stakingContract, address[] memory assets, uint[] memory unlockSpeeds) private {
-        require(assets.length == unlockSpeeds.length, "Collateral: UPDATE_CONFIG_INVALID_PARAMS");
+        require(assets.length == unlockSpeeds.length && stakingContract != address(0), "Collateral: UPDATE_CONFIG_INVALID_PARAMS");
         _assets = assets;
         _stakingContract = stakingContract;
         for (uint i = 0; i < assets.length; i++) {
@@ -66,9 +62,8 @@ contract Collateral is OwnableUpgradeable, ReentrancyGuardUpgradeable, ICollater
         emit UpdateConfig(msg.sender, stakingContract, assets, unlockSpeeds);
     }
 
-
     // asset.approve(Collateral.address,amount)
-    function deposit(address asset, uint amount) override external nonReentrant {
+    function deposit(address asset, uint amount) override external nonReentrant nonContractAccess {
         require(amount > 0 && asset != address(0) && _unlockSpeeds[asset] > 0, "Collateral: DEPOSIT_INVALID_PARAMS");
         address depositor = msg.sender;
         require(IBEP20Token(asset).transferFrom(depositor, address(this), amount), "Collateral: TRANSFER_FROM_FAIL");
@@ -77,11 +72,11 @@ contract Collateral is OwnableUpgradeable, ReentrancyGuardUpgradeable, ICollater
         emit Deposit(depositor, asset, amount);
     }
 
-    function withdraw(address asset, uint amount) override external nonReentrant {
+    function withdraw(address asset, uint amount) override external nonReentrant nonContractAccess {
         require(amount > 0 && asset != address(0) && _unlockSpeeds[asset] > 0, "Collateral: WITHDRAW_INVALID_PARAMS");
         address depositor = msg.sender;
         DepositItem memory item = _depositItems[depositor][asset];
-        require(item.amount >= amount && amount > 0, "Collateral: INVALD_WITHDRAW_AMOUNT");
+        require(item.amount >= amount, "Collateral: INVALD_WITHDRAW_AMOUNT");
         require(IBEP20Token(asset).transfer(depositor, amount), "Collateral: TRANSFER_FAIL");
         collect(depositor, asset, item, - int(amount));
         emit Withdraw(depositor, asset, amount);

@@ -1,15 +1,8 @@
 {
-  "BUSD": {
-    "address": "0x04e192DcCcF0DF2AE637CA89a51017eEcdF91Bd2",
-    "png": "https://app.kalata.io/media/assets/USD.png",
-    "svg": "https://app.kalata.io/media/assets/USD.svg"
-  },
   "Kala": {
     "address": "0x32299c93960bb583a43c2220dc89152391a610c5",
     "png": "https://app.kalata.io/media/assets/KALA.png",
-    "svg": "https://app.kalata.io/media/assets/KALA.svg"
-  },
-  "IBEP20": {
+    "svg": "https://app.kalata.io/media/assets/KALA.svg",
     "abi": [
       {
         "anonymous": false,
@@ -249,7 +242,7 @@
     ]
   },
   "UniswapV2Factory": {
-    "address": "0x0b0d483f32A754596AcC8359671f547290038FEe",
+    "address": "0xB3B251ab2AF097f7238752dF8d9328Ef72036ad2",
     "abi": [
       {
         "anonymous": false,
@@ -417,7 +410,7 @@
     ]
   },
   "UniswapV2Router02": {
-    "address": "0x0f273B0101826aC4F715be9e3E2D231F63D1A42f",
+    "address": "0xeC7288267128C81391d82D88e1EC16B32123D1ca",
     "abi": [
       {
         "inputs": [],
@@ -1373,7 +1366,7 @@
     ]
   },
   "Oracle": {
-    "address": "0x6f465B9D815D23a113bC84F8Ab3a14324C02d6cc",
+    "address": "0xdA7D829ADf848949d34905A88a29D66b38af837c",
     "abi": [
       {
         "inputs": [],
@@ -1424,9 +1417,593 @@
       }
     ]
   },
-  "Staking": {
-    "address": "0x56a32Ab31B1e89aBb4Ae85C9A2d41D780CCD7CF6",
+  "Collateral": {
+    "address": "0xECa19e158F63319269Eaa97289aa6e05d26441d7",
     "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "Deposit",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "previousOwner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "OwnershipTransferred",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "depositor",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "unlockedAmount",
+            "type": "uint256"
+          }
+        ],
+        "name": "ReduceUnlockedAmount",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "stakingContract",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address[]",
+            "name": "assets",
+            "type": "address[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256[]",
+            "name": "unlockSpeeds",
+            "type": "uint256[]"
+          }
+        ],
+        "name": "UpdateConfig",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "Withdraw",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "deposit",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "initialize",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "queryConfig",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "stakingContract",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "assets",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "unlockSpeeds",
+            "type": "uint256[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "depositor",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "name": "queryDeposit",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "blockNumber",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "depositor",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "name": "queryUnlockedAmount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "depositor",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "unlockedAmount",
+            "type": "uint256"
+          }
+        ],
+        "name": "reduceUnlockedAmount",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "renounceOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "transferOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "stakingContract",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "assets",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "unlockSpeeds",
+            "type": "uint256[]"
+          }
+        ],
+        "name": "updateConfig",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "withdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ]
+  },
+  "Staking": {
+    "address": "0x738aCBcEc5925185711cfcFFF143B1D0465066eA",
+    "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amounts",
+            "type": "uint256"
+          }
+        ],
+        "name": "DepositReward",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address[]",
+            "name": "assets",
+            "type": "address[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256[]",
+            "name": "amounts",
+            "type": "uint256[]"
+          }
+        ],
+        "name": "DepositRewards",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "stakingToken",
+            "type": "address"
+          }
+        ],
+        "name": "RegisterAsset",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "bool",
+            "name": "lockable",
+            "type": "bool"
+          }
+        ],
+        "name": "SetLockable",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "stakingTokenAmount",
+            "type": "uint256"
+          }
+        ],
+        "name": "Stake",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "UnStake",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address[]",
+            "name": "assets",
+            "type": "address[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256[]",
+            "name": "intervals",
+            "type": "uint256[]"
+          }
+        ],
+        "name": "UpdateClaimIntervals",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address[]",
+            "name": "assets",
+            "type": "address[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "address[]",
+            "name": "collateralAssets",
+            "type": "address[]"
+          }
+        ],
+        "name": "UpdateCollateralAssetMapping",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "factory",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "govToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "collateralContract",
+            "type": "address"
+          }
+        ],
+        "name": "UpdateConfig",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "Withdraw",
+        "type": "event"
+      },
       {
         "inputs": [
           {
@@ -1754,19 +2331,6 @@
         "inputs": [
           {
             "internalType": "address",
-            "name": "factory",
-            "type": "address"
-          }
-        ],
-        "name": "setFactory",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
             "name": "asset",
             "type": "address"
           },
@@ -1861,8 +2425,360 @@
     ]
   },
   "Mint": {
-    "address": "0x1031d53842fDd55aaD22723166e5610931e9f005",
+    "address": "0x2E95435751dED34e4a43d5443A6f574557a2B5Ee",
     "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "positionOwner",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "positionIndex",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "liquidateAssetAmount",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "returnCollateralAmount",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "protocolFee",
+            "type": "uint256"
+          }
+        ],
+        "name": "Auction",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "positionIndex",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "assetAmount",
+            "type": "uint256"
+          }
+        ],
+        "name": "Burn",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "positionIndex",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "collateralToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "collateralAmount",
+            "type": "uint256"
+          }
+        ],
+        "name": "Deposit",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "positionIndex",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "assetAmount",
+            "type": "uint256"
+          }
+        ],
+        "name": "Mint",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "collateralToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "collateralAmount",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "collateralRatio",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "positionIndex",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "mintAmount",
+            "type": "uint256"
+          }
+        ],
+        "name": "OpenPosition",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "auctionDiscount",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "minCollateralRatio",
+            "type": "uint256"
+          }
+        ],
+        "name": "RegisterAsset",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "endPrice",
+            "type": "uint256"
+          }
+        ],
+        "name": "RegisterMigration",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "auctionDiscount",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "minCollateralRatio",
+            "type": "uint256"
+          }
+        ],
+        "name": "UpdateAsset",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "factory",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "oracle",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "collector",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "baseToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "protocolFeeRate",
+            "type": "uint256"
+          }
+        ],
+        "name": "UpdateConfig",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "positionIndex",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "collateralToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "collateralAmount",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "protocolFee",
+            "type": "uint256"
+          }
+        ],
+        "name": "Withdraw",
+        "type": "event"
+      },
       {
         "inputs": [
           {
@@ -2291,19 +3207,6 @@
         "inputs": [
           {
             "internalType": "address",
-            "name": "factory",
-            "type": "address"
-          }
-        ],
-        "name": "setFactory",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
             "name": "assetToken",
             "type": "address"
           },
@@ -2387,8 +3290,176 @@
     ]
   },
   "Factory": {
-    "address": "0x0DC341c73F0aA73CE078399ACBaa6956fa3683e8",
+    "address": "0x182A93D1B573E5809342905D405894412538bccf",
     "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "Distribute",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "endPrice",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          }
+        ],
+        "name": "MigrateAsset",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "endPrice",
+            "type": "uint256"
+          }
+        ],
+        "name": "RevokeAsset",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "bytes32",
+            "name": "name",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "internalType": "bytes32",
+            "name": "symbol",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "initialSupply",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "name": "TokenCreated",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256[]",
+            "name": "scheduleStartTime",
+            "type": "uint256[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256[]",
+            "name": "scheduleEndTime",
+            "type": "uint256[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256[]",
+            "name": "scheduleAmounts",
+            "type": "uint256[]"
+          }
+        ],
+        "name": "UpdateConfig",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetToken",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          }
+        ],
+        "name": "UpdateWeight",
+        "type": "event"
+      },
       {
         "inputs": [],
         "name": "distribute",
@@ -2761,8 +3832,83 @@
     ]
   },
   "Router": {
-    "address": "0xC23E1Aa147CAFD3D23b7b648312223966BdE4343",
+    "address": "0x1B88C7633B4Dd229d7DD13b3Dea420C40AEdff89",
     "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "name": "AddExtraAsset",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "name": "RemoveExtraAsset",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "uniswapFactory",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "factory",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "busdAddress",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "kalaAddress",
+            "type": "address"
+          }
+        ],
+        "name": "UpdateConfig",
+        "type": "event"
+      },
       {
         "inputs": [
           {
@@ -2872,334 +4018,6 @@
           }
         ],
         "name": "updateConfig",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
-    ]
-  },
-  "Collateral": {
-    "address": "0xa4ABf4BF4d5AEA1Cd41B7A36c6249D460AEa0194",
-    "abi": [
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "sender",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "asset",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "Deposit",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "previousOwner",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "OwnershipTransferred",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "depositor",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "asset",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "unlockedAmount",
-            "type": "uint256"
-          }
-        ],
-        "name": "ReduceUnlockedAmount",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "sender",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "stakingContract",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "address[]",
-            "name": "assets",
-            "type": "address[]"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256[]",
-            "name": "unlockSpeeds",
-            "type": "uint256[]"
-          }
-        ],
-        "name": "UpdateConfig",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "sender",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "asset",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "Withdraw",
-        "type": "event"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "asset",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "deposit",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "initialize",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "owner",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "queryConfig",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "stakingContract",
-            "type": "address"
-          },
-          {
-            "internalType": "address[]",
-            "name": "assets",
-            "type": "address[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "unlockSpeeds",
-            "type": "uint256[]"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "depositor",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "asset",
-            "type": "address"
-          }
-        ],
-        "name": "queryDeposit",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "blockNumber",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "depositor",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "asset",
-            "type": "address"
-          }
-        ],
-        "name": "queryUnlockedAmount",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "depositor",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "asset",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "unlockedAmount",
-            "type": "uint256"
-          }
-        ],
-        "name": "reduceUnlockedAmount",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "renounceOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "transferOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "stakingContract",
-            "type": "address"
-          },
-          {
-            "internalType": "address[]",
-            "name": "assets",
-            "type": "address[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "unlockSpeeds",
-            "type": "uint256[]"
-          }
-        ],
-        "name": "updateConfig",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "asset",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "withdraw",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

@@ -55,6 +55,7 @@ function saveAssets(hre, content) {
     saveJson(getAssetsPath(hre), content);
 }
 
+
 function getWebAssetsPath(hre) {
     return path.resolve(getResourceFolder(hre), "webAssets.json");
 }

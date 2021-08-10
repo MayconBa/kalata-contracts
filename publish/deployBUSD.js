@@ -1,12 +1,10 @@
-const {updateWebContracts} = require("../utils/resources");
 const {readBUSD, saveBUSD} = require("../utils/assets")
-
 const {toUnitString} = require("../utils/maths");
 const {deployToken} = require("../utils/contract")
 
 const ASSETS = {
-    name: "Binance-Peg BUSD-T",
-    symbol: "BUSD",
+    name: "BUSD-T",
+    symbol: "BUSD-T",
     initialSupply: toUnitString(10000000000),
     isBaseAsset: true,
     addresses: {
@@ -24,14 +22,7 @@ async function deploy(hre) {
         saveBUSD(hre, {name, symbol, address})
         return;
     }
-    let config = readBUSD(hre) || {
-        name,
-        symbol,
-        initialSupply,
-        deployer: deployer.address,
-        address: null,
-        deploy: true
-    };
+    let config = readBUSD(hre) || {name, symbol, initialSupply, deployer: deployer.address, address: null, deploy: true};
     if (config.deploy) {
         let token = await deployToken(hre, name, symbol, initialSupply);
         config.address = token.address;
@@ -39,11 +30,6 @@ async function deploy(hre) {
         saveBUSD(hre, config)
         console.log(`MockUSD deployed to network ${hre.network.name} with address ${token.address}`);
     }
-    updateWebContracts(hre, symbol, {
-        address: config.address,
-        png: `https://app.kalata.io/media/assets/USD.png`,
-        svg: `https://app.kalata.io/media/assets/USD.svg`,
-    });
 }
 
 module.exports = {

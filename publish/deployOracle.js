@@ -10,16 +10,7 @@ async function deploy(hre) {
     const {bytecode, abi} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
 
     let deployedContracts = readContracts(hre) || {};
-    let deployedContract = deployedContracts[CONTRACT_CLASS] || {
-        name: CONTRACT_CLASS,
-        upgrade: false,
-        address: null,
-        initialize: null,
-        deployer: deployer.address,
-        abi,
-        bytecode,
-        deploy: true
-    };
+    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, deployer: deployer.address, abi, bytecode, deploy: true};
 
     if (deployedContract.deploy || deployedContract.upgrade) {
         if (deployedContract.upgrade) {

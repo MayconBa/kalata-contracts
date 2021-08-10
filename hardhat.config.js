@@ -5,6 +5,10 @@ require("@nomiclabs/hardhat-web3");
 require("hardhat-deploy");
 require("hardhat-gas-reporter");
 require('hardhat-preprocessor');
+//https://hardhat.org/plugins/nomiclabs-hardhat-solhint.html
+//npx hardhat check
+require("@nomiclabs/hardhat-solhint");
+
 const {removeConsoleLog} = require("hardhat-preprocessor");
 
 const env = require('./env.js');
@@ -17,6 +21,7 @@ task("accounts", "Prints the list of accounts", async () => {
     }
 });
 
+//npx hardhat transfer-test-busd --amount 10000000 --network testnet
 task("transfer-test-busd", "Batch transfer Test Kalas").addParam("amount", "The account's address").setAction(async taskArgs => {
     const hre = require("hardhat");
     if (hre.network.name !== 'testnet') {
@@ -38,18 +43,26 @@ task("transfer-test-busd", "Batch transfer Test Kalas").addParam("amount", "The 
     const logFile = `${folder}/log.json`
     const transferLogs = readJson(logFile) || {};
     let transferred = Object.keys(transferLogs).length;
-    await busdToken.mint('0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0', toUnitString("10000000000"));
+    await busdToken.mint('0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0', toUnitString("100000000000"));
     console.log("transferred:", transferred)
     let index = 0;
     for (let line of fs.readFileSync(`${folder}/list.txt`, "utf-8").split("\n")) {
         let account = line.trim();
         //console.log(line)
         if (account.startsWith("0x") && account.length === 42 && !transferLogs[account]) {
-            let result = await busdToken.transfer(account, toUnitString(amount));
-            let transferLog = {account, amount: amount, transaction: result.hash, time: moment().format()};
-            console.log(transferred + (++index), JSON.stringify(transferLog))
-            transferLogs[account] = transferLog
-            saveJson(logFile, transferLogs);
+
+            try {
+                let receipt = await busdToken.transfer(account, toUnitString(amount));
+                await receipt.wait().catch(e => {
+                    console.log(e)
+                })
+                let transferLog = {account, amount: amount, transaction: receipt.hash, time: moment().format()};
+                console.log(transferred + (++index), JSON.stringify(transferLog))
+                transferLogs[account] = transferLog
+                saveJson(logFile, transferLogs);
+            } catch (error) {
+                console.log(error)
+            }
         }
     }
 });
@@ -174,9 +187,9 @@ module.exports = {
     solidity: {
         compilers: [
             {version: '0.7.6', settings: {optimizer: {enabled: true}}},
-            {version: '0.6.6', settings: {optimizer: {enabled: true}}},
+            //{version: '0.6.6', settings: {optimizer: {enabled: true}}},
             //{version: '0.5.6', settings: {optimizer: {enabled: true}}},
-            {version: '0.5.16', settings: {optimizer: {enabled: true}}},
+           // {version: '0.5.16', settings: {optimizer: {enabled: true}}},
         ],
     },
 

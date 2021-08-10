@@ -13,20 +13,14 @@ import "./libraries/SafeDecimalMath.sol";
 import "./libraries/ContractFactory.sol";
 import "./libraries/Bytes32.sol";
 import "./BEP20Token.sol";
+import "./SafeAccess.sol";
 
 
-contract Factory is OwnableUpgradeable, IFactory {
+contract Factory is OwnableUpgradeable, IFactory ,SafeAccess{
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using Bytes32 for bytes32;
     using ContractFactory for bytes;
-
-    event RevokeAsset(address indexed sender, address indexed assetToken, uint endPrice);
-    event Distribute(address indexed sender, address  indexed asset, uint amount);
-    event UpdateConfig(address indexed sender, uint[] scheduleStartTime, uint[] scheduleEndTime, uint[] scheduleAmounts);
-    event UpdateWeight(address indexed sender, address  indexed assetToken, uint weight);
-    event TokenCreated(address indexed sender, bytes32 name, bytes32 symbol, uint initialSupply, address  indexed token);
-    event MigrateAsset(address indexed sender, uint endPrice, address  indexed assetToken);
 
     struct Token {
         bytes32 tokenName;
@@ -71,10 +65,11 @@ contract Factory is OwnableUpgradeable, IFactory {
     address private _mint;
     //Contract address of Kalata Staking
     address private _staking;
+
     //Contract address of Uniswap Factory
     address private _uniswapFactory;
     address private _baseToken;
-    //Contract address of Kalata Token (KALA)
+
     address private _govToken;
 
     uint private _genesisTime;
@@ -155,7 +150,7 @@ contract Factory is OwnableUpgradeable, IFactory {
     //2nd year: genesisTime+(31557600 to 63093600),   distribute 274500 kala tokens
     //3rd year: genesisTime+(63093600 to 94629600),   distribute 137250 kala tokens
     //4th year: genesisTime+(94629600 to 126165600),  distribute 68625 kala tokens
-    function distribute() override external {
+    function distribute() override external nonContractAccess {
         require(block.timestamp.sub(_lastDistributed) >= DISTRIBUTION_INTERVAL, "Factory: DISTRIBUTE_NOT_TIME");
         uint timeElapsed = block.timestamp.sub(_genesisTime);
         uint distributedAmount = 0;
@@ -195,15 +190,6 @@ contract Factory is OwnableUpgradeable, IFactory {
         _revokeAsset(assetToken, endPrice);
         emit RevokeAsset(msg.sender, assetToken, endPrice);
     }
-
-    // New replacement mAsset token, Uniswap pair, and LP tokens contracts are created, and the present values of properties of mAsset will be transferred over
-    // The mAsset's min. collateral ratio is set to 100%
-    // At this stage:
-    //    CDPs may no longer mint new tokens of the mAsset
-    //    Liquidation auctions are disabled for the mAsset
-    //    Burns will take effect at the fixed "end price" for withdrawing collateral deposits
-    //    LP tokens for the mAsset will stop counting for staking rewards
-    //    Deprecation will not directly affect the functionality of the mAsset's Uniswap pool and users will still be able to make trades against it, although price is likely to be very unstable. Users are urged to burn the mAsset to recover their collateral if they have an open position, and are free to open a new CDP / engage in liquidity provision for the new, replacement mAsset. The old mAsset will be retired and marked as "deprecated" on front-end interfaces.
 
     function migrateAsset(bytes32 name, bytes32 symbol, address assetToken, uint endPrice) override external onlyOwner {
         (uint auctionDiscount, uint minCollateralRatio,) = IMint(_mint).queryAssetConfig(assetToken);

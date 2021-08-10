@@ -10,16 +10,7 @@ async function deploy(hre) {
     let deployedContracts = readContracts(hre) || {};
     const {bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
     const {abi} = await hre.artifacts.readArtifact("IRouter");
-    let deployedContract = deployedContracts[CONTRACT_CLASS] || {
-        upgrade: false,
-        name: CONTRACT_CLASS,
-        address: null,
-        initialize: null,
-        deployer: deployer.address,
-        abi,
-        bytecode,
-        deploy: true
-    };
+    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, deployer: deployer.address, abi, bytecode, deploy: true};
     if (deployedContract.deploy || deployedContract.upgrade) {
         const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
         if (deployedContract.upgrade) {
@@ -29,14 +20,11 @@ async function deploy(hre) {
             deployedContract.upgradeTime = moment().format();
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
-            //address uniswapFactory, address factory, address busdAddress, address kalaAddress
             let uniswapFactory = deployedContracts['UniswapV2Factory'].address;
             let factory = deployedContracts['Factory'].address;
             let busdAddress = readBUSD(hre).address;
             let kalaAddress = readKala(hre).address;
-            const instance = await hre.upgrades.deployProxy(ContractClass, [uniswapFactory, factory, busdAddress, kalaAddress], {
-                initializer: 'initialize',
-            });
+            const instance = await hre.upgrades.deployProxy(ContractClass, [uniswapFactory, factory, busdAddress, kalaAddress], {initializer: 'initialize',});
             await instance.deployed();
             deployedContract.address = instance.address;
             deployedContract.initialize = {uniswapFactory, factory, busdAddress, kalaAddress};
@@ -46,10 +34,9 @@ async function deploy(hre) {
         deployedContract.upgrade = false;
         deployedContracts[CONTRACT_CLASS] = deployedContract
         saveContracts(hre, deployedContracts);
+        updateWebContracts(hre, CONTRACT_CLASS, {address: deployedContract.address, abi});
     }
-    updateWebContracts(hre, CONTRACT_CLASS, {address: deployedContract.address, abi});
     return deployedContract;
-
 }
 
 

@@ -1,3 +1,4 @@
+const publish = require("../publish");
 module.exports = async (hre) => {
     const {deleteResource} = require("../utils/resources")
     const publish = require("../publish")

@@ -3,9 +3,18 @@ pragma solidity >=0.6.0;
 
 interface IStaking {
 
-    function updateConfig(address factory, address govToken, address kalaCollateralContract) external;
+    event UpdateConfig(address indexed sender, address factory, address govToken, address collateralContract);
+    event RegisterAsset(address indexed sender, address indexed asset, address indexed stakingToken);
+    event Stake(address indexed sender, address indexed asset, uint stakingTokenAmount);
+    event DepositReward(address indexed sender, address indexed asset, uint amounts);
+    event DepositRewards(address indexed sender, address[] assets, uint[] amounts);
+    event Withdraw(address indexed sender, address indexed asset, uint amount);
+    event UnStake(address indexed sender, address indexed asset, uint amount);
+    event UpdateClaimIntervals(address indexed sender, address[] assets, uint[] intervals);
+    event SetLockable(address indexed sender, address asset, bool lockable);
+    event UpdateCollateralAssetMapping(address indexed sender, address[] assets, address[] collateralAssets);
 
-    function setFactory(address factory) external;
+    function updateConfig(address factory, address govToken, address kalaCollateralContract) external;
 
     function registerAsset(address asset, address stakingToken) external;
 

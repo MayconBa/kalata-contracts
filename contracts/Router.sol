@@ -12,10 +12,6 @@ contract Router is OwnableUpgradeable, IRouter {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
-    event AddExtraAsset(address indexed sender, address indexed asset);
-    event RemoveExtraAsset(address indexed sender, address indexed asset);
-    event UpdateConfig(address indexed sender, address uniswapFactory, address factory, address busdAddress, address kalaAddress);
-
     address private _uniswapFactory;
     address private _factory;
     address private _busdAddress;
@@ -67,6 +63,10 @@ contract Router is OwnableUpgradeable, IRouter {
     }
 
     function _updateConfig(address uniswapFactory, address factory, address busdAddress, address kalaAddress) private {
+        require(
+            uniswapFactory != address(0) && factory != address(0) && busdAddress != address(0) && kalaAddress != address(0),
+            "Router: _UPDATE_CONFIG_INVALD_PARAMETERS"
+        );
         _uniswapFactory = uniswapFactory;
         _factory = factory;
         _busdAddress = busdAddress;

@@ -3,8 +3,7 @@ const {readKala, saveKala} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths");
 
 async function deploy(hre) {
-    const accounts = await hre.ethers.getSigners();
-    let deployer = accounts[0];
+    const [deployer] = await hre.ethers.getSigners();
     let name = "Kalata";
     let symbol = "Kala";
 
@@ -37,14 +36,13 @@ async function deploy(hre) {
         }
     }
     saveKala(hre, config);
+    const {abi} = await hre.artifacts.readArtifact("IBEP20");
     updateWebContracts(hre, symbol, {
         address: config.address,
         png: `https://app.kalata.io/media/assets/KALA.png`,
         svg: `https://app.kalata.io/media/assets/KALA.svg`,
+        abi,
     });
-    const {abi} = await hre.artifacts.readArtifact("IBEP20");
-    updateWebContracts(hre, "IBEP20", {abi});
-    return config;
 }
 
 

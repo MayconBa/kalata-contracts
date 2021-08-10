@@ -6,21 +6,12 @@ async function deploy(hre) {
     let deployer = accounts[0];
     const {abi, bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
     let deployedContracts = readContracts(hre) || {};
-    let deployedContract = deployedContracts[CONTRACT_CLASS] || {
-        name: CONTRACT_CLASS,
-        address: null,
-        initialize: null,
-        deployer: deployer.address,
-        deploy: true,
-        upgradable: false,
-        abi,
-        bytecode
-    };
+    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, deployer: deployer.address, deploy: true, abi, bytecode};
     if (deployedContract.deploy) {
         let Contract = new hre.web3.eth.Contract(abi, null, {data: bytecode});
         let minDelay = 3600 * 24;
-        let proposers = ['0x3A55B00c94bB0816DA85454797B13B46c395a38B', deployer.address];
-        let executors = ['0xFc0aaEe5D05e8231b00e8b1e57181d0077fD1081', deployer.address];
+        let proposers = [deployer.address];
+        let executors = proposers;
         let result = await Contract.deploy({data: bytecode, arguments: [minDelay, proposers, executors]}).send({
             from: deployer.address,
         });

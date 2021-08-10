@@ -8,17 +8,7 @@ async function deploy(hre) {
     const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
     const {bytecode, abi} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
     let deployedContracts = readContracts(hre) || {};
-    let deployedContract = deployedContracts[CONTRACT_CLASS] || {
-        name: CONTRACT_CLASS,
-        upgrade: false,
-        address: null,
-        initialize: null,
-        deployer: deployer.address,
-        abi,
-        bytecode,
-        deploy: true,
-    };
-
+    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, deployer: deployer.address, abi, bytecode, deploy: true};
     if (deployedContract.deploy || deployedContract.upgrade) {
         if (deployedContract.upgrade) {
             const instance = await hre.upgrades.upgradeProxy(deployedContract.address, ContractClass, {});
@@ -29,9 +19,7 @@ async function deploy(hre) {
         } else {
             let assets = [];
             let feeders = [];
-            const instance = await hre.upgrades.deployProxy(ContractClass, [assets, feeders], {
-                initializer: 'initialize',
-            });
+            const instance = await hre.upgrades.deployProxy(ContractClass, [assets, feeders], {initializer: 'initialize'});
             await instance.deployed();
             deployedContract.address = instance.address;
             deployedContract.initialize = {assets, feeders};

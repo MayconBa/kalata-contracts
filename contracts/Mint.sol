@@ -8,6 +8,8 @@ import "./interfaces/IOracle.sol";
 import "./interfaces/IBEP20Token.sol";
 import "./interfaces/IERC20.sol";
 import "./libraries/SafeDecimalMath.sol";
+import "./SafeAccess.sol";
+
 
 /**
     The Mint Contract implements the logic for Collateralized Debt Positions (CDPs),
@@ -15,20 +17,9 @@ import "./libraries/SafeDecimalMath.sol";
     Current prices of collateral and minted mAssets are read from the Oracle Contract determine the C-ratio of each CDP.
     The Mint Contract also contains the logic for liquidating CDPs with C-ratios below the minimum for their minted mAsset through auction.
 */
-contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
+contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAccess {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
-
-    event UpdateConfig(address indexed sender, address indexed factory, address indexed oracle, address collector, address baseToken, uint protocolFeeRate);
-    event UpdateAsset(address indexed sender, address indexed assetToken, uint indexed auctionDiscount, uint minCollateralRatio);
-    event RegisterAsset(address indexed sender, address indexed assetToken, uint auctionDiscount, uint minCollateralRatio);
-    event RegisterMigration(address indexed sender, address indexed assetToken, uint endPrice);
-    event Deposit(address indexed sender, uint positionIndex, address indexed collateralToken, uint collateralAmount);
-    event OpenPosition(address indexed sender, address indexed collateralToken, uint collateralAmount, address indexed assetToken, uint collateralRatio, uint positionIndex, uint mintAmount);
-    event Withdraw(address indexed sender, uint positionIndex, address indexed collateralToken, uint collateralAmount, uint protocolFee);
-    event Mint(address indexed sender, uint positionIndex, address indexed assetToken, uint assetAmount);
-    event Burn(address indexed sender, uint positionIndex, address indexed assetToken, uint assetAmount);
-
 
     struct AssetConfig {
         address token;
@@ -62,18 +53,18 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
     address private _oracle;
     address private _collector;
     address private _baseToken;
+
     uint private _protocolFeeRate;//0.015
     uint private _priceExpireTime;
 
-    mapping(address => AssetConfig) private assetConfigMap;
+    mapping(address => AssetConfig) private _assetConfigMap;
+    address [] private _assets;
 
-    //for looping assetConfigMap;
-    address [] private assetTokenArray;
-    mapping(uint => Position) private idxPositionMap;
 
-    //for looping idxPositionMap
-    uint[] private postionIdxArray;
-    uint private currentpositionIndex;
+    mapping(uint => Position) private _idxPositionMap;
+    uint[] private _postionIndexes;
+
+    uint private _currentPositionIndex;
 
     modifier onlyFactoryOrOwner() {
         require(_factory == _msgSender() || owner() == _msgSender(), "Unauthorized, only factory/owner can perform");
@@ -82,15 +73,11 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
     function initialize(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime) external initializer {
         __Ownable_init();
-        currentpositionIndex = 1;
+        _currentPositionIndex = 1;
         require(protocolFeeRate <= SafeDecimalMath.unit(), "protocolFeeRate must be less than 100%.");
         _updateConfig(factory, oracle, collector, baseToken, protocolFeeRate, priceExpireTime);
     }
 
-    function setFactory(address factory) override external onlyOwner {
-        require(factory != address(0), "Invalid parameter");
-        _factory = factory;
-    }
 
     function updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime) override external onlyOwner {
         _updateConfig(factory, oracle, collector, baseToken, protocolFeeRate, priceExpireTime);
@@ -99,6 +86,15 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
 
     function _updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime) private {
+        require(
+            factory != address(0)
+            && oracle != address(0)
+            && collector != address(0)
+            && baseToken != address(0)
+            && protocolFeeRate > 0
+            && priceExpireTime > 0,
+            "Router: _UPDATE_CONFIG_INVALD_PARAMETERS"
+        );
         _factory = factory;
         _oracle = oracle;
         _collector = collector;
@@ -114,7 +110,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
     }
 
     function registerAsset(address assetToken, uint auctionDiscount, uint minCollateralRatio) override external onlyFactoryOrOwner {
-        require(assetConfigMap[assetToken].token == address(0), "Asset was already registered");
+        require(_assetConfigMap[assetToken].token == address(0), "Asset was already registered");
         _saveAsset(assetToken, auctionDiscount, minCollateralRatio);
         emit RegisterAsset(msg.sender, assetToken, auctionDiscount, minCollateralRatio);
     }
@@ -123,7 +119,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         require(assetToken != address(0), "Invalid assetToken address");
         assertAuctionDiscount(auctionDiscount);
         assertMinCollateralRatio(minCollateralRatio);
-        AssetConfig memory assetConfig = assetConfigMap[assetToken];
+        AssetConfig memory assetConfig = _assetConfigMap[assetToken];
         assetConfig.auctionDiscount = auctionDiscount;
         assetConfig.minCollateralRatio = minCollateralRatio;
         assetConfig.token = assetToken;
@@ -133,7 +129,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
     function registerMigration(address assetToken, uint endPrice) override external onlyFactoryOrOwner {
         require(assetToken != address(0), "Invalid assetToken address");
-        AssetConfig memory assetConfig = assetConfigMap[assetToken];
+        AssetConfig memory assetConfig = _assetConfigMap[assetToken];
         assetConfig.endPrice = endPrice;
         assetConfig.minCollateralRatio = SafeDecimalMath.unit();
         saveAssetConfig(assetToken, assetConfig);
@@ -149,7 +145,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
       *  sender is the end user
       *
     */
-    function openPosition(address collateralToken, uint collateralAmount, address assetToken, uint collateralRatio) override external nonReentrant returns (uint){
+    function openPosition(address collateralToken, uint collateralAmount, address assetToken, uint collateralRatio) override external nonReentrant nonContractAccess returns (uint){
         address sender = _msgSender();
         require(collateralToken != address(0), "Invalid collateralToken address");
         require(assetToken != address(0), "Invalid assetContract address");
@@ -158,7 +154,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         //User should invoke IERC20.approve
         require(IERC20(collateralToken).transferFrom(sender, address(this), collateralAmount), "Unable to execute transferFrom, recipient may have reverted");
 
-        AssetConfig memory assetConfig = assetConfigMap[assetToken];
+        AssetConfig memory assetConfig = _assetConfigMap[assetToken];
 
         require(assetConfig.token == assetToken, "Asset not registed");
         require(assetConfig.endPrice == 0, "Operation is not allowed for the deprecated asset");
@@ -172,7 +168,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         require(mintAmount > 0, "collateral is too small");
 
         Position memory position = Position({
-        idx : currentpositionIndex,
+        idx : _currentPositionIndex,
         owner : sender,
         collateralToken : collateralToken,
         collateralAmount : collateralAmount,
@@ -182,7 +178,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
         savePosition(position.idx, position);
 
-        currentpositionIndex += 1;
+        _currentPositionIndex += 1;
         IBEP20Token(assetToken).mint(sender, mintAmount);
 
         ownerPositionIndex[sender][collateralToken][assetToken] = position.idx;
@@ -193,18 +189,18 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
     //Deposits additional collateral to an existing CDP to raise its C-ratio.
     //After method IERC20.approve()
-    function deposit(uint positionIndex, address collateralToken, uint collateralAmount) override external nonReentrant {
+    function deposit(uint positionIndex, address collateralToken, uint collateralAmount) override external nonReentrant nonContractAccess {
         address sender = _msgSender();
         require(collateralToken != address(0), "Invalid collateralToken address");
         require(positionIndex > 0, "Invalid positionIndex");
 
-        Position memory position = idxPositionMap[positionIndex];
+        Position memory position = _idxPositionMap[positionIndex];
         require(position.owner == sender, "deposit unauthorized");
 
         assertCollateral(position.collateralToken, collateralToken, collateralAmount);
 
         address assetToken = position.assetToken;
-        AssetConfig memory assetConfig = assetConfigMap[assetToken];
+        AssetConfig memory assetConfig = _assetConfigMap[assetToken];
         assertMigratedAsset(assetConfig.endPrice);
 
         require(IERC20(collateralToken).transferFrom(sender, address(this), collateralAmount), "Unable to execute transferFrom, recipient may have reverted");
@@ -217,16 +213,16 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
 
     //Withdraws collateral from the CDP. Cannot withdraw more than an amount that would drop the CDP's C-ratio below the minted mAsset's mandated minimum.
-    function withdraw(uint positionIndex, address collateralToken, uint withdrawAmount) override external {
+    function withdraw(uint positionIndex, address collateralToken, uint withdrawAmount) override external nonContractAccess {
         require(collateralToken != address(0), "invalid address");
-        Position memory position = idxPositionMap[positionIndex];
+        Position memory position = _idxPositionMap[positionIndex];
         require(position.owner == _msgSender(), "withdraw unauthorized");
         assertCollateral(position.collateralToken, collateralToken, withdrawAmount);
         require(position.collateralAmount >= withdrawAmount, "Cannot withdraw more than you provide");
 
         address assetToken = position.assetToken;
 
-        AssetConfig memory assetConfig = assetConfigMap[assetToken];
+        AssetConfig memory assetConfig = _assetConfigMap[assetToken];
 
 
         uint relativeCollateralPrice = queryPrice(position.collateralToken, position.assetToken);
@@ -237,7 +233,10 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         // Convert asset to collateral unit
         uint assetValueInCollateralAsset = position.assetAmount.multiplyDecimal(relativeCollateralPrice);
 
-        require(assetValueInCollateralAsset.multiplyDecimal(assetConfig.minCollateralRatio) <= newCollateralAmount, "Cannot withdraw collateral over than minimum collateral ratio");
+        require(assetValueInCollateralAsset.multiplyDecimal(
+            assetConfig.minCollateralRatio) <= newCollateralAmount,
+            "Cannot withdraw collateral over than minimum collateral ratio"
+        );
 
         position.collateralAmount = newCollateralAmount;
         if (position.collateralAmount == 0 && position.assetAmount == 0) {
@@ -258,14 +257,14 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
     }
 
     //In case the collateralRatio is too large, user can mint more mAssets to reduce the collateralRatio;
-    function mint(uint positionIndex, address assetToken, uint assetAmount) override external {
+    function mint(uint positionIndex, address assetToken, uint assetAmount) override external nonContractAccess {
         require(assetToken != address(0), "invalid address");
 
-        Position memory position = idxPositionMap[positionIndex];
+        Position memory position = _idxPositionMap[positionIndex];
         require(position.owner == _msgSender(), "mint unauthorized");
         assertAsset(position.assetToken, assetToken, assetAmount);
 
-        AssetConfig memory assetConfig = assetConfigMap[position.assetToken];
+        AssetConfig memory assetConfig = _assetConfigMap[position.assetToken];
         assertMigratedAsset(assetConfig.endPrice);
 
         uint relativeCollateralPrice = queryPrice(position.collateralToken, position.assetToken);
@@ -285,9 +284,9 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         emit Mint(msg.sender, positionIndex, assetToken, assetAmount);
     }
 
-    function closePosition(uint positionIndex) override external {
+    function closePosition(uint positionIndex) override external nonContractAccess {
         address positionOwner = _msgSender();
-        Position memory position = idxPositionMap[positionIndex];
+        Position memory position = _idxPositionMap[positionIndex];
         require(position.assetAmount > 0 && position.assetToken != address(0) && position.collateralAmount > 0 && position.assetAmount > 0, "Nothing to close");
         require(position.owner == positionOwner, "closePosition: unauthorized");
 
@@ -328,8 +327,8 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         (uint assetPrice,) = IOracle(_oracle).queryPrice(asset);
         if (assetPrice > 0) {
             uint index = 0;
-            for (uint i = 0; i < postionIdxArray.length; i++) {
-                Position memory position = idxPositionMap[postionIdxArray[i]];
+            for (uint i = 0; i < _postionIndexes.length; i++) {
+                Position memory position = _idxPositionMap[_postionIndexes[i]];
                 if (position.assetToken == asset && !isValidPostion(position, assetPrice)) {
                     positionIdxes[index] = position.idx;
                     positionOwners[index] = position.owner;
@@ -345,13 +344,13 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
     function isValidPostion(Position memory position, uint assetPrice) private view returns (bool){
         uint currentCollateralRatio = position.collateralAmount.divideDecimal(position.assetAmount.multiplyDecimal(assetPrice));
-        return currentCollateralRatio >= assetConfigMap[position.assetToken].minCollateralRatio;
+        return currentCollateralRatio >= _assetConfigMap[position.assetToken].minCollateralRatio;
     }
 
-    function auction(uint positionIndex, uint liquidateAssetAmount) override external {
+    function auction(uint positionIndex, uint liquidateAssetAmount) override external nonContractAccess {
         address sender = msg.sender;
-        Position memory position = idxPositionMap[positionIndex];
-        AssetConfig memory assetConfig = assetConfigMap[position.assetToken];
+        Position memory position = _idxPositionMap[positionIndex];
+        AssetConfig memory assetConfig = _assetConfigMap[position.assetToken];
         (uint assetPrice,) = IOracle(_oracle).queryPrice(position.assetToken);
         require(!isValidPostion(position, assetPrice), "Mint: AUCTION_CANNOT_LIQUIDATE_SAFELY_POSITION");
 
@@ -370,6 +369,8 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
         require(IBEP20Token(position.assetToken).transferFrom(sender, address(this), liquidateAssetAmount), "Mint: AUCTION_TRANSFER_FROM_FAIL");
 
+        IBEP20Token(position.assetToken).burn(address(this), liquidateAssetAmount);
+
         //returnCollateralAmount = liquidateAssetAmount * discountedPrice
         uint returnCollateralAmount = liquidateAssetAmount.multiplyDecimal(discountedPrice);
 
@@ -384,7 +385,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
             IERC20(position.collateralToken).transfer(position.owner, position.collateralAmount);
             removePosition(positionIndex);
         } else {
-            idxPositionMap[positionIndex] = position;
+            _idxPositionMap[positionIndex] = position;
         }
 
         uint protocolFee = returnCollateralAmount.multiplyDecimal(_protocolFeeRate);
@@ -395,8 +396,6 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         emit Auction(sender, position.owner, positionIndex, liquidateAssetAmount, returnCollateralAmount, protocolFee);
 
     }
-
-    event Auction(address indexed sender, address indexed positionOwner, uint positionIndex, uint liquidateAssetAmount, uint returnCollateralAmount, uint protocolFee);
 
 
     function queryConfig() override external view returns (address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime){
@@ -410,7 +409,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
 
     function queryAssetConfig(address assetToken) override external view returns (uint auctionDiscount, uint minCollateralRatio, uint endPrice){
-        AssetConfig memory m = assetConfigMap[assetToken];
+        AssetConfig memory m = _assetConfigMap[assetToken];
         auctionDiscount = m.auctionDiscount;
         minCollateralRatio = m.minCollateralRatio;
         endPrice = m.endPrice;
@@ -423,7 +422,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         address assetToken,
         uint assetAmount
     ){
-        Position memory m = idxPositionMap[positionIndex];
+        Position memory m = _idxPositionMap[positionIndex];
         positionOwner = m.owner;
         collateralToken = m.collateralToken;
         collateralAmount = m.collateralAmount;
@@ -440,7 +439,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         uint[] memory assetAmounts
     ){
         require(owner != address(0), "Invalid address");
-        uint length = postionIdxArray.length;
+        uint length = _postionIndexes.length;
         idxes = new uint[](length);
         positionOwners = new address[](length);
         collateralTokens = new address[](length);
@@ -449,7 +448,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         assetAmounts = new uint[](length);
         uint index = 0;
         for (uint i = 0; i < length; i++) {
-            Position memory position = idxPositionMap[postionIdxArray[i]];
+            Position memory position = _idxPositionMap[_postionIndexes[i]];
             if (position.owner == owner) {
                 idxes[index] = position.idx;
                 positionOwners[index] = (position.owner);
@@ -470,7 +469,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         address[]  memory assetTokens,
         uint[] memory assetAmounts
     ) {
-        uint length = postionIdxArray.length;
+        uint length = _postionIndexes.length;
         idxes = new uint[](length);
         positionOwners = new address[](length);
         collateralTokens = new address[](length);
@@ -479,7 +478,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
         assetAmounts = new uint[](length);
         uint index = 0;
         for (uint i = 0; i < length; i++) {
-            Position memory position = idxPositionMap[postionIdxArray[i]];
+            Position memory position = _idxPositionMap[_postionIndexes[i]];
             if ((position.owner == owner || owner == address(0)) && (position.assetToken == assetToken || assetToken == address(0))) {
                 idxes[index] = position.idx;
                 positionOwners[index] = (position.owner);
@@ -554,41 +553,41 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint {
 
     function saveAssetConfig(address assetToken, AssetConfig memory assetConfig) private {
         bool exists = false;
-        for (uint i = 0; i < assetTokenArray.length; i++) {
-            if (assetTokenArray[i] == assetToken) {
+        for (uint i = 0; i < _assets.length; i++) {
+            if (_assets[i] == assetToken) {
                 exists = true;
                 break;
             }
         }
         if (!exists) {
-            assetTokenArray.push(assetToken);
+            _assets.push(assetToken);
         }
-        assetConfigMap[assetToken] = assetConfig;
+        _assetConfigMap[assetToken] = assetConfig;
     }
 
     function savePosition(uint positionIndex, Position memory position) private {
         bool exists = false;
-        for (uint i = 0; i < postionIdxArray.length; i++) {
-            if (postionIdxArray[i] == positionIndex) {
+        for (uint i = 0; i < _postionIndexes.length; i++) {
+            if (_postionIndexes[i] == positionIndex) {
                 exists = true;
                 break;
             }
         }
         if (!exists) {
-            postionIdxArray.push(positionIndex);
+            _postionIndexes.push(positionIndex);
         }
-        idxPositionMap[positionIndex] = position;
+        _idxPositionMap[positionIndex] = position;
     }
 
     function removePosition(uint positionIndex) private {
-        delete idxPositionMap[positionIndex];
-        uint length = postionIdxArray.length;
+        delete _idxPositionMap[positionIndex];
+        uint length = _postionIndexes.length;
         for (uint i = 0; i < length; i++) {
-            if (postionIdxArray[i] == positionIndex) {
+            if (_postionIndexes[i] == positionIndex) {
                 if (i != length - 1) {
-                    postionIdxArray[i] = postionIdxArray[length - 1];
+                    _postionIndexes[i] = _postionIndexes[length - 1];
                 }
-                delete postionIdxArray[length - 1];
+                delete _postionIndexes[length - 1];
             }
         }
     }

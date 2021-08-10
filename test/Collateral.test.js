@@ -9,7 +9,7 @@ const {getBlockNumber, evmMine} = require('../utils/block')
 const CONTRACT = 'Collateral'
 
 let owner, staking, alice, bob;
-let mockAsset, instance;
+let mockAsset, instance, contractProxy;
 const unlockSpeed = toUnit("0.1");
 
 describe(CONTRACT, () => {
@@ -17,6 +17,11 @@ describe(CONTRACT, () => {
         [owner, staking, alice, bob] = await hre.ethers.getSigners();
         const ContractFactory = await hre.ethers.getContractFactory(CONTRACT);
         instance = await ContractFactory.deploy();
+
+        const ContractProxyFactory = await hre.ethers.getContractFactory('ContractProxy');
+
+        contractProxy = await ContractProxyFactory.deploy();
+
         const BEP20TokenFactory = await hre.ethers.getContractFactory('BEP20Token', owner);
         mockAsset = await BEP20TokenFactory.deploy();
         await mockAsset.initialize("mock", "mock", toUnitString('10000000'));
@@ -33,9 +38,15 @@ describe(CONTRACT, () => {
     });
 
     it('deposit/withdraw', async () => {
+
         let depositAmount1 = toUnit("500");
         await mockAsset.connect(alice).approve(instance.address, depositAmount1.toString());
+
+        expect(contractProxy.callCollateralDeposit(instance.address, mockAsset.address, depositAmount1.toString()))
+            .to.revertedWith("CONTRACT_ACCESS_NOT_ALLOWED");
+
         let receipt = await instance.connect(alice).deposit(mockAsset.address, depositAmount1.toString());
+
         await receipt.wait();
         let {amount: remoteStakingAmount, blockNumber} = await instance.queryDeposit(alice.address, mockAsset.address);
         assert.bnEqual(depositAmount1, remoteStakingAmount);

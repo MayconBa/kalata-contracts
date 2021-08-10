@@ -6,8 +6,10 @@ import "./interfaces/IOracle.sol";
 import "./libraries/String.sol";
 import "./libraries/SafeDecimalMath.sol";
 import "./interfaces/IPriceConsumer.sol";
+import "./SafeAccess.sol";
 
-contract KalataOracle is OwnableUpgradeable, IPriceConsumer {
+
+contract KalataOracle is OwnableUpgradeable, IPriceConsumer, SafeAccess {
     struct PriceInfo {
         uint price;
         uint lastUpdatedTime;
@@ -44,7 +46,7 @@ contract KalataOracle is OwnableUpgradeable, IPriceConsumer {
         emit RegisterAsset(msg.sender, asset, feeder);
     }
 
-    function feedPrices(address[] calldata assets, uint[] calldata prices) public {
+    function feedPrices(address[] calldata assets, uint[] calldata prices) public nonContractAccess {
         require(assets.length == prices.length, "KalataOracle: FEED_PRICES_INVALID_PARAMS");
         address feeder = _msgSender();
         for (uint i; i < assets.length; i++) {
@@ -53,7 +55,7 @@ contract KalataOracle is OwnableUpgradeable, IPriceConsumer {
         emit FeedPrices(msg.sender, assets, prices);
     }
 
-    function feedPrice(address asset, uint price) public {
+    function feedPrice(address asset, uint price) public nonContractAccess {
         _feedPrice(_msgSender(), asset, price);
         emit FeedPrice(msg.sender, asset, price);
     }

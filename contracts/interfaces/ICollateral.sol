@@ -2,6 +2,10 @@
 pragma solidity >=0.6.0;
 
 interface ICollateral {
+    event Deposit(address indexed sender, address indexed asset, uint amount);
+    event Withdraw(address indexed sender, address indexed asset, uint amount);
+    event UpdateConfig(address indexed sender, address indexed stakingContract, address[] assets, uint[] unlockSpeeds);
+    event ReduceUnlockedAmount(address indexed depositor, address indexed asset, uint unlockedAmount);
 
     function updateConfig(address stakingContract, address[] memory assets, uint[] memory unlockSpeeds) external;
 

@@ -8,22 +8,12 @@ import "./interfaces/IStaking.sol";
 import "./libraries/SafeDecimalMath.sol";
 import "./interfaces/IBEP20Token.sol";
 import "./interfaces/ICollateral.sol";
+import "./SafeAccess.sol";
 
-contract Staking is OwnableUpgradeable, IStaking {
+contract Staking is OwnableUpgradeable, IStaking, SafeAccess {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using EnumerableSet for EnumerableSet.AddressSet;
-
-    event UpdateConfig(address indexed sender, address factory, address govToken, address collateralContract);
-    event RegisterAsset(address indexed sender, address indexed asset, address indexed stakingToken);
-    event Stake(address indexed sender, address indexed asset, uint stakingTokenAmount);
-    event DepositReward(address indexed sender, address indexed asset, uint amounts);
-    event DepositRewards(address indexed sender, address[] assets, uint[] amounts);
-    event Withdraw(address indexed sender, address indexed asset, uint amount);
-    event UnStake(address indexed sender, address indexed asset, uint amount);
-    event UpdateClaimIntervals(address indexed sender, address[] assets, uint[] intervals);
-    event SetLockable(address indexed sender, address asset, bool lockable);
-    event UpdateCollateralAssetMapping(address indexed sender, address[] assets, address[] collateralAssets);
 
     struct StakingItem {
         // stakingToken can be:
@@ -40,6 +30,7 @@ contract Staking is OwnableUpgradeable, IStaking {
         uint index;
         uint stakingAmount;
         uint pendingReward;
+        uint lastClaimTimestamp;
     }
 
     address private _factory;
@@ -53,9 +44,6 @@ contract Staking is OwnableUpgradeable, IStaking {
 
     // asset => interval (seconds)
     mapping(address => uint) private _claimIntervals;
-
-    // user => ( asset=> lastClaimTimestamp)
-    mapping(address => mapping(address => uint)) private _userLastClaimTimestamps;
 
 
     //asset => Collateral asset mapping
@@ -105,7 +93,7 @@ contract Staking is OwnableUpgradeable, IStaking {
 
     function getRemaingClaimTime(address staker, address asset) private view returns (uint) {
         uint claimInterval = _claimIntervals[asset];
-        uint lastClaimTimestamps = _userLastClaimTimestamps[staker][asset];
+        uint lastClaimTimestamps = _userStakingItems[staker][asset].lastClaimTimestamp;
         uint passedTime = block.timestamp.sub(lastClaimTimestamps);
         return claimInterval <= passedTime ? 0 : claimInterval.sub(passedTime);
     }
@@ -124,16 +112,18 @@ contract Staking is OwnableUpgradeable, IStaking {
     }
 
     function _updateConfig(address factory, address govToken, address collateralContract) private {
+        require(
+            factory != address(0) &&
+            govToken != address(0) &&
+            collateralContract != address(0),
+            "Staking: _UPDATE_CONFIG_INVALD_PARAMETERS"
+        );
         _factory = factory;
         _govToken = govToken;
         _collateralContract = collateralContract;
         emit UpdateConfig(msg.sender, factory, govToken, collateralContract);
     }
 
-    function setFactory(address factory) override external onlyOwner {
-        require(factory != address(0), "Invalid parameter");
-        _factory = factory;
-    }
 
     function updateConfig(address factory, address govToken, address collateralContract) override external onlyOwner {
         _updateConfig(factory, govToken, collateralContract);
@@ -151,7 +141,7 @@ contract Staking is OwnableUpgradeable, IStaking {
 
     // Can be issued when the user sends LP Tokens to the Staking contract.
     // The LP token must be recognized by the staking pool of the specified asset token.
-    function stake(address asset, uint stakingAmount) override external {
+    function stake(address asset, uint stakingAmount) override external nonContractAccess {
         require(asset != address(0), "Staking: invalid asset token");
         require(stakingAmount > 0, "invalid amount");
 
@@ -169,16 +159,17 @@ contract Staking is OwnableUpgradeable, IStaking {
 
         item.stakingAmount = item.stakingAmount.add(stakingAmount);
         userStakingItem.stakingAmount = userStakingItem.stakingAmount.add(stakingAmount);
+        userStakingItem.lastClaimTimestamp = block.timestamp;
 
         _stakingItems[asset] = item;
         _userStakingAssets[staker].add(asset);
         _userStakingItems[staker][asset] = userStakingItem;
-        _userLastClaimTimestamps[staker][asset] = block.timestamp;
+
         emit Stake(msg.sender, asset, stakingAmount);
     }
 
 
-    function unStake(address asset, uint amount) override external {
+    function unStake(address asset, uint amount) override external nonContractAccess {
         require(amount > 0, "invalid amount");
         address staker = msg.sender;
         StakingItem memory item = _stakingItems[asset];
@@ -242,7 +233,7 @@ contract Staking is OwnableUpgradeable, IStaking {
     }
 
 
-    function claim(address asset) override public {
+    function claim(address asset) override public nonContractAccess {
         require(asset != address(0), "Staking: CLAIM_INVALID_ASSET_TOKEN");
         address staker = msg.sender;
         require(getRemaingClaimTime(staker, asset) == 0, "Staking: CLAIM_INVALID_REMAING_CLAIM_TIME");
@@ -252,8 +243,10 @@ contract Staking is OwnableUpgradeable, IStaking {
         uint pendingRewardAmount = userStakingItem.pendingReward.add(userStakingItem.stakingAmount.multiplyDecimal(stakingItem.rewardIndex.sub(userStakingItem.index)));
 
         address collateralAsset = _collateralAssetMapping[asset];
+
         bool lockable = collateralAsset != address(0);
         uint unlockedAmount = lockable ? ICollateral(_collateralContract).queryUnlockedAmount(staker, collateralAsset) : type(uint).max;
+
         uint amount = pendingRewardAmount < unlockedAmount ? pendingRewardAmount : unlockedAmount;
 
         require(amount > 0, "Staking: CLAIM_NOTHING_TO_CLAIM");
@@ -264,9 +257,9 @@ contract Staking is OwnableUpgradeable, IStaking {
         }
 
         userStakingItem.pendingReward = pendingRewardAmount > amount ? pendingRewardAmount.sub(amount) : 0;
+        userStakingItem.index = stakingItem.rewardIndex;
+        userStakingItem.lastClaimTimestamp = block.timestamp;
         updateUserStakingItem(staker, asset, userStakingItem);
-
-        _userLastClaimTimestamps[staker][asset] = block.timestamp;
         emit Withdraw(msg.sender, asset, amount);
     }
 

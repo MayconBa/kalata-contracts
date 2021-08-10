@@ -23,14 +23,7 @@ async function deploy(hre) {
         saveWBNB(hre, {name, symbol, address})
         return;
     }
-    let config = readWBNB(hre) || {
-        name,
-        symbol,
-        initialSupply,
-        deployer: deployer.address,
-        address: null,
-        deploy: true,
-    };
+    let config = readWBNB(hre) || {name, symbol, initialSupply, deployer: deployer.address, address: null, deploy: true,};
     if (config.deploy) {
         let token = await deployToken(hre, name, symbol, initialSupply);
         config.address = token.address;

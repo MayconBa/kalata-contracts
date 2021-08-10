@@ -1,7 +1,21 @@
 const {readContracts} = require("./resources")
 
+
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
+
+async function waitPromise(promise, action = "") {
+    await promise.catch(e => {
+        console.log(`${action}: ${e}`,)
+    }).then(async receipt => {
+        if (receipt) {
+            await receipt.wait().catch(e => {
+                console.log(`${action}: ${e}`,)
+            });
+            console.log(`${action}: ${receipt.hash}`,)
+        }
+    });
+}
 
 async function waitReceipt(promise) {
     let receipt = await promise;
@@ -11,10 +25,12 @@ async function waitReceipt(promise) {
         return receipt
     }
 }
+
 async function getUniswapPairinitCodeHash(hre) {
     const {bytecode} = await hre.artifacts.readArtifact('UniswapV2Pair');
     return hre.web3.utils.keccak256(bytecode).substring(2)
 }
+
 async function deploy(hre, name, contractFacotryOptions) {
     const ContractClass = await hre.ethers.getContractFactory(name, contractFacotryOptions || {});
     let instance = await ContractClass.deploy();
@@ -117,7 +133,7 @@ module.exports = {
     deployUniswapV2Factory,
     deployUniswapV2Router02,
     randomAddress,
-    waitReceipt,
+    waitReceipt, waitPromise,
     loadContractByAbi
 };
 

@@ -7,8 +7,24 @@ pragma solidity >=0.6.0;
 ///The Mint Contract also contains the logic for liquidating CDPs with C-ratios below the minimum for their minted mAsset through auction.
 interface IMint {
 
-
-    function setFactory(address factory) external;
+    event UpdateConfig(address indexed sender, address indexed factory, address indexed oracle, address collector, address baseToken, uint protocolFeeRate);
+    event UpdateAsset(address indexed sender, address indexed assetToken, uint indexed auctionDiscount, uint minCollateralRatio);
+    event RegisterAsset(address indexed sender, address indexed assetToken, uint auctionDiscount, uint minCollateralRatio);
+    event RegisterMigration(address indexed sender, address indexed assetToken, uint endPrice);
+    event Deposit(address indexed sender, uint positionIndex, address indexed collateralToken, uint collateralAmount);
+    event Auction(address indexed sender, address indexed positionOwner, uint positionIndex, uint liquidateAssetAmount, uint returnCollateralAmount, uint protocolFee);
+    event OpenPosition(
+        address indexed sender,
+        address indexed collateralToken,
+        uint collateralAmount,
+        address indexed assetToken,
+        uint collateralRatio,
+        uint positionIndex,
+        uint mintAmount
+    );
+    event Withdraw(address indexed sender, uint positionIndex, address indexed collateralToken, uint collateralAmount, uint protocolFee);
+    event Mint(address indexed sender, uint positionIndex, address indexed assetToken, uint assetAmount);
+    event Burn(address indexed sender, uint positionIndex, address indexed assetToken, uint assetAmount);
 
     function updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime) external;
 

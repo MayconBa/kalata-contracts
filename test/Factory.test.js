@@ -112,9 +112,21 @@ describe(CONTRACT_NAME, () => {
 
         await govToken.registerMinters([factoryInstance.address, mintInstance.address]);
 
-        //After the factory is deployed, replace the mock factory with the deployed factory
-        await mintInstance.setFactory(factoryInstance.address);
-        await stakingInstance.setFactory(factoryInstance.address);
+        {
+            //function staking.updateConfig(address factory, address govToken, address collateralContract) override external onlyOwner {
+            // function staking queryConfig() override external view returns (address factory, address govToken, address collateralContract){
+            let {govToken, collateralContract} = await stakingInstance.queryConfig();
+            await stakingInstance.updateConfig(factoryInstance.address, govToken, collateralContract)
+
+        }
+
+        {
+            // function queryConfig() override external view returns (address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime){
+            //updateConfig(address factory, address oracle, address collector, address baseToken, uint protocolFeeRate, uint priceExpireTime)
+            let {oracle, collector, baseToken, protocolFeeRate, priceExpireTime} = await mintInstance.queryConfig();
+            await mintInstance.updateConfig(factoryInstance.address, oracle, collector, baseToken, protocolFeeRate, priceExpireTime)
+
+        }
 
         await uniswapFactory.createPair(baseToken.address, govToken.address);
         await uniswapFactory.createPair(baseToken.address, appleToken.address);

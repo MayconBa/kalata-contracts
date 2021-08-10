@@ -24,6 +24,10 @@ describe(CONTRACT_CLASS, () => {
         this.timelock = await Contract.deploy(MINDELAY.toString(), proposers, executors);
     });
 
+
+});
+
+function todo(){
     it("staking.setConfig", async () => {
         let factoryAddress = randomAddress(hre);
         let govTokenAddress = randomAddress(hre);
@@ -58,6 +62,6 @@ describe(CONTRACT_CLASS, () => {
         factory = (await staking.queryConfig()).factory;
         expect(factory).to.equal(newFactory);
     });
-});
+}
 
 

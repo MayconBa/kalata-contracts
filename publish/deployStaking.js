@@ -10,16 +10,7 @@ async function deploy(hre) {
     const {bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
     const {abi} = await hre.artifacts.readArtifact("IStaking");
     let deployedContracts = readContracts(hre) || {};
-    let deployedContract = deployedContracts[CONTRACT_CLASS] || {
-        name: CONTRACT_CLASS,
-        address: null,
-        initialize: null,
-        deployer: deployer.address,
-        abi,
-        bytecode,
-        deploy: true,
-        upgrade: false
-    };
+    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, deployer: deployer.address, abi, bytecode, deploy: true};
     if (deployedContract.deploy || deployedContract.upgrade) {
         const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
         if (deployedContract.upgrade) {
@@ -42,8 +33,8 @@ async function deploy(hre) {
         deployedContract.upgrade = false;
         deployedContracts[CONTRACT_CLASS] = deployedContract
         saveContracts(hre, deployedContracts);
+        updateWebContracts(hre, CONTRACT_CLASS, {address: deployedContract.address, abi});
     }
-    updateWebContracts(hre, CONTRACT_CLASS, {address: deployedContract.address, abi});
 }
 
 

@@ -9,6 +9,14 @@ pragma solidity >=0.6.0;
 ///After the initial bootstrapping of Kalata Protocol contracts,
 ///the Factory is assigned to be the owner for the Mint, Staking,
 interface IFactory {
+
+    event RevokeAsset(address indexed sender, address indexed assetToken, uint endPrice);
+    event Distribute(address indexed sender, address  indexed asset, uint amount);
+    event UpdateConfig(address indexed sender, uint[] scheduleStartTime, uint[] scheduleEndTime, uint[] scheduleAmounts);
+    event UpdateWeight(address indexed sender, address  indexed assetToken, uint weight);
+    event TokenCreated(address indexed sender, bytes32 name, bytes32 symbol, uint initialSupply, address  indexed token);
+    event MigrateAsset(address indexed sender, uint endPrice, address  indexed assetToken);
+
     function updateConfig(address mint, address staking, address uniswapFactory, address baseToken, address govToken) external;
 
     function updateDistributionSchedules(uint[] calldata startTimes, uint[] calldata endTimes, uint[] calldata amounts) external;

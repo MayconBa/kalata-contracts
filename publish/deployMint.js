@@ -14,16 +14,7 @@ async function deploy(hre) {
     let deployedContracts = readContracts(hre) || {};
     const {bytecode} = await hre.artifacts.readArtifact(CONTRACT_CLASS);
     const {abi} = await hre.artifacts.readArtifact("IMint");
-    let deployedContract = deployedContracts[CONTRACT_CLASS] || {
-        name: CONTRACT_CLASS,
-        address: null,
-        initialize: null,
-        deployer: deployer.address,
-        abi,
-        bytecode,
-        deploy: true,
-        upgrade: false
-    };
+    let deployedContract = deployedContracts[CONTRACT_CLASS] || {name: CONTRACT_CLASS, deployer: deployer.address, abi, bytecode, deploy: true};
     if (deployedContract.deploy || deployedContract.upgrade) {
         const ContractClass = await hre.ethers.getContractFactory(CONTRACT_CLASS, {});
         if (deployedContract.upgrade) {
@@ -37,7 +28,8 @@ async function deploy(hre) {
             let collector = COLLECTOR;
             let baseToken = readBUSD(hre).address;
             let protocolFeeRate = toUnitString("0.015");
-            //mock factory firstly, Will use the factory address after the factory is deployed.
+
+            //mock factory, Will use the factory address after the factory is deployed.
             let factory = deployer.address;
             let priceExpireTime = 3600 * 24;
             const instance = await hre.upgrades.deployProxy(ContractClass, [factory, oracle, collector, baseToken, protocolFeeRate, priceExpireTime], {
@@ -52,13 +44,11 @@ async function deploy(hre) {
         deployedContract.upgrade = false;
         deployedContracts[CONTRACT_CLASS] = deployedContract
         saveContracts(hre, deployedContracts);
+        updateWebContracts(hre, CONTRACT_CLASS, {address: deployedContract.address, abi});
     }
-    updateWebContracts(hre, CONTRACT_CLASS, {address: deployedContract.address, abi});
     return deployedContract;
 
 }
-
-
 module.exports = {
     deploy
 }
