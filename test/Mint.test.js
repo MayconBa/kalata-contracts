@@ -3,10 +3,10 @@ const {expect} = require("chai");
 const {toUnitString, toUnit, divideDecimal, multiplyDecimal} = require('../utils/maths')
 const assert = require('../utils/assert')
 const {humanBN} = require("../utils/maths");
-const {loadToken, deployToken, deployAndInitializeContract, randomAddress} = require("../utils/contract")
+const {loadToken, deployToken, deployAndInitializeContract, randomAddress, waitPromise} = require("../utils/contract")
 
 const CONTRACT_NAME = 'Mint';
-let deployer, factory, collector, account1, account2, account3;
+let deployer, factory, collector, account1, account2, account3, liquidator;
 let mintInstance, oracleInstance, kalataOracleInstance;
 let targetAsset, baseToken;
 let protocolFeeRate;
@@ -22,7 +22,6 @@ async function waitReceipt(promise) {
 async function preparePostion(hre, params) {
     await waitReceipt(kalataOracleInstance.registerAsset(params.assetToken, deployer.address));
     await waitReceipt(kalataOracleInstance.feedPrice(params.assetToken, params.assetTokenPrice.toString()));
-
     await waitReceipt(mintInstance.updateAsset(params.assetToken, params.auctionDiscount.toString(), params.minCollateralRatio.toString()))
     const tokenInstance = await loadToken(hre, params.collateralToken);
     await waitReceipt(tokenInstance.approve(mintInstance.address, params.collateralAmount.toString()));
@@ -33,7 +32,7 @@ async function preparePostion(hre, params) {
 describe(CONTRACT_NAME, () => {
     before(async () => {
         //we can mock factory and collector address, since they are just used for token transfer and permission check in Mint contract;
-        [deployer, account1, account2, account3] = await hre.ethers.getSigners();
+        [deployer, account1, account2, account3, liquidator] = await hre.ethers.getSigners();
         factory = deployer.address;
         collector = deployer.address;
         baseToken = await deployToken(hre, "usd-token", "busd", toUnitString('1200000000000'));
@@ -65,46 +64,9 @@ describe(CONTRACT_NAME, () => {
 
         await targetAsset.registerMinters([mintInstance.address])
         expect(mintInstance.address).to.properAddress;
+
+        await targetAsset.transfer(liquidator.address, toUnitString("100000"))
     });
-
-
-    it("auction", async () => {
-        let params = {
-            collateralAmount: toUnit("2"),
-            collateralRatio: toUnit("2.0"),
-            assetTokenPrice: toUnit("2"),
-            auctionDiscount: toUnit("0.2"),
-            minCollateralRatio: toUnit("1.5"),
-            collateralToken: baseToken.address,
-            assetToken: targetAsset.address
-        }
-
-        let positionIndex = await preparePostion(hre, params);
-        {
-            let {positionOwner, collateralToken, collateralAmount, assetToken, assetAmount} = await mintInstance.queryPosition(positionIndex);
-            console.log(positionOwner, collateralToken, collateralAmount, assetToken, assetAmount)
-        }
-
-
-        let {price} = await oracleInstance.queryPrice(params.assetToken);
-        console.log('price', humanBN(price))
-
-        expect(mintInstance.auction(positionIndex, toUnitString("11111"))).to.revertedWith("Mint: AUCTION_CANNOT_LIQUIDATE_SAFELY_POSITION");
-        await kalataOracleInstance.feedPrice(params.assetToken, toUnitString("3.0")).catch(e => {
-            console.error(`feedPrice:${e}`);
-        })
-
-        let maxCollateralAmount = toUnitString("11111");
-        await baseToken.approve(mintInstance.address, maxCollateralAmount)
-        await mintInstance.auction(positionIndex, maxCollateralAmount).catch(e => {
-            console.log(`acution:${e}`);
-        })
-    });
-
-
-});
-
-function tested() {
     describe("Deployment", async () => {
         it("Should set the right owner", async () => {
             expect(await mintInstance.owner()).to.equal(deployer.address);
@@ -215,8 +177,6 @@ function tested() {
 
         expect(balanceBefore.toString()).to.equal(balanceAfter.toString());
     });
-
-
     it("withdraw() should work", async () => {
         let [collateralAmount, collateralRatio, assetTokenPrice, auctionDiscount, minCollateralRatio, collateralToken, assetToken] = [
             toUnit("2"), toUnit("2.0"), toUnit("2"), toUnit("0.8"), toUnit("1.5"), baseToken.address, targetAsset.address
@@ -237,8 +197,6 @@ function tested() {
         let balanceAfter = await collateralTokenInstance.balanceOf(collector);
         assert.bnGt(balanceAfter, balanceBefore)
     });
-
-
     it("mint() should work", async () => {
         let [collateralAmount, collateralRatio, assetTokenPrice, auctionDiscount, minCollateralRatio, collateralToken, assetToken] = [
             toUnit("200"), toUnit("8.0"), toUnit("2"), toUnit("0.8"), toUnit("1.5"), baseToken.address, targetAsset.address
@@ -259,7 +217,6 @@ function tested() {
         const difference = postionAfter.assetAmount - postionBefore.assetAmount;
         assert.equal(difference, mintAmount);
     });
-
     it("openPosition", async () => {
         let collateralAmount = toUnit("2");
         let collateralRatio = toUnit("2.0");
@@ -284,5 +241,93 @@ function tested() {
         let relativecollateralPrice = divideDecimal(collateralPrice, assetTokenPrice);
         let expectedBalanceDifference = divideDecimal(multiplyDecimal(relativecollateralPrice, collateralAmount), collateralRatio);
         expect('0').to.equal((relativecollateralPrice - expectedBalanceDifference).toString());
+
+        let {idxes, positionOwners, collateralTokens, collateralAmounts, assetTokens, assetAmounts} = await mintInstance.queryAllPositions(deployer.address);
+        for (let i = 0; i < idxes.length; i++) {
+            console.log(
+                'queryAllPositions',
+                idxes[i].toString(),
+                positionOwners[i].toString(),
+                collateralTokens[i].toString(),
+                collateralAmounts[i].toString(),
+                assetTokens[i].toString(),
+                assetAmounts[i].toString(),
+            )
+        }
     });
+    it("auction", async () => {
+        let params = {
+            collateralAmount: toUnit("1000"),
+            collateralRatio: toUnit("1.51"),
+            assetTokenPrice: toUnit("2"),
+            auctionDiscount: toUnit("0.2"),
+            minCollateralRatio: toUnit("1.5"),
+            collateralToken: baseToken.address,
+            assetToken: targetAsset.address
+        }
+
+        async function showBalances() {
+            console.log('targetAsset,liquidator.balance', humanBN(await targetAsset.balanceOf(liquidator.address)))
+            console.log('targetAsset,deployer.balance', humanBN(await targetAsset.balanceOf(deployer.address)))
+            console.log('baseToken,liquidator.balance', humanBN(await baseToken.balanceOf(liquidator.address)))
+            console.log('baseToken,deployer.balance', humanBN(await baseToken.balanceOf(deployer.address)))
+        }
+
+        async function showPositions() {
+            let {idxes, positionOwners, collateralTokens, collateralAmounts, assetTokens, assetAmounts} =
+                await mintInstance.queryAllPositions(deployer.address);
+            let {price} = await oracleInstance.queryPrice(params.assetToken);
+
+            console.log('price', humanBN(price))
+            if (idxes.length > 0) {
+                for (let i = 0; i < idxes.length; i++) {
+                    console.log(
+                        "position",
+                        idxes[i].toString(),
+                        humanBN(collateralAmounts[i]), collateralAmounts[i].toString(),
+                        humanBN(assetAmounts[i]),
+                        parseFloat(humanBN(collateralAmounts[i])) / (humanBN(assetAmounts[i]) * humanBN(price))
+                    )
+                }
+            } else {
+                console.log('no positioins')
+            }
+
+        }
+
+
+        let positionIndex = await preparePostion(hre, params);
+        await showPositions();
+
+        await showBalances();
+        let maxCollateralAmount = toUnitString("2222222");
+
+        expect(mintInstance.connect(liquidator).auction(positionIndex, toUnitString("1"))).to.revertedWith("Mint: AUCTION_CANNOT_LIQUIDATE_SAFELY_POSITION");
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await waitPromise(kalataOracleInstance.feedPrice(params.assetToken, toUnitString("2.1")), "feedPrice")
+
+        await showPositions();
+
+        expect(mintInstance.connect(liquidator).auction(positionIndex, maxCollateralAmount)).to.revertedWith("Mint: AUCTION_ALLWANCE_NOT_ENOUGH");
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await waitPromise(targetAsset.connect(liquidator).approve(mintInstance.address, maxCollateralAmount), "approve");
+        await waitPromise(mintInstance.connect(liquidator).auction(positionIndex, toUnitString("22")), "auction");
+        await showPositions();
+        await showBalances();
+
+        await waitPromise(mintInstance.connect(liquidator).auction(positionIndex, toUnitString("33")), "auction");
+        await showPositions();
+
+        await waitPromise(mintInstance.connect(liquidator).auction(positionIndex, toUnitString("33000")), "auction");
+        await showPositions();
+
+
+    });
+
+
+});
+
+function tested() {
+
 }

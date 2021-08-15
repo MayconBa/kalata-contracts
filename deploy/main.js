@@ -7,10 +7,6 @@ module.exports = async (hre) => {
         deleteResource(hre);
     }
 
-    if (hre.network.name === "mainnet" || hre.network.name === "mainnet") {
-        console.log(`Please confirm to deploy ${hre.network.name}`)
-        return;
-    }
     await publish.deployAll(hre);
     await publish.deployAssets(hre);
     await publish.addLiquidityForAll(hre)

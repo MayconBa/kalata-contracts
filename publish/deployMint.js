@@ -5,10 +5,10 @@ const {readBUSD} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths");
 const CONTRACT_CLASS = "Mint";
 
-//cyberpunk
-const COLLECTOR = '0xa1036E4E163c707F49A75af5AcA4F89Ba010DA2B'
+
 
 async function deploy(hre) {
+    const config = require('./config')[hre.network.name]
     const accounts = await hre.ethers.getSigners();
     let deployer = accounts[0];
     let deployedContracts = readContracts(hre) || {};
@@ -25,7 +25,7 @@ async function deploy(hre) {
             console.log(`${CONTRACT_CLASS} upgraded:${instance.address}`);
         } else {
             let oracle = deployedContracts['Oracle'].address;
-            let collector = COLLECTOR;
+            let collector = config.mintCollector;
             let baseToken = readBUSD(hre).address;
             let protocolFeeRate = toUnitString("0.015");
 

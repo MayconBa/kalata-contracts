@@ -19,7 +19,7 @@ const start = async () => {
         try {
             setInterval(() => mint.doAuction(), 60 * 1000);
             setInterval(() => timelock.execute(), 60 * 1000);
-            setInterval(() => distribute(hre), 300 * 1000);
+            setInterval(() => distribute(hre), 3600 * 2 * 1000);
             setInterval(() => transactionLog.collect(), 30 * 1000);
             setInterval(() => collectPrices(hre), 5 * 1000);
             setInterval(() => batchFeed(hre), 55 * 5 * 1000);

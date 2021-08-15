@@ -54,5 +54,19 @@
     "claimTimeLimit": false,
     "rewardLockable": true,
     "isPair": false
+  },
+  "kTSLA": {
+    "name": "Wrapped Kalata TSLA Token",
+    "symbol": "kTSLA",
+    "address": "0x8114b001a4462dEEBFff48c47Dc7764a54AF8Cd8",
+    "pair": "0xc29145d758a51142fe68230e621c0BA09c5CC251",
+    "png": "https://app.kalata.io/media/assets/TSLA.png",
+    "svg": "https://app.kalata.io/media/assets/TSLA.svg",
+    "stakable": true,
+    "tradable": true,
+    "minable": true,
+    "claimTimeLimit": false,
+    "rewardLockable": false,
+    "isPair": true
   }
 }

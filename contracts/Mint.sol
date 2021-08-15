@@ -3,6 +3,7 @@ pragma solidity >=0.6.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "./interfaces/IMint.sol";
 import "./interfaces/IOracle.sol";
 import "./interfaces/IBEP20Token.sol";
@@ -20,6 +21,10 @@ import "./SafeAccess.sol";
 contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAccess {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
+    using EnumerableSet for EnumerableSet.UintSet;
+
+    // 0.00000000000001
+    uint constant APPROXIMATE_ZERO = 10000;
 
     struct AssetConfig {
         address token;
@@ -62,7 +67,8 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
 
 
     mapping(uint => Position) private _idxPositionMap;
-    uint[] private _postionIndexes;
+    mapping(address => EnumerableSet.UintSet) private _userPostionIndexes;
+    EnumerableSet.UintSet private _postionIndexes;
 
     uint private _currentPositionIndex;
 
@@ -136,15 +142,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         emit RegisterMigration(msg.sender, assetToken, endPrice);
     }
 
-    /**
-      *  OpenPosition
-      *  Used for creating a new CDP with USD collateral.
-      *  Opens a new CDP with an initial deposit of collateral.
-      *  The user specifies the target minted mAsset for the CDP, and sets the desired initial collateralization ratio,
-      *  which must be greater or equal than the minimum for the mAsset.
-      *  sender is the end user
-      *
-    */
+
     function openPosition(address collateralToken, uint collateralAmount, address assetToken, uint collateralRatio) override external nonReentrant nonContractAccess returns (uint){
         address sender = _msgSender();
         require(collateralToken != address(0), "Invalid collateralToken address");
@@ -176,7 +174,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         assetAmount : mintAmount
         });
 
-        savePosition(position.idx, position);
+        savePosition(position);
 
         _currentPositionIndex += 1;
         IBEP20Token(assetToken).mint(sender, mintAmount);
@@ -206,7 +204,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         require(IERC20(collateralToken).transferFrom(sender, address(this), collateralAmount), "Unable to execute transferFrom, recipient may have reverted");
         position.collateralAmount = position.collateralAmount.add(collateralAmount);
 
-        savePosition(positionIndex, position);
+        savePosition(position);
 
         emit Deposit(msg.sender, positionIndex, collateralToken, collateralAmount);
     }
@@ -240,9 +238,9 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
 
         position.collateralAmount = newCollateralAmount;
         if (position.collateralAmount == 0 && position.assetAmount == 0) {
-            removePosition(positionIndex);
+            removePosition(position);
         } else {
-            savePosition(positionIndex, position);
+            savePosition(position);
         }
         require(_protocolFeeRate > 0, "_protocolFeeRate is zero");
         uint protocolFee = withdrawAmount.multiplyDecimal(_protocolFeeRate);
@@ -278,7 +276,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         require(assetValueInCollateralAsset.multiplyDecimal(assetConfig.minCollateralRatio) <= position.collateralAmount, "Cannot mint asset over than min collateral ratio");
 
         position.assetAmount = position.assetAmount.add(assetAmount);
-        savePosition(positionIndex, position);
+        savePosition(position);
 
         IBEP20Token(assetConfig.token).mint(_msgSender(), assetAmount);
         emit Mint(msg.sender, positionIndex, assetToken, assetAmount);
@@ -305,7 +303,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
 
         //require(IERC20(position.collateralToken).transfer(positionOwner, position.collateralAmount), "Mint:closePosition,transfer to postion owner failed");
 
-        removePosition(positionIndex);
+        removePosition(position);
         emit Burn(msg.sender, positionIndex, position.assetToken, position.assetAmount);
         delete ownerPositionIndex[positionOwner][position.collateralToken][position.assetToken];
     }
@@ -327,8 +325,8 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         (uint assetPrice,) = IOracle(_oracle).queryPrice(asset);
         if (assetPrice > 0) {
             uint index = 0;
-            for (uint i = 0; i < _postionIndexes.length; i++) {
-                Position memory position = _idxPositionMap[_postionIndexes[i]];
+            for (uint i = 0; i < _postionIndexes.length(); i++) {
+                Position memory position = _idxPositionMap[_postionIndexes.at(i)];
                 if (position.assetToken == asset && !isValidPostion(position, assetPrice)) {
                     positionIdxes[index] = position.idx;
                     positionOwners[index] = position.owner;
@@ -367,8 +365,8 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
             liquidateAssetAmount = position.assetAmount;
         }
 
-        require(IBEP20Token(position.assetToken).transferFrom(sender, address(this), liquidateAssetAmount), "Mint: AUCTION_TRANSFER_FROM_FAIL");
-
+        require(IBEP20Token(position.assetToken).allowance(sender, address(this)) >= liquidateAssetAmount, "Mint: AUCTION_ALLWANCE_NOT_ENOUGH");
+        IBEP20Token(position.assetToken).transferFrom(sender, address(this), liquidateAssetAmount);
         IBEP20Token(position.assetToken).burn(address(this), liquidateAssetAmount);
 
         //returnCollateralAmount = liquidateAssetAmount * discountedPrice
@@ -377,13 +375,13 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         position.collateralAmount = position.collateralAmount.sub(returnCollateralAmount);
         position.assetAmount = position.assetAmount.sub(liquidateAssetAmount);
 
-        if (position.collateralAmount == 0) {
+        if (position.collateralAmount <= APPROXIMATE_ZERO) {
             // all collaterals are sold out
-            removePosition(positionIndex);
-        } else if (position.assetAmount == 0) {
+            removePosition(position);
+        } else if (position.assetAmount <= APPROXIMATE_ZERO) {
             //transfer left collateralToken to owner
             IERC20(position.collateralToken).transfer(position.owner, position.collateralAmount);
-            removePosition(positionIndex);
+            removePosition(position);
         } else {
             _idxPositionMap[positionIndex] = position;
         }
@@ -415,6 +413,26 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         endPrice = m.endPrice;
     }
 
+
+    function queryAllAssetConfigs() override external view returns (
+        address [] memory assets,
+        uint[] memory auctionDiscounts,
+        uint[] memory minCollateralRatios,
+        uint[] memory endPrices
+    ){
+        assets = _assets;
+        auctionDiscounts = new uint[](assets.length);
+        minCollateralRatios = new uint[](assets.length);
+        endPrices = new uint[](assets.length);
+
+        for (uint i; i < assets.length; i++) {
+            AssetConfig memory m = _assetConfigMap[assets[i]];
+            auctionDiscounts[i] = m.auctionDiscount;
+            minCollateralRatios[i] = m.minCollateralRatio;
+            endPrices[i] = m.endPrice;
+        }
+    }
+
     function queryPosition(uint positionIndex) override external view returns (
         address positionOwner,
         address collateralToken,
@@ -439,25 +457,22 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         uint[] memory assetAmounts
     ){
         require(owner != address(0), "Invalid address");
-        uint length = _postionIndexes.length;
-        idxes = new uint[](length);
-        positionOwners = new address[](length);
-        collateralTokens = new address[](length);
-        collateralAmounts = new uint[](length);
-        assetTokens = new address[](length);
-        assetAmounts = new uint[](length);
+        idxes = new uint[](_userPostionIndexes[owner].length());
+        positionOwners = new address[](idxes.length);
+        collateralTokens = new address[](idxes.length);
+        collateralAmounts = new uint[](idxes.length);
+        assetTokens = new address[](idxes.length);
+        assetAmounts = new uint[](idxes.length);
         uint index = 0;
-        for (uint i = 0; i < length; i++) {
-            Position memory position = _idxPositionMap[_postionIndexes[i]];
-            if (position.owner == owner) {
-                idxes[index] = position.idx;
-                positionOwners[index] = (position.owner);
-                collateralTokens[index] = (position.collateralToken);
-                collateralAmounts[index] = (position.collateralAmount);
-                assetTokens[index] = (position.assetToken);
-                assetAmounts[index] = (position.assetAmount);
-                index++;
-            }
+        for (uint i = 0; i < idxes.length; i++) {
+            Position memory position = _idxPositionMap[_userPostionIndexes[owner].at(i)];
+            idxes[index] = position.idx;
+            positionOwners[index] = (position.owner);
+            collateralTokens[index] = (position.collateralToken);
+            collateralAmounts[index] = (position.collateralAmount);
+            assetTokens[index] = (position.assetToken);
+            assetAmounts[index] = (position.assetAmount);
+            index++;
         }
     }
 
@@ -469,7 +484,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         address[]  memory assetTokens,
         uint[] memory assetAmounts
     ) {
-        uint length = _postionIndexes.length;
+        uint length = _postionIndexes.length();
         idxes = new uint[](length);
         positionOwners = new address[](length);
         collateralTokens = new address[](length);
@@ -478,7 +493,7 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         assetAmounts = new uint[](length);
         uint index = 0;
         for (uint i = 0; i < length; i++) {
-            Position memory position = _idxPositionMap[_postionIndexes[i]];
+            Position memory position = _idxPositionMap[_postionIndexes.at(i)];
             if ((position.owner == owner || owner == address(0)) && (position.assetToken == assetToken || assetToken == address(0))) {
                 idxes[index] = position.idx;
                 positionOwners[index] = (position.owner);
@@ -565,32 +580,16 @@ contract Mint is OwnableUpgradeable, ReentrancyGuardUpgradeable, IMint, SafeAcce
         _assetConfigMap[assetToken] = assetConfig;
     }
 
-    function savePosition(uint positionIndex, Position memory position) private {
-        bool exists = false;
-        for (uint i = 0; i < _postionIndexes.length; i++) {
-            if (_postionIndexes[i] == positionIndex) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
-            _postionIndexes.push(positionIndex);
-        }
-        _idxPositionMap[positionIndex] = position;
+    function savePosition(Position memory position) private {
+        _postionIndexes.add(position.idx);
+        _idxPositionMap[position.idx] = position;
+        _userPostionIndexes[position.owner].add(position.idx);
     }
 
-    function removePosition(uint positionIndex) private {
-        delete _idxPositionMap[positionIndex];
-        uint length = _postionIndexes.length;
-        for (uint i = 0; i < length; i++) {
-            if (_postionIndexes[i] == positionIndex) {
-                if (i != length - 1) {
-                    _postionIndexes[i] = _postionIndexes[length - 1];
-                }
-                delete _postionIndexes[length - 1];
-            }
-        }
+    function removePosition(Position memory position) private {
+        delete _idxPositionMap[position.idx];
+        _postionIndexes.remove(position.idx);
+        _userPostionIndexes[position.owner].remove(position.idx);
     }
-
 
 }

@@ -1,6 +1,4 @@
-scripts
 node_modules
-#Hardhat files
 cache
 artifacts
 .idea
@@ -9,12 +7,10 @@ env.js
 .openzeppelin
 tmp
 deployments
-publish/deployed/hardhat
-publish/deployed/localhost
-doc
-scripts
-docs
+deployed/hardhat
+deployed/localhost
 *-bak*
-rsync.sh
-rsync-exclude.list
+yarn.lock
+/1.txt
+1.js
 

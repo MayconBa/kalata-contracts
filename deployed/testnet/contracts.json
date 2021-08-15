@@ -5158,7 +5158,7 @@
         "68625000000000000000000"
       ]
     },
-    "upgrade": false,
+    "upgrade": true,
     "scheduleUpdated": true
   },
   "Router": {

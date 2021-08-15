@@ -16,7 +16,7 @@ import "./BEP20Token.sol";
 import "./SafeAccess.sol";
 
 
-contract Factory is OwnableUpgradeable, IFactory ,SafeAccess{
+contract Factory is OwnableUpgradeable, IFactory, SafeAccess {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using Bytes32 for bytes32;
@@ -44,7 +44,6 @@ contract Factory is OwnableUpgradeable, IFactory ,SafeAccess{
         uint weight;
     }
 
-    uint private constant NORMAL_TOKEN_WEIGHT = 30;
     uint private constant DISTRIBUTION_INTERVAL = 60;
 
     //Distribution schedule for the minting of new KALA tokens.
@@ -72,13 +71,17 @@ contract Factory is OwnableUpgradeable, IFactory ,SafeAccess{
 
     address private _govToken;
 
-    uint private _genesisTime;
+    uint private _distributeStartTime;
 
     function initialize(address mint, address staking, address uniswapFactory, address baseToken, address govToken) external initializer {
         __Ownable_init();
         _updateConfig(mint, staking, uniswapFactory, baseToken, govToken);
         _totalWeight = 32;
-        _genesisTime = block.timestamp;
+        _distributeStartTime = 0;
+    }
+
+    function updateDistributeStartTime(uint distributeStartTime) public {
+        _distributeStartTime = distributeStartTime;
     }
 
     function updateConfig(
@@ -151,15 +154,15 @@ contract Factory is OwnableUpgradeable, IFactory ,SafeAccess{
     //3rd year: genesisTime+(63093600 to 94629600),   distribute 137250 kala tokens
     //4th year: genesisTime+(94629600 to 126165600),  distribute 68625 kala tokens
     function distribute() override external nonContractAccess {
-        require(block.timestamp.sub(_lastDistributed) >= DISTRIBUTION_INTERVAL, "Factory: DISTRIBUTE_NOT_TIME");
-        uint timeElapsed = block.timestamp.sub(_genesisTime);
+        require(_distributeStartTime > 0 && block.timestamp.sub(_lastDistributed) >= DISTRIBUTION_INTERVAL, "Factory: DISTRIBUTE_NOT_TIME");
+        uint timeElapsed = block.timestamp.sub(_distributeStartTime);
         uint distributedAmount = 0;
         for (uint i = 0; i < _distributionSchedules.length; i++) {
             DistributionSchedule memory schedule = _distributionSchedules[i];
             if (schedule.startTime <= timeElapsed && timeElapsed < schedule.endTime) {
                 uint timeSlot = schedule.endTime.sub(schedule.startTime);
                 uint timeDuration = Math.min(timeElapsed, schedule.endTime).sub(
-                    Math.max(schedule.startTime, _lastDistributed > _genesisTime ? _lastDistributed.sub(_genesisTime) : 0)
+                    Math.max(schedule.startTime, _lastDistributed > _distributeStartTime ? _lastDistributed.sub(_distributeStartTime) : 0)
                 );
                 uint amount = timeDuration.multiplyDecimal(schedule.amount.divideDecimal(timeSlot));
                 distributedAmount = amount;
@@ -233,7 +236,7 @@ contract Factory is OwnableUpgradeable, IFactory ,SafeAccess{
     }
 
     function queryDistributeAmount() override external view returns (uint){
-        uint timeElapsed = block.timestamp.sub(_genesisTime);
+        uint timeElapsed = block.timestamp.sub(_distributeStartTime);
         for (uint i = 0; i < _distributionSchedules.length; i++) {
             DistributionSchedule memory schedule = _distributionSchedules[i];
             if (timeElapsed >= schedule.startTime && timeElapsed <= schedule.endTime) {
@@ -327,7 +330,6 @@ contract Factory is OwnableUpgradeable, IFactory ,SafeAccess{
 
         _symbolTokenMap[symbol] = tokenAddress;
         _tokens.push(Token(name, symbol, tokenAddress, pairAddress));
-        weight = weight == 0 ? NORMAL_TOKEN_WEIGHT : weight;
         saveWeight(tokenAddress, weight);
         _totalWeight = _totalWeight.add(weight);
         IMint(_mint).registerAsset(tokenAddress, auctionDiscount, minCollateralRatio);

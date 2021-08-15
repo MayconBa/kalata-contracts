@@ -6,7 +6,7 @@
   "scripts": {
     "service": "hardhat run scripts/service.js",
     "compile": "hardhat compile",
-    "testnet:service": "hardhat run scripts/service --network testnet --no-compile",
+    "testnet:service": "hardhat run scripts/service --network testnet",
     "testnet:deploy": "hardhat deploy --network testnet",
     "testnet:demo": "hardhat run scripts/demo.js --network testnet",
     "testnet:history": "hardhat run scripts/service/history.js --network testnet",
@@ -24,7 +24,7 @@
     "hardhat:deploy": "hardhat deploy --network hardhat",
     "hardhat:test": "hardhat test --network hardhat",
     "generateAccounts": "hardhat run scripts/generateAccounts.js",
-    "hardhat:partial-test": "hardhat test test/Collateral.test.js --network hardhat"
+    "hardhat:partial-test": "hardhat test test/Mint.test.js --network hardhat"
   },
   "author": "",
   "license": "ISC",

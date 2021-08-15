@@ -4,5 +4,12 @@
   "name": "Kalata",
   "symbol": "Kala",
   "initialSupply": "120000000000000000000000000",
-  "address": "0x32299c93960bB583A43c2220Dc89152391A610c5"
+  "address": "0x32299c93960bB583A43c2220Dc89152391A610c5",
+  "pair": "0x64330C8AcCd74E8EB30894F341eF45c743B875b5",
+  "unlockSpeedRegistered": true,
+  "pairStakingRegistered": true,
+  "pool": {
+    "busd": "270000000000000000",
+    "asset": "1000000000000000000"
+  }
 }

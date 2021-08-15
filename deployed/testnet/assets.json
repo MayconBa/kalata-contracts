@@ -12,5 +12,19 @@
       "busd": "166530000000000000000",
       "asset": "1000000000000000000"
     }
+  },
+  "kTSLA": {
+    "name": "Wrapped Kalata TSLA Token",
+    "symbol": "kTSLA",
+    "type": "stock",
+    "deploy": false,
+    "sinaCode": "gb_tsla",
+    "gtimgCode": "usTSLA",
+    "address": "0x8114b001a4462dEEBFff48c47Dc7764a54AF8Cd8",
+    "pair": "0xc29145d758a51142fe68230e621c0BA09c5CC251",
+    "pool": {
+      "busd": "707820000000000000000",
+      "asset": "1000000000000000000"
+    }
   }
 }

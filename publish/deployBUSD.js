@@ -3,12 +3,12 @@ const {toUnitString} = require("../utils/maths");
 const {deployToken} = require("../utils/contract")
 
 const ASSETS = {
-    name: "BUSD-T",
-    symbol: "BUSD-T",
+    name: "Binance-Peg BUSD",
+    symbol: "BUSD",
     initialSupply: toUnitString(10000000000),
     isBaseAsset: true,
     addresses: {
-        mainnet: "0x55d398326f99059ff775485246999027b3197955",
+        mainnet: "0xe9e7cea3dedca5984780bafc599bd69add087d56",
         //testnet: "0x1a959f482AEcC14309B6855DcD7B591214CF2f25"
     }
 };

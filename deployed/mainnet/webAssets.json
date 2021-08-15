@@ -1,0 +1,30 @@
+{
+  "Kala": {
+    "name": "Kalata",
+    "symbol": "Kala",
+    "address": "0x32299c93960bB583A43c2220Dc89152391A610c5",
+    "pair": "0x64330C8AcCd74E8EB30894F341eF45c743B875b5",
+    "png": "https://app.kalata.io/media/assets/KALA.png",
+    "svg": "https://app.kalata.io/media/assets/KALA.svg",
+    "stakable": true,
+    "tradable": true,
+    "minable": false,
+    "claimTimeLimit": true,
+    "rewardLockable": false,
+    "isPair": true
+  },
+  "BUSD": {
+    "name": "BUSD",
+    "symbol": "BUSD",
+    "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+    "pair": null,
+    "png": "https://app.kalata.io/media/assets/BUSD.png",
+    "svg": "https://app.kalata.io/media/assets/BUSD.svg",
+    "tradable": false,
+    "minable": false,
+    "stakable": true,
+    "claimTimeLimit": false,
+    "rewardLockable": true,
+    "isPair": false
+  }
+}

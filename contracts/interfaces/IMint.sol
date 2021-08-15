@@ -54,6 +54,13 @@ interface IMint {
 
     function queryAssetConfig(address assetToken) external view returns (uint auctionDiscount, uint minCollateralRatio, uint endPrice);
 
+    function queryAllAssetConfigs() external view returns (
+        address [] memory assets,
+        uint[] memory auctionDiscounts,
+        uint[] memory minCollateralRatios,
+        uint[] memory endPrices
+    );
+
     function queryPosition(uint positionIndex) external view returns (
         address positionOwner,
         address collateralToken,
