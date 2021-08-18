@@ -1,0 +1,17 @@
+{
+  "kCOIN": {
+    "name": "Wrapped Kalata COIN Token",
+    "symbol": "kCOIN",
+    "type": "stock",
+    "deploy": false,
+    "sinaCode": "gb_coin",
+    "gtimgCode": "usCOIN",
+    "address": "0x4e5ad38a9AaC36FdaD438A1bB24b57aE2dB81689",
+    "pair": "0x3211FC573Cb8527b108588e104A1A6c1BE65c8E3",
+    "chinlinkFeeder": "0x2d1AB79D059e21aE519d88F978cAF39d74E31AEB",
+    "pool": {
+      "busd": "261250000000000000000",
+      "asset": "1000000000000000000"
+    }
+  }
+}

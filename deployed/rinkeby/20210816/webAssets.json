@@ -2,8 +2,8 @@
   "Kala": {
     "name": "Kalata",
     "symbol": "Kala",
-    "address": "0x32299c93960bB583A43c2220Dc89152391A610c5",
-    "pair": "0x64330C8AcCd74E8EB30894F341eF45c743B875b5",
+    "address": "0x32299c93960bb583a43c2220dc89152391a610c5",
+    "pair": "0x802c4aB2023E5D0Cf58D1b1711833aEa896213Cd",
     "png": "https://app.kalata.io/media/assets/KALA.png",
     "svg": "https://app.kalata.io/media/assets/KALA.svg",
     "stakable": true,
@@ -13,10 +13,24 @@
     "rewardLockable": false,
     "isPair": true
   },
+  "kCOIN": {
+    "name": "Wrapped Kalata COIN Token",
+    "symbol": "kCOIN",
+    "address": "0x4e5ad38a9AaC36FdaD438A1bB24b57aE2dB81689",
+    "pair": "0x3211FC573Cb8527b108588e104A1A6c1BE65c8E3",
+    "png": "https://app.kalata.io/media/assets/COIN.png",
+    "svg": "https://app.kalata.io/media/assets/COIN.svg",
+    "stakable": true,
+    "tradable": true,
+    "minable": true,
+    "claimTimeLimit": false,
+    "rewardLockable": false,
+    "isPair": true
+  },
   "BUSD": {
     "name": "BUSD",
     "symbol": "BUSD",
-    "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+    "address": "0x6a755f4d63156D6681234A0eE7896A940816e2E6",
     "pair": null,
     "png": "https://app.kalata.io/media/assets/BUSD.png",
     "svg": "https://app.kalata.io/media/assets/BUSD.svg",
@@ -26,19 +40,5 @@
     "claimTimeLimit": false,
     "rewardLockable": true,
     "isPair": false
-  },
-  "kCOIN": {
-    "name": "Wrapped Kalata COIN Token",
-    "symbol": "kCOIN",
-    "address": "0xAC637B0f9030436f21E2FfBDf104B45c7e4156CA",
-    "pair": "0x2F5b3Ab702b48B448D510200676AF63630C6DAa2",
-    "png": "https://app.kalata.io/media/assets/COIN.png",
-    "svg": "https://app.kalata.io/media/assets/COIN.svg",
-    "stakable": true,
-    "tradable": true,
-    "minable": true,
-    "claimTimeLimit": false,
-    "rewardLockable": false,
-    "isPair": true
   }
 }

@@ -6,25 +6,33 @@
   "scripts": {
     "service": "hardhat run scripts/service.js",
     "compile": "hardhat compile",
+
+    "hecoMainnet:deploy": "hardhat deploy --network hecoMainnet",
+
+    "mainnet:deploy": "hardhat deploy --network mainnet",
+    "mainnet:service": "hardhat run scripts/service --network mainnet",
+    "mainnet:verification": "hardhat run scripts/verification.js --network mainnet --no-compile",
+
     "testnet:service": "hardhat run scripts/service --network testnet",
     "testnet:deploy": "hardhat deploy --network testnet",
     "testnet:demo": "hardhat run scripts/demo.js --network testnet",
     "testnet:history": "hardhat run scripts/service/history.js --network testnet",
     "testnet:verification": "hardhat run scripts/verification.js --network testnet --no-compile",
     "testnet:timelock": "npx hardhat run scripts/timelock.js --network testnet",
-    "hecoMainnet:deploy": "hardhat deploy --network hecoMainnet",
-    "mainnet:deploy": "hardhat deploy --network mainnet",
-    "ropsten:deploy": "hardhat deploy --network ropsten",
+
+
     "rinkeby:deploy": "hardhat deploy --network rinkeby",
+    "ropsten:deploy": "hardhat deploy --network ropsten",
     "goerli:deploy": "hardhat deploy --network goerli",
     "kovan:deploy": "hardhat deploy --network kovan",
-    "localhost:deploy": "hardhat deploy --network localhost",
-    "localhost:node": "rm -Rf deployed/localhost && hardhat node --no-deploy",
-    "localhost:service": "hardhat run scripts/service --network localhost",
+
+
     "hardhat:deploy": "hardhat deploy --network hardhat",
     "hardhat:test": "hardhat test --network hardhat",
-    "generateAccounts": "hardhat run scripts/generateAccounts.js",
-    "hardhat:partial-test": "hardhat test test/Mint.test.js --network hardhat"
+    "hardhat:partial-test": "hardhat test test/Mint.test.js --network hardhat",
+
+    "generateAccounts": "hardhat run scripts/generateAccounts.js"
+
   },
   "author": "",
   "license": "ISC",

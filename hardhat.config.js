@@ -14,11 +14,9 @@ const {removeConsoleLog} = require("hardhat-preprocessor");
 const env = require('./env.js');
 
 // https://hardhat.org/guides/create-task.html
-task("accounts", "Prints the list of accounts", async () => {
-    const accounts = await ethers.getSigners();
-    for (const account of accounts) {
-        console.log(account.address);
-    }
+task("start-distribute", " ", async () => {
+    const hardhatScript = require("./scripts/hardhat")
+    await hardhatScript.startDistribute();
 });
 
 //npx hardhat transfer-test-busd --amount 10000000 --network testnet
@@ -189,7 +187,7 @@ module.exports = {
             {version: '0.7.6', settings: {optimizer: {enabled: true}}},
             //{version: '0.6.6', settings: {optimizer: {enabled: true}}},
             //{version: '0.5.6', settings: {optimizer: {enabled: true}}},
-           // {version: '0.5.16', settings: {optimizer: {enabled: true}}},
+            // {version: '0.5.16', settings: {optimizer: {enabled: true}}},
         ],
     },
 

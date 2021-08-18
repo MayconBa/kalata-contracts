@@ -37,6 +37,8 @@ interface IFactory {
 
     function distribute() external;
 
+    function queryLastDistributed()   external view returns (uint);
+
     function revokeAsset(address assetToken, uint endPrice) external;
 
     function migrateAsset(bytes32 name, bytes32 symbol, address assetToken, uint endPrice) external;

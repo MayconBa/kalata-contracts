@@ -1,15 +1,16 @@
 const {readContracts, saveContracts} = require("../utils/resources")
 const {readBUSD, saveBUSD, readAssets, saveAssets, readWebAssets, saveWebAssets, readKala, saveKala, readWBNB, saveWBNB} = require("../utils/assets")
 const {toUnitString} = require("../utils/maths")
-const {loadToken, loadUniswapV2Factory, ZERO_ADDRESS, waitReceipt, waitPromise} = require("../utils/contract")
+const {loadToken, loadUniswapV2Factory, ZERO_ADDRESS, waitReceipt, waitPromise, deployToken} = require("../utils/contract")
 const {stringToBytes32} = require('../utils/bytes')
 
 let deployedAssets, deployedWebAssets;
 let uniswapV2Factory, deployedContracts, kalataOracleInstance,
     factoryInstance, routerInstance, stakingInstance,
     mintInstance,
+    chainlinkOracleInstance,
     collateralInstance, oracleInstance;
-let usdToken, usdInfo;
+let usdToken, usdInfo
 let config;
 
 async function init(hre) {
@@ -35,6 +36,7 @@ async function init(hre) {
     stakingInstance = loadContract("Staking");
     collateralInstance = loadContract("Collateral");
     mintInstance = loadContract("Mint");
+    chainlinkOracleInstance = loadContract("ChainlinkOracle");
     console.log('init end')
 }
 
@@ -113,10 +115,9 @@ async function addWBNBPair(hre) {
 
 
 async function deployPair(hre, {name, symbol, type, initialSupply, sinaCode, gtimgCode, coingeckoCoinId, weight}) {
-    console.log('deployPair begin',name)
-    let [deployer] = await hre.ethers.getSigners();
+    console.log('deployPair begin', name)
     let assetInfo = deployedAssets[symbol] || {name, symbol, type, deploy: true, sinaCode, gtimgCode, coingeckoCoinId}
-    let assetAddress = assetInfo.address;
+    deployedAssets[symbol] = assetInfo;
     if (assetInfo.deploy) {
         let bytes32Name = stringToBytes32(name);
         let bytes32Symbol = stringToBytes32(symbol);
@@ -125,55 +126,33 @@ async function deployPair(hre, {name, symbol, type, initialSupply, sinaCode, gti
             console.error("factory.baseToken != usdToken", factoryConfig.baseToken, usdToken.address)
             process.exit(503);
         }
-        console.log(11111)
-        if (assetInfo.address && assetInfo.pair) {
-            console.log(222222)
-            await waitReceipt(
-                factoryInstance.registerAsset(
-                    assetInfo.address,
-                    assetInfo.pair,
-                    bytes32Name,
-                    bytes32Symbol,
-                    config.mintAuctionDiscount,
-                    config.minCollateralRatio,
-                    weight.toString(),
-                    {gasLimit: 2500000}
-                )
-            )
-            console.log(`register asset ${symbol},${assetAddress}`);
-        } else {
-            console.log(33333)
-            await waitReceipt(factoryInstance.whitelist(
+        if (!assetInfo.address) {
+            let token = await deployToken(hre, name, symbol, 0);
+            assetInfo.address = token.address;
+            saveAssets(hre, deployedAssets);
+        }
+        if (!assetInfo.pair) {
+            let pair = await uniswapV2Factory.getPair(assetInfo.address, usdToken.address);
+            if (pair === ZERO_ADDRESS) {
+                await waitPromise(uniswapV2Factory.createPair(assetInfo.address, usdToken.address), `create pair for ${name}`);
+                pair = await uniswapV2Factory.getPair(assetInfo.address, usdToken.address)
+            }
+            assetInfo.pair = pair;
+            saveAssets(hre, deployedAssets);
+        }
+        await waitPromise(
+            factoryInstance.registerAsset(
+                assetInfo.address,
+                assetInfo.pair,
                 bytes32Name,
                 bytes32Symbol,
                 config.mintAuctionDiscount,
                 config.minCollateralRatio,
-                weight.toString(), {gasLimit: 2500000}
-            ), 'factoryInstance.whitelist');
-            assetAddress = await factoryInstance.queryToken(bytes32Symbol);
-            console.log(`whitelist asset ${symbol},${assetAddress}`);
-        }
-        console.log(444444)
-        if (assetAddress === ZERO_ADDRESS) {
-            console.error(`Asset ${symbol} deployed to network ${hre.network.name} with address ${assetAddress}`)
-            process.exit(502);
-        } else {
-            console.log(55555)
-            assetInfo.address = assetAddress;
-            if (!assetInfo.initialSupply && initialSupply) {
-                let assetToken = await loadToken(hre, assetAddress);
-                await waitReceipt(assetToken.mint(deployer.address, initialSupply));
-                assetInfo.initialSupply = initialSupply;
-            }
-            if (!assetInfo.pair) {
-                assetInfo.pair = await uniswapV2Factory.getPair(usdToken.address, assetAddress);
-                console.log(`Pair ${symbol}/${usdInfo.symbol} deployed to network ${hre.network.name} with address ${assetInfo.pair}`);
-            }
-            console.log(666666)
-            assetInfo.deploy = false;
-            deployedAssets[symbol] = assetInfo;
-
-        }
+                weight.toString(),
+                {gasLimit: 2500000}
+            ), `factoryInstance.registerAsset for ${name}`
+        )
+        assetInfo.deploy = false;
         saveAssets(hre, deployedAssets);
         let receipt = await oracleInstance.registerAssets([assetInfo.address], {gasLimit: 2500000});
         console.log(`oracleInstance.registerAssets for ${symbol}`, receipt.hash);
@@ -192,7 +171,7 @@ async function deployPair(hre, {name, symbol, type, initialSupply, sinaCode, gti
         isPair: true
     }
     saveWebAssets(hre, deployedWebAssets);
-    console.log('deployPair end',name)
+    console.log('deployPair end', name)
 }
 
 async function registerKalataOracle(hre) {
@@ -315,14 +294,46 @@ async function registerMintAssets(hre) {
 }
 
 async function updateWeight(hre) {
-    console.log('updateWeight begin')
-    let kala = readKala(hre);
-    await waitPromise(factoryInstance.updateWeight(kala.address, config.assetWeights.KALA), `factoryInstance.updateWeight for kala`)
-    const busd = readBUSD(hre);
-    await waitPromise(factoryInstance.updateWeight(busd.address, config.assetWeights.BUSD), `factoryInstance.updateWeight for busd`)
-    console.log('updateWeight end')
+    //console.log('updateWeight begin')
+    //let kala = readKala(hre);
+    //await waitPromise(factoryInstance.updateWeight(kala.address, config.assetWeights.KALA), `factoryInstance.updateWeight for kala`)
+    //const busd = readBUSD(hre);
+    //await waitPromise(factoryInstance.updateWeight(busd.address, config.assetWeights.BUSD), `factoryInstance.updateWeight for busd`)
+    //console.log('updateWeight end')
+
+    await waitPromise(factoryInstance.updateWeight('0xAC637B0f9030436f21E2FfBDf104B45c7e4156CA', toUnitString("1")), `factoryInstance.updateWeight for busd`)
+
+
+
 }
 
+async function registerChinlinkFeeders(hre) {
+    let deployedAssets = readAssets(hre) || {};
+    for (let asset of Object.values(config.assets).filter(asset => asset.chinlinkFeeder)) {
+        let deployedAsset = deployedAssets[asset.symbol]
+        if (deployedAsset && !deployedAsset.chinlinkFeeder) {
+            await waitPromise(
+                chainlinkOracleInstance.registerFeeders([deployedAsset.address], [asset.chinlinkFeeder]),
+                `chainlinkOracleInstance.registerFeeders for ${asset.symbol}`
+            );
+            deployedAsset.chinlinkFeeder = asset.chinlinkFeeder;
+            saveAssets(hre, deployedAssets)
+        }
+    }
+}
+
+
+async function registerTokenMintersForKala(hre,force) {
+    let kala = readKala(hre);
+    if (!kala.minterRegistered||force) {
+        let token = await loadToken(hre, kala.address);
+        await waitPromise(token.clearMinters(), "kala.clearMinters")
+        await waitPromise(token.registerMinters([mintInstance.address,factoryInstance.address]), "kala.registerMinters for Mint address")
+        kala.minterRegistered = true
+        saveKala(hre, kala);
+    }
+
+}
 
 module.exports = {
     deploy: async (hre) => {
@@ -338,9 +349,11 @@ module.exports = {
         await registerBUSDStaking(hre, false);
         await registerKalaBUSDStaking(hre, false);
         await registerMintAssets(hre);
-        //await updateDistributionSchedules(hre, false)
+        await updateDistributionSchedules(hre, false)
         await updateUnlockSpeed(hre, false)
+        await registerChinlinkFeeders(hre);
 
+        await registerTokenMintersForKala(hre,false);
         //await updateWeight(hre)
 
     }

@@ -4,7 +4,6 @@ artifacts
 .idea
 package-lock.json
 env.js
-.openzeppelin
 tmp
 deployments
 deployed/hardhat
@@ -13,4 +12,3 @@ deployed/localhost
 yarn.lock
 /1.txt
 1.js
-

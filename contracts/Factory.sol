@@ -181,6 +181,10 @@ contract Factory is OwnableUpgradeable, IFactory, SafeAccess {
         }
     }
 
+    function queryLastDistributed() override external view returns (uint){
+        return _lastDistributed;
+    }
+
     function distributeAsset(address asset, uint amount) private {
         if (asset != address(0) && amount > 0) {
             IStaking(_staking).depositReward(asset, amount);

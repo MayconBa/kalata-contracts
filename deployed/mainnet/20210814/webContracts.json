@@ -1,6 +1,6 @@
 {
   "Kala": {
-    "address": "0x32299c93960bb583a43c2220dc89152391a610c5",
+    "address": "0x32299c93960bB583A43c2220Dc89152391A610c5",
     "png": "https://app.kalata.io/media/assets/KALA.png",
     "svg": "https://app.kalata.io/media/assets/KALA.svg",
     "abi": [
@@ -242,7 +242,7 @@
     ]
   },
   "UniswapV2Factory": {
-    "address": "0xB3B251ab2AF097f7238752dF8d9328Ef72036ad2",
+    "address": "0xA265535863305cE0a2a8Ec330c2cEC972Aca3004",
     "abi": [
       {
         "anonymous": false,
@@ -410,7 +410,7 @@
     ]
   },
   "UniswapV2Router02": {
-    "address": "0xeC7288267128C81391d82D88e1EC16B32123D1ca",
+    "address": "0x3658f687eee36B1661e2Bc8758e6e0AB704FAb93",
     "abi": [
       {
         "inputs": [],
@@ -1366,7 +1366,7 @@
     ]
   },
   "Oracle": {
-    "address": "0xdA7D829ADf848949d34905A88a29D66b38af837c",
+    "address": "0x557619936268907AD7C29CF6F2B4D1491cb7a3c1",
     "abi": [
       {
         "inputs": [],
@@ -1418,7 +1418,7 @@
     ]
   },
   "Collateral": {
-    "address": "0xECa19e158F63319269Eaa97289aa6e05d26441d7",
+    "address": "0xf453f0365E8084CABb9B4a518D66d5B2DE0539c0",
     "abi": [
       {
         "anonymous": false,
@@ -1746,7 +1746,7 @@
     ]
   },
   "Staking": {
-    "address": "0x738aCBcEc5925185711cfcFFF143B1D0465066eA",
+    "address": "0x565bCba3eA730ac6987edE126B29DCf499fccEA1",
     "abi": [
       {
         "anonymous": false,
@@ -2425,7 +2425,7 @@
     ]
   },
   "Mint": {
-    "address": "0x2E95435751dED34e4a43d5443A6f574557a2B5Ee",
+    "address": "0x2d067575BE1f719f0b0865D357e67925B6f461C5",
     "abi": [
       {
         "anonymous": false,
@@ -2891,6 +2891,34 @@
         "type": "function"
       },
       {
+        "inputs": [],
+        "name": "queryAllAssetConfigs",
+        "outputs": [
+          {
+            "internalType": "address[]",
+            "name": "assets",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "auctionDiscounts",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "minCollateralRatios",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "endPrices",
+            "type": "uint256[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
         "inputs": [
           {
             "internalType": "address",
@@ -3290,7 +3318,7 @@
     ]
   },
   "Factory": {
-    "address": "0x182A93D1B573E5809342905D405894412538bccf",
+    "address": "0xC3a17c23972843407EDEefd0a88946c9f28fC485",
     "abi": [
       {
         "anonymous": false,
@@ -3832,7 +3860,7 @@
     ]
   },
   "Router": {
-    "address": "0x1B88C7633B4Dd229d7DD13b3Dea420C40AEdff89",
+    "address": "0xDdC94dD43B27e1B78f27d5a2866c138731713F0D",
     "abi": [
       {
         "anonymous": false,

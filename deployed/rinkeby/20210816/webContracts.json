@@ -1,6 +1,6 @@
 {
   "Kala": {
-    "address": "0x32299c93960bB583A43c2220Dc89152391A610c5",
+    "address": "0x32299c93960bb583a43c2220dc89152391a610c5",
     "png": "https://app.kalata.io/media/assets/KALA.png",
     "svg": "https://app.kalata.io/media/assets/KALA.svg",
     "abi": [
@@ -242,7 +242,7 @@
     ]
   },
   "UniswapV2Factory": {
-    "address": "0xA265535863305cE0a2a8Ec330c2cEC972Aca3004",
+    "address": "0x98d12B105Fccae9Fc74010F8229CB6C660beaD7a",
     "abi": [
       {
         "anonymous": false,
@@ -410,7 +410,7 @@
     ]
   },
   "UniswapV2Router02": {
-    "address": "0x3658f687eee36B1661e2Bc8758e6e0AB704FAb93",
+    "address": "0x3Ef313e8291adc9208C836DAef8F8bAB6A57D8eD",
     "abi": [
       {
         "inputs": [],
@@ -1366,7 +1366,7 @@
     ]
   },
   "Oracle": {
-    "address": "0x557619936268907AD7C29CF6F2B4D1491cb7a3c1",
+    "address": "0x2eFfA72F180A3C31Bb1d8190B342E8E9762c5090",
     "abi": [
       {
         "inputs": [],
@@ -1418,7 +1418,7 @@
     ]
   },
   "Collateral": {
-    "address": "0xf453f0365E8084CABb9B4a518D66d5B2DE0539c0",
+    "address": "0x245c8595209d394a787732F2ba115fc671e4DB22",
     "abi": [
       {
         "anonymous": false,
@@ -1746,7 +1746,7 @@
     ]
   },
   "Staking": {
-    "address": "0x565bCba3eA730ac6987edE126B29DCf499fccEA1",
+    "address": "0x097eA1fDd8A6b3b96b2EF5E5b473A83E117ceaB3",
     "abi": [
       {
         "anonymous": false,
@@ -2425,7 +2425,7 @@
     ]
   },
   "Mint": {
-    "address": "0x2d067575BE1f719f0b0865D357e67925B6f461C5",
+    "address": "0xBAc420aA9A182a8F3e94c1Af45653B56Dcc48ba9",
     "abi": [
       {
         "anonymous": false,
@@ -3318,7 +3318,7 @@
     ]
   },
   "Factory": {
-    "address": "0xC3a17c23972843407EDEefd0a88946c9f28fC485",
+    "address": "0xCE253e8A63820EFaD7191C5aAACD12DCFB7c6Ea1",
     "abi": [
       {
         "anonymous": false,
@@ -3639,19 +3639,6 @@
         "type": "function"
       },
       {
-        "inputs": [],
-        "name": "queryLastDistributed",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
         "inputs": [
           {
             "internalType": "bytes32",
@@ -3873,7 +3860,7 @@
     ]
   },
   "Router": {
-    "address": "0xDdC94dD43B27e1B78f27d5a2866c138731713F0D",
+    "address": "0x51c4f7D4b595e279c40E743e5BdCAe9F6704c313",
     "abi": [
       {
         "anonymous": false,

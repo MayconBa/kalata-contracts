@@ -1,16 +1,15 @@
 {
-  "deploy": false,
-  "upgrade": false,
   "name": "Kalata",
   "symbol": "Kala",
+  "deployer": "0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0",
   "initialSupply": "120000000000000000000000000",
-  "address": "0x32299c93960bB583A43c2220Dc89152391A610c5",
-  "pair": "0x64330C8AcCd74E8EB30894F341eF45c743B875b5",
+  "address": "0x32299c93960bb583a43c2220dc89152391a610c5",
+  "pair": "0x802c4aB2023E5D0Cf58D1b1711833aEa896213Cd",
   "unlockSpeedRegistered": true,
   "pairStakingRegistered": true,
+  "minterRegistered": true,
   "pool": {
     "busd": "270000000000000000",
     "asset": "1000000000000000000"
-  },
-  "minterRegistered": true
+  }
 }

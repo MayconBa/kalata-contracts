@@ -24,7 +24,7 @@ async function collectPrices(hre) {
         requestBody.push({symbol, price})
     }
     //console.log(requestBody);
-    const URL = `https://testnet.kalata.io/api/finance/symbol/updatePrices`;
+    const URL = `https://app.kalata.io/api/finance/symbol/updatePrices`;
     const {body} = await got.post(URL, {json: requestBody,});
     logger.info(`Collector:${JSON.stringify({url: URL, request: requestBody, response: body})}`,)
 }

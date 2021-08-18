@@ -18,12 +18,13 @@ const start = async () => {
     if (true) {
         try {
             setInterval(() => mint.doAuction(), 60 * 1000);
-            setInterval(() => timelock.execute(), 60 * 1000);
-            setInterval(() => distribute(hre), 3600 * 2 * 1000);
+            //setInterval(() => timelock.execute(), 60 * 1000);
+            //setInterval(() => distribute(hre), 3600 * 2 * 1000);
+            setInterval(() => distribute(hre), 60 * 30 * 1000);
             setInterval(() => transactionLog.collect(), 30 * 1000);
             setInterval(() => collectPrices(hre), 5 * 1000);
-            setInterval(() => batchFeed(hre), 55 * 5 * 1000);
-            await fastify.listen(3001)
+            //setInterval(() => batchFeed(hre), 55 * 5 * 1000);
+            await fastify.listen(9001)
         } catch (err) {
             fastify.log.error(err)
             process.exit(1)

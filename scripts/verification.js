@@ -3,7 +3,7 @@ const {bytesToString} = require("../utils/bytes");
 const moment = require('moment')
 const hre = require("hardhat");
 const {readContracts} = require("../utils/resources");
-const {waitReceipt, waitPromise, randomAddress,} = require("../utils/contract");
+const {waitReceipt, waitPromise, randomAddress, loadToken,} = require("../utils/contract");
 const {readAssets, readBUSD, readKala, readWBNB, getAddressSymbolMapping} = require("../utils/assets");
 const {toUnitString, humanBN, humanBNNumber, toUnit, toBN} = require("../utils/maths")
 const Contract = require("web3-eth-contract");
@@ -14,11 +14,25 @@ let deployedAssets, busdToken, kalaToken, wbnbToken;
 
 async function main() {
     await init();
-    console.log(`${1.0/(72.0*3600/3)}`)
-    //await queryAllPositions();
+    await queryWeights();
     await new Promise(resolve => setTimeout(resolve, 2 * 1000));
 }
 
+async function queryMinters() {
+    console.log("Kala minters", await kalaToken.queryMinters());
+    for (let asset of Object.values(deployedAssets).filter(item => item.minable)) {
+        let token = await loadToken(hre, asset.address);
+        console.log(`${asset.symbol} minters`, await kalaToken.queryMinters());
+    }
+}
+
+
+async function queryWeights(){
+    //function queryAllAssetWeights() override external view returns (address[] memory assets, uint[] memory weights){
+    let {assets,weights} = await factoryInstance.queryAllAssetWeights();
+    console.log(assets)
+    console.log(weights.map(item=>item.toString()))
+}
 
 async function queryAllPositions() {
     let {idxes, positionOwners, collateralTokens, collateralAmounts, assetTokens, assetAmounts} = await mintInstance.queryAllPositions('0x28D89B837BFDb5DD386988F06C87BEB3ab5DC8C0');
